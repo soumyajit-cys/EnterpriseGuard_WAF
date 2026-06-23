@@ -1,24 +1,16 @@
 fastapi
-uvicorn[standard]
-
+uvicorn
 sqlalchemy
-psycopg2-binary
-alembic
-
+asyncpg
 redis
-
-python-jose
-passlib[bcrypt]
-
-python-dotenv
 pydantic
 pydantic-settings
-
-structlog
-
+python-dotenv
+alembic
 pytest
 httpx
-pytest-asyncio
+
+
 
 
 
