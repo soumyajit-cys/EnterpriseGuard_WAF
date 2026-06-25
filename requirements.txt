@@ -9,6 +9,10 @@ python-dotenv
 alembic
 pytest
 httpx
+python-jose[cryptography]
+passlib[bcrypt]
+email-validator
+
 
 
 

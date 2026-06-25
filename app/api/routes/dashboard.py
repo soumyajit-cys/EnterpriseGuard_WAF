@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+
 router = APIRouter(
     prefix="/dashboard",
     tags=["Dashboard"]
@@ -10,7 +11,13 @@ router = APIRouter(
 async def stats():
 
     return {
-        "total_requests": 0,
-        "blocked_requests": 0,
-        "alerts": 0
+        "status": "online",
+        "mode": "detection",
+        "active_rules": [
+            "SQLI",
+            "XSS",
+            "CSRF",
+            "BOT",
+            "RATE_LIMIT"
+        ]
     }
