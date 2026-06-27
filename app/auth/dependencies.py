@@ -1,34 +1,37 @@
+from jose import jwt
+from jose import JWTError
+
 from fastapi import Depends
 from fastapi import HTTPException
+from fastapi.security import HTTPBearer
 
-from fastapi.security import (
-    HTTPBearer
-)
+from app.core.config import settings
 
 security = HTTPBearer()
 
-
-async def get_current_user():
-
-    return {
-        "id": 1,
-        "role": "admin"
-    }
+ALGORITHM = "HS256"
 
 
-def require_admin():
+async def get_current_user(credentials=Depends(security)):
 
-    async def dependency():
+    token = credentials.credentials
 
-        user = await get_current_user()
+    try:
 
-        if user["role"] != "admin":
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[ALGORITHM]
+        )
 
-            raise HTTPException(
-                status_code=403,
-                detail="Forbidden"
-            )
+        return {
+            "id": payload["sub"],
+            "role": payload["role"]
+        }
 
-        return user
+    except JWTError:
 
-    return dependency
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token"
+        )
