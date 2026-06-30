@@ -1,23 +1,19 @@
-from sqlalchemy.ext.asyncio import (
-    create_async_engine,
-    AsyncSession,
-    async_sessionmaker
-)
+from sqlalchemy import select
 
-from app.core.config import settings
-
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=False
-)
-
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False
-)
+from app.models.user import User
 
 
-async def get_db():
-    async with AsyncSessionLocal() as session:
-        yield session
+class UserRepository:
+
+    async def get_by_username(
+        self,
+        db,
+        username: str
+    ):
+        result = await db.execute(
+            select(User).where(
+                User.username == username
+            )
+        )
+
+        return result.scalar_one_or_none()
