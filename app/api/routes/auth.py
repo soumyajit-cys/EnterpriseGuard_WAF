@@ -2,21 +2,15 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 
-from app.schemas.auth import (
-    LoginRequest
-)
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.jwt import (
-    create_token
-)
+from app.schemas.auth import LoginRequest
 
-from app.auth.password import (
-    verify_password
-)
+from app.auth.jwt import create_token
+from app.auth.password import verify_password
 
-from app.repositories.user_repository import (
-    UserRepository
-)
+from app.repositories.user_repository import UserRepository
+from app.core.database import get_db
 
 router = APIRouter(
     prefix="/auth",
@@ -26,10 +20,9 @@ router = APIRouter(
 
 @router.post("/login")
 async def login(
-    payload: LoginRequest
+    payload: LoginRequest,
+    db: AsyncSession = Depends(get_db)
 ):
-
-    db = None
 
     repo = UserRepository()
 
@@ -39,7 +32,6 @@ async def login(
     )
 
     if not user:
-
         raise HTTPException(
             status_code=401,
             detail="Invalid credentials"
@@ -51,7 +43,6 @@ async def login(
     )
 
     if not valid:
-
         raise HTTPException(
             status_code=401,
             detail="Invalid credentials"
