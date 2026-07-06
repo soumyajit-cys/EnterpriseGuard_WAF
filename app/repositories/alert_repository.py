@@ -33,4 +33,4 @@ class AlertRepository:
 
         await db.refresh(alert)
 
-        return alert
+        return alert 
