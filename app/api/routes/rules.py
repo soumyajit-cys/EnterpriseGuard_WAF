@@ -1,8 +1,12 @@
 from fastapi import APIRouter
 from fastapi import Depends
 
-from app.auth.dependencies import (
-    get_current_user
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_db
+
+from app.repositories.rule_repository import (
+    RuleRepository
 )
 
 router = APIRouter(
@@ -10,50 +14,32 @@ router = APIRouter(
     tags=["Rules"]
 )
 
+repo = RuleRepository()
+
 
 @router.get("/")
-async def list_rules(
-    user=Depends(
-        get_current_user
-    )
+async def get_rules(
+    db: AsyncSession = Depends(get_db)
 ):
-    return {
-        "rules": []
-    }
+
+    rules = await repo.get_all(db)
+
+    return rules
 
 
 @router.post("/")
 async def create_rule(
     payload: dict,
-    user=Depends(
-        get_current_user
-    )
+    db: AsyncSession = Depends(get_db)
 ):
-    return {
-        "message": "rule created"
-    }
 
-
-@router.put("/{rule_id}")
-async def update_rule(
-    rule_id: int,
-    payload: dict,
-    user=Depends(
-        get_current_user
+    rule = await repo.create(
+        db,
+        payload["name"],
+        payload.get(
+            "description",
+            ""
+        )
     )
-):
-    return {
-        "message": "updated"
-    }
 
-
-@router.delete("/{rule_id}")
-async def delete_rule(
-    rule_id: int,
-    user=Depends(
-        get_current_user
-    )
-):
-    return {
-        "message": "deleted"
-    }
+    return rule
