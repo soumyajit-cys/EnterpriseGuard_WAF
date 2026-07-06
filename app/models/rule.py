@@ -1,5 +1,9 @@
-from sqlalchemy import Integer, String, Boolean
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy import Integer
+from sqlalchemy import String
+from sqlalchemy import Boolean
+
+from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import Mapped
 
 from app.models.base import Base
 
@@ -19,18 +23,12 @@ class Rule(Base):
         unique=True
     )
 
+    description: Mapped[str] = mapped_column(
+        String(500),
+        default=""
+    )
+
     enabled: Mapped[bool] = mapped_column(
         Boolean,
         default=True
     )
-
-    pattern: Mapped[str] = mapped_column(
-        String(500)
-    )
-
-    severity: Mapped[str] = mapped_column(
-        String(30),
-        default="medium"
-    )
-
-    
