@@ -124,14 +124,18 @@ async def shutdown_event():
 # Global Exception Handler
 # ==========================
 
+import traceback
+
 @app.exception_handler(Exception)
 async def global_exception_handler(
     request: Request,
     exc: Exception
 ):
+    traceback.print_exc()
+
     return JSONResponse(
         status_code=500,
         content={
-            "error": "Internal Server Error"
+            "error": str(exc)
         }
     )
