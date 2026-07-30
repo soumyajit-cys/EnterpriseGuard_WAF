@@ -1,23 +1,23 @@
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     AsyncSession,
-    async_sessionmaker
+    async_sessionmaker,
 )
+from sqlalchemy import text
 
 from app.core.config import settings
 from app.models.base import Base
 
-
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
-    future=True
+    future=True,
 )
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
-    expire_on_commit=False
+    expire_on_commit=False,
 )
 
 
@@ -27,10 +27,6 @@ async def get_db():
 
 
 async def init_db():
-    """
-    Register models and create tables.
-    """
-
     from app.models.user import User
     from app.models.rule import Rule
     from app.models.alert import Alert
@@ -38,6 +34,49 @@ async def init_db():
     from app.models.blocked_ip import BlockedIP
     from app.models.allowed_ip import AllowedIP
     from app.models.waf_setting import WAFSetting
+    from app.models.audit_log import AuditLog
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    await _run_migrations()
+
+
+async def _run_migrations():
+    async with engine.begin() as conn:
+        migrations = [
+            ("users", "is_active", "BOOLEAN DEFAULT TRUE"),
+            ("users", "is_verified", "BOOLEAN DEFAULT FALSE"),
+            ("users", "created_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
+            ("users", "updated_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
+            ("request_logs", "method", "VARCHAR(10)"),
+            ("request_logs", "score", "INTEGER DEFAULT 0"),
+            ("request_logs", "attack_type", "VARCHAR(100)"),
+            ("request_logs", "status_code", "INTEGER"),
+            ("request_logs", "user_agent", "VARCHAR(500)"),
+            ("request_logs", "request_body", "TEXT"),
+            ("request_logs", "response_time", "INTEGER"),
+            ("request_logs", "country", "VARCHAR(100)"),
+            ("alerts", "source", "VARCHAR(100)"),
+            ("alerts", "ip_address", "VARCHAR(100)"),
+            ("alerts", "resolved", "BOOLEAN DEFAULT FALSE"),
+            ("alerts", "resolved_at", "TIMESTAMP WITH TIME ZONE"),
+            ("blocked_ips", "reason", "VARCHAR(500)"),
+            ("blocked_ips", "is_permanent", "BOOLEAN DEFAULT FALSE"),
+            ("blocked_ips", "expires_at", "TIMESTAMP WITH TIME ZONE"),
+            ("blocked_ips", "created_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
+            ("allowed_ips", "description", "VARCHAR(500)"),
+            ("allowed_ips", "created_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
+            ("waf_settings", "key", "VARCHAR(100) DEFAULT 'mode'"),
+            ("waf_settings", "value", "TEXT DEFAULT 'detection'"),
+            ("waf_settings", "description", "VARCHAR(500)"),
+            ("waf_settings", "updated_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
+        ]
+
+        for table, column, col_type in migrations:
+            try:
+                await conn.execute(
+                    text(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {column} {col_type}")
+                )
+            except Exception:
+                pass

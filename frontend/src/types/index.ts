@@ -1,0 +1,145 @@
+export interface User {
+  id: number
+  username: string
+  email: string
+  role: "admin" | "analyst" | "operator" | "viewer"
+  is_active: boolean
+  is_verified: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface AuthResponse {
+  access_token: string
+  refresh_token: string
+  token_type: string
+  user: User
+}
+
+export interface TokenResponse {
+  access_token: string
+  refresh_token: string
+  token_type: string
+}
+
+export interface LoginRequest {
+  username: string
+  password: string
+}
+
+export interface RegisterRequest {
+  username: string
+  email: string
+  password: string
+  role?: string
+}
+
+export interface Rule {
+  id: number
+  name: string
+  description: string
+  enabled: boolean
+  priority?: number
+  severity?: string
+  pattern?: string
+  category?: string
+  rule_type?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface Alert {
+  id: number
+  severity: string
+  message: string
+  source?: string
+  ip_address?: string
+  resolved?: boolean
+  created_at?: string
+}
+
+export interface RequestLog {
+  id: number
+  ip_address: string
+  method?: string
+  path: string
+  status_code?: number
+  threat_score?: number
+  score?: number
+  action: string
+  attack_type?: string
+  user_agent?: string
+  response_time?: number
+  created_at: string
+}
+
+export interface DashboardStats {
+  requests_today: number
+  blocked_today: number
+  allowed_today: number
+  alerts_today: number
+  attack_rate: number
+  total_requests: number
+  total_blocked: number
+  total_alerts: number
+  active_rules: number
+  mode: string
+  threats_by_type: { name: string; value: number }[]
+  top_attacker_ips: { ip: string; count: number }[]
+  top_rules: { name: string; count: number }[]
+  traffic_last_24h: { time: string; requests: number; blocked: number }[]
+}
+
+export interface WAFSettings {
+  mode: string
+  rate_limit: number
+  rate_limit_window: number
+  security_level: string
+  email_notifications: boolean
+  redis_url?: string
+  smtp_host?: string
+  smtp_port?: number
+}
+
+export interface PaginatedResponse<T> {
+  items: T[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
+export interface BlockedIP {
+  id: number
+  ip_address: string
+  reason?: string
+  is_permanent?: boolean
+  permanent?: boolean
+  expires_at?: string
+  created_at: string
+}
+
+export interface AllowedIP {
+  id: number
+  ip_address: string
+  description?: string
+  created_at: string
+}
+
+export interface ReportParams {
+  type: "attack" | "traffic" | "alert"
+  format: "pdf" | "csv" | "json"
+  start_date?: string
+  end_date?: string
+}
+
+export interface AuditLog {
+  id: number
+  user_id?: number
+  username?: string
+  action: string
+  resource?: string
+  details?: string
+  ip_address?: string
+  created_at: string
+}

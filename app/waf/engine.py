@@ -1,68 +1,64 @@
 from app.waf.detector import Detector
-
-from app.waf.actions import (
-    should_block
-)
-
-from app.services.alert_service import (
-    alert_service
-)
-
-from app.services.request_logger import (
-    request_logger
-)
-
+from app.waf.actions import should_block
+from app.services.alert_service import alert_service
+from app.services.request_logger import request_logger
 
 detector = Detector()
+
+SEVERITY_MAP = {
+    (0, 20): "low",
+    (20, 50): "medium",
+    (50, 80): "high",
+    (80, 101): "critical",
+}
+
+
+def get_severity(score: int) -> str:
+    for (low, high), severity in SEVERITY_MAP.items():
+        if low <= score < high:
+            return severity
+    return "low"
 
 
 class WAFEngine:
 
-    async def inspect(
-        self,
-        request
-    ):
+    async def inspect(self, request):
+        findings = await detector.detect(request)
+        max_score = max((f["score"] for f in findings), default=0)
+        total_score = sum(f["score"] for f in findings)
+        effective_score = min(max_score + (total_score - max_score) // 2, 100)
 
-        findings = await detector.detect(
-            request
-        )
-
-        score = sum(
-            f["score"]
-            for f in findings
-        )
-
-        block = should_block(score)
-
+        block = should_block(effective_score)
         ip = request.client.host
-
-        action = (
-            "BLOCK"
-            if block
-            else "ALLOW"
-        )
+        action = "BLOCK" if block else "ALLOW"
+        attack_types = [f["type"] for f in findings]
 
         await request_logger.log(
-            ip,
-            request.url.path,
-            action,
-            score
+            ip=ip,
+            path=request.url.path,
+            action=action,
+            score=effective_score,
+            method=request.method,
+            attack_type=",".join(attack_types) if attack_types else None,
+            status_code=403 if block else None,
+            user_agent=request.headers.get("user-agent"),
         )
 
-        if score >= 50:
-
+        severity = get_severity(effective_score)
+        if findings and effective_score >= 30:
             await alert_service.create(
-                "HIGH",
-                f"Threat score={score}"
+                severity=severity,
+                message=f"{attack_types[0]} detected from {ip} on {request.url.path} (score: {effective_score})",
+                source=attack_types[0] if attack_types else None,
+                ip_address=ip,
             )
 
         return {
             "block": block,
-            "reason": findings[0]["type"]
-            if findings else None,
-            "score": score
+            "reason": attack_types[0] if findings else None,
+            "score": effective_score,
+            "findings": findings,
         }
 
 
 waf_engine = WAFEngine()
-

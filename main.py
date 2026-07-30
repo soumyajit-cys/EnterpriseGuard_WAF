@@ -1,11 +1,13 @@
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import init_db
 from app.core.security_headers import add_security_headers
 
 from app.middleware.waf_middleware import WAFMiddleware
+from app.middleware.audit_middleware import AuditMiddleware
 
 # Routers
 from app.api.routes.health import router as health_router
@@ -17,6 +19,8 @@ from app.api.routes.admin import router as admin_router
 from app.api.routes.alerts import router as alert_router
 from app.api.routes.requests import router as request_router
 from app.api.routes.settings import router as settings_router
+from app.api.routes.analytics import router as analytics_router
+from app.api.routes.reports import router as reports_router
 
 
 app = FastAPI(
@@ -51,6 +55,18 @@ async def ping():
 
 
 # ==========================
+# CORS
+# ==========================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ==========================
 # Middleware
 # ==========================
 
@@ -59,6 +75,12 @@ try:
     print("[+] WAF Middleware Loaded")
 except Exception as e:
     print(f"[!] Failed to load WAF Middleware: {e}")
+
+try:
+    app.add_middleware(AuditMiddleware)
+    print("[+] Audit Middleware Loaded")
+except Exception as e:
+    print(f"[!] Failed to load Audit Middleware: {e}")
 
 
 @app.middleware("http")
@@ -89,6 +111,8 @@ app.include_router(rules_router)
 app.include_router(settings_router)
 app.include_router(dashboard_router)
 app.include_router(waf_router)
+app.include_router(analytics_router)
+app.include_router(reports_router)
 
 
 # ==========================

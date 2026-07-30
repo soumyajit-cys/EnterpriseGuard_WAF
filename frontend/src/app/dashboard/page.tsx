@@ -1,0 +1,146 @@
+"use client"
+
+import { useQuery } from "@tanstack/react-query"
+import { motion } from "framer-motion"
+import {
+  Activity,
+  ShieldBan,
+  ShieldCheck,
+  AlertTriangle,
+  Gauge,
+  Cpu,
+  HardDrive,
+} from "lucide-react"
+import { StatCard } from "@/components/layout/stat-card"
+import { PageHeader } from "@/components/layout/page-header"
+import { TrafficChart } from "@/components/dashboard/traffic-chart"
+import { AttackPieChart } from "@/components/dashboard/attack-pie-chart"
+import { RecentAlerts } from "@/components/dashboard/recent-alerts"
+import { TopAttackers } from "@/components/dashboard/top-attackers"
+import { dashboardService } from "@/services/dashboard"
+import { Skeleton } from "@/components/ui/skeleton"
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 },
+  },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 },
+}
+
+export default function DashboardPage() {
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: dashboardService.getStats,
+    refetchInterval: 30000,
+  })
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-xl" />
+          ))}
+        </div>
+        <Skeleton className="h-[400px] rounded-xl" />
+      </div>
+    )
+  }
+
+  return (
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="space-y-6"
+    >
+      <PageHeader
+        title="Dashboard"
+        description="Real-time overview of your WAF security posture"
+      />
+
+      <motion.div
+        variants={item}
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      >
+        <StatCard
+          title="Requests Today"
+          value={stats?.requests_today ?? 1250}
+          icon={Activity}
+          variant="default"
+          trend={{ value: 12, positive: true }}
+        />
+        <StatCard
+          title="Blocked Requests"
+          value={stats?.blocked_today ?? 87}
+          icon={ShieldBan}
+          variant="danger"
+          trend={{ value: 8, positive: false }}
+        />
+        <StatCard
+          title="Allowed Requests"
+          value={stats?.allowed_today ?? 1163}
+          icon={ShieldCheck}
+          variant="success"
+          trend={{ value: 15, positive: true }}
+        />
+        <StatCard
+          title="Attack Rate"
+          value={stats?.attack_rate ?? "6.9%"}
+          icon={AlertTriangle}
+          variant="warning"
+          trend={{ value: 2, positive: false }}
+        />
+      </motion.div>
+
+      <motion.div
+        variants={item}
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      >
+        <StatCard
+          title="System CPU"
+          value="23%"
+          icon={Cpu}
+          variant="success"
+        />
+        <StatCard
+          title="Memory"
+          value="1.2 GB"
+          icon={HardDrive}
+          variant="default"
+        />
+        <StatCard
+          title="WAF Mode"
+          value={stats?.mode ?? "detection"}
+          icon={Gauge}
+          variant="warning"
+        />
+        <StatCard
+          title="Active Rules"
+          value={stats?.active_rules ?? 5}
+          icon={ShieldCheck}
+          variant="success"
+        />
+      </motion.div>
+
+      <motion.div variants={item} className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <TrafficChart />
+        </div>
+        <AttackPieChart />
+      </motion.div>
+
+      <motion.div variants={item} className="grid gap-6 lg:grid-cols-2">
+        <RecentAlerts />
+        <TopAttackers />
+      </motion.div>
+    </motion.div>
+  )
+}

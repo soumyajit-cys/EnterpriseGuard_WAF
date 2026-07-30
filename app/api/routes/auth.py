@@ -1,59 +1,98 @@
-from fastapi import APIRouter
-from fastapi import Depends
-from fastapi import HTTPException
-
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.auth import LoginRequest
-
-from app.auth.jwt import create_token
-from app.auth.password import verify_password
-
-from app.repositories.user_repository import UserRepository
+from app.auth.dependencies import get_current_user
 from app.core.database import get_db
+from app.models.user import User
+from app.schemas.auth import (
+    RegisterRequest,
+    LoginRequest,
+    RefreshRequest,
+    ChangePasswordRequest,
+    TokenResponse,
+    AuthResponse,
+    UserResponse,
+    MessageResponse,
+)
+from app.services.auth_service import auth_service
 
 router = APIRouter(
     prefix="/auth",
-    tags=["Authentication"]
+    tags=["Authentication"],
 )
 
 
-@router.post("/login")
+@router.post(
+    "/register",
+    response_model=AuthResponse,
+    status_code=201,
+    summary="Register a new user",
+)
+async def register(
+    payload: RegisterRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    return await auth_service.register(db, payload)
+
+
+@router.post(
+    "/login",
+    response_model=AuthResponse,
+    summary="Login and receive JWT tokens",
+)
 async def login(
     payload: LoginRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
+    return await auth_service.login(db, payload)
 
-    repo = UserRepository()
 
-    user = await repo.get_by_username(
-        db,
-        payload.username
-    )
+@router.post(
+    "/refresh",
+    response_model=TokenResponse,
+    summary="Refresh access token using refresh token",
+)
+async def refresh(
+    payload: RefreshRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    return await auth_service.refresh(db, payload)
 
-    if not user:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid credentials"
-        )
 
-    valid = verify_password(
-        payload.password,
-        user.password_hash
-    )
+@router.post(
+    "/logout",
+    response_model=MessageResponse,
+    summary="Logout and revoke tokens",
+)
+async def logout(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    auth_header = request.headers.get("Authorization", "")
+    access_token = auth_header.replace("Bearer ", "")
+    refresh_token = request.headers.get("X-Refresh-Token", "")
+    return await auth_service.logout(access_token, refresh_token)
 
-    if not valid:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid credentials"
-        )
 
-    token = create_token(
-        user.id,
-        user.role
-    )
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    summary="Get current authenticated user",
+)
+async def get_me(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user
 
-    return {
-        "access_token": token,
-        "token_type": "bearer"
-    }
+
+@router.put(
+    "/change-password",
+    response_model=MessageResponse,
+    summary="Change current user password",
+)
+async def change_password(
+    payload: ChangePasswordRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await auth_service.change_password(db, current_user, payload)
