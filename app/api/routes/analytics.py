@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 from app.core.database import get_db
 from app.models.request_log import RequestLog
+from app.models.alert import Alert
 from app.auth.dependencies import require_analyst
 from app.models.user import User
 
