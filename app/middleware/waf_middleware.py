@@ -153,18 +153,15 @@ class WAFMiddleware(
             request
         )
 
-        try:
-            await request_logger.log(
-                ip=ip,
-                path=request.url.path,
-                method=request.method,
-                action="ALLOW",
-                score=decision.get("score", 0),
-                attack_type=decision.get("attack_type") if decision.get("score", 0) > 0 else None,
-                status_code=response.status_code,
-                user_agent=request.headers.get("User-Agent"),
-            )
-        except Exception:
-            pass
+        await request_logger.log(
+            ip=ip,
+            path=request.url.path,
+            method=request.method,
+            action="ALLOW",
+            score=decision.get("score", 0),
+            attack_type=decision.get("attack_type") if decision.get("score", 0) > 0 else None,
+            status_code=response.status_code,
+            user_agent=request.headers.get("User-Agent"),
+        )
 
         return response
