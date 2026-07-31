@@ -42,6 +42,8 @@ class WAFMiddleware(
 
         ip = request.client.host
 
+        print(f"[WAF] dispatching {request.method} {request.url.path} from {ip}")
+
         if AllowList.contains(ip):
             return await call_next(request)
 
