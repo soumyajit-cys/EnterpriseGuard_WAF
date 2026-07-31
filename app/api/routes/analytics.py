@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, cast, Integer
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
 from app.core.database import get_db
 from app.models.request_log import RequestLog
-from app.models.alert import Alert
 from app.auth.dependencies import require_analyst
 from app.models.user import User
 
@@ -36,8 +35,8 @@ async def traffic_analytics(
         select(
             func.date_trunc(trunc, RequestLog.created_at).label("date"),
             func.count(RequestLog.id).label("requests"),
-            func.sum(func.cast(RequestLog.action == "BLOCK", func.Integer)).label("blocked"),
-            func.sum(func.cast(RequestLog.action == "ALLOW", func.Integer)).label("allowed"),
+            func.sum(cast(RequestLog.action == "BLOCK", Integer)).label("blocked"),
+            func.sum(cast(RequestLog.action == "ALLOW", Integer)).label("allowed"),
         )
         .where(RequestLog.created_at >= since)
         .group_by(func.date_trunc(trunc, RequestLog.created_at))
@@ -48,7 +47,7 @@ async def traffic_analytics(
         select(RequestLog.attack_type, func.count(RequestLog.id).label("value"))
         .where(
             and_(
-                RequestLog.attack_type.isnot(None),
+                RequestLog.attack_type != None,
                 RequestLog.attack_type != "",
                 RequestLog.created_at >= since,
             )

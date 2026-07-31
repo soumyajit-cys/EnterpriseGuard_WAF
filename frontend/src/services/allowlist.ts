@@ -6,7 +6,7 @@ export const allowlistService = {
     page?: number
     page_size?: number
   }): Promise<PaginatedResponse<AllowedIP>> {
-    const res = await api.get("/waf/allowlist/", { params })
+    const res = await api.get("/waf/allowlist", { params })
     return res.data
   },
 
@@ -14,7 +14,7 @@ export const allowlistService = {
     ip_address: string
     description?: string
   }): Promise<AllowedIP> {
-    const res = await api.post("/waf/allowlist/", data)
+    const res = await api.post("/waf/allowlist", data)
     return res.data
   },
 

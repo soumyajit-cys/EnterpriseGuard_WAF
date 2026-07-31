@@ -6,7 +6,7 @@ export const blocklistService = {
     page?: number
     page_size?: number
   }): Promise<PaginatedResponse<BlockedIP>> {
-    const res = await api.get("/waf/blocked-ips/", { params })
+    const res = await api.get("/waf/blocklist", { params })
     return res.data
   },
 
@@ -16,11 +16,11 @@ export const blocklistService = {
     permanent?: boolean
     expires_in?: string
   }): Promise<BlockedIP> {
-    const res = await api.post("/waf/blocked-ips/", data)
+    const res = await api.post("/waf/blocklist", data)
     return res.data
   },
 
   async delete(id: number): Promise<void> {
-    await api.delete(`/waf/blocked-ips/${id}`)
+    await api.delete(`/waf/blocklist/${id}`)
   },
 }
