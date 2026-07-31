@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select, func, and_, cast, Integer
+from sqlalchemy import select, func, and_, cast, Integer, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
@@ -31,16 +31,17 @@ async def traffic_analytics(
         since = now - timedelta(days=30)
         trunc = "day"
 
+    trunc_expr = func.date_trunc(text(f"'{trunc}'"), RequestLog.created_at).label("date")
     traffic = await db.execute(
         select(
-            func.date_trunc(trunc, RequestLog.created_at).label("date"),
+            trunc_expr,
             func.count(RequestLog.id).label("requests"),
             func.sum(cast(RequestLog.action == "BLOCK", Integer)).label("blocked"),
             func.sum(cast(RequestLog.action == "ALLOW", Integer)).label("allowed"),
         )
         .where(RequestLog.created_at >= since)
-        .group_by(func.date_trunc(trunc, RequestLog.created_at))
-        .order_by(func.date_trunc(trunc, RequestLog.created_at))
+        .group_by(trunc_expr)
+        .order_by(trunc_expr)
     )
 
     attack_dist = await db.execute(
