@@ -88,3 +88,20 @@ async def _run_migrations():
                 )
             except Exception:
                 pass
+
+        for table in [
+            "users", "rules", "request_logs", "alerts",
+            "blocked_ips", "allowed_ips", "waf_settings", "audit_logs",
+        ]:
+            try:
+                await conn.execute(
+                    text(f"ALTER TABLE {table} ALTER COLUMN created_at SET DEFAULT NOW()")
+                )
+            except Exception:
+                pass
+            try:
+                await conn.execute(
+                    text(f"ALTER TABLE {table} ALTER COLUMN updated_at SET DEFAULT NOW()")
+                )
+            except Exception:
+                pass
