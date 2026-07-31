@@ -48,10 +48,10 @@ const securityNav: NavItem[] = [
 
 const analyticsNav: NavItem[] = [
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-  { label: "Reports", href: "/dashboard/reports", icon: FileText },
 ]
 
 const adminNav: NavItem[] = [
+  { label: "Reports", href: "/dashboard/reports", icon: FileText },
   { label: "Users", href: "/dashboard/users", icon: Users },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
   { label: "Profile", href: "/dashboard/profile", icon: UserCircle },
