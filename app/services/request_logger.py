@@ -72,7 +72,7 @@ class RequestLogger:
                 select(RequestLog.attack_type, func.count(RequestLog.id).label("cnt"))
                 .where(
                     and_(
-                        RequestLog.attack_type.isnot(None),
+                        RequestLog.attack_type != None,
                         RequestLog.created_at >= since,
                     )
                 )
