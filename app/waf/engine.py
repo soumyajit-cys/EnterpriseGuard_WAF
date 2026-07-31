@@ -23,6 +23,7 @@ def get_severity(score: int) -> str:
 class WAFEngine:
 
     async def inspect(self, request):
+        print(f"[ENGINE] inspecting {request.method} {request.url.path}")
         findings = await detector.detect(request)
         max_score = max((f["score"] for f in findings), default=0)
         total_score = sum(f["score"] for f in findings)
