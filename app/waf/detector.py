@@ -43,7 +43,7 @@ class Detector:
             pass
 
         query_params = str(request.query_params)
-        headers_str = str(request.headers)
+        headers_str = str({k: v for k, v in request.headers.items() if k.lower() != "host"})
         uri = str(request.url.path)
 
         targets = [
