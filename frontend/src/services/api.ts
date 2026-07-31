@@ -11,6 +11,12 @@ api.interceptors.request.use((config) => {
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    let csrf = localStorage.getItem("csrf_token")
+    if (!csrf) {
+      csrf = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)
+      localStorage.setItem("csrf_token", csrf)
+    }
+    config.headers["X-CSRF-Token"] = csrf
   }
   return config
 })
