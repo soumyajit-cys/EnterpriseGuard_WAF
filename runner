@@ -5,4 +5,4 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 # Terminal 2 - Frontend
 cd /home/babai/Desktop/codeing/EnterpriseGuard_WAF/frontend
-npm run dev
+npm run dev 
