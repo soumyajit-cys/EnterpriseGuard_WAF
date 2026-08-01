@@ -25,4 +25,18 @@ export const analyticsService = {
     const res = await api.get("/analytics/geo", { params: { hours } })
     return res.data
   },
+
+  async getAttackers(hours: number = 24, limit: number = 25): Promise<any> {
+    const res = await api.get("/analytics/attackers", {
+      params: { hours, limit },
+    })
+    return res.data
+  },
+
+  async getAttackerDetail(ip: string, hours: number = 24): Promise<any> {
+    const res = await api.get(`/analytics/attackers/${encodeURIComponent(ip)}`, {
+      params: { hours },
+    })
+    return res.data
+  },
 }
