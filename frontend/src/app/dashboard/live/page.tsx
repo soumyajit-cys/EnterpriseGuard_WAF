@@ -53,6 +53,9 @@ export default function LiveTrafficPage() {
       <div className="flex items-center gap-2">
         <div className={`h-2 w-2 rounded-full ${isConnected ? "bg-green-400" : "bg-red-400"}`} />
         <span className="text-sm text-zinc-500">{isConnected ? "Connected" : "Disconnected"}</span>
+        {authError && (
+          <Badge variant="danger">Auth failed — log in again</Badge>
+        )}
       </div>
 
       <Card>
