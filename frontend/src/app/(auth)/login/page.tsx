@@ -7,25 +7,34 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
-import { Eye, EyeOff, Loader2, Lock, User } from "lucide-react"
+import { Eye, EyeOff, Loader2, Lock, ShieldCheck, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { authService } from "@/services/auth"
 import { useAuthStore } from "@/store/auth-store"
+import type { AuthResponse } from "@/types"
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
 })
 
+const mfaSchema = z.object({
+  code: z
+    .string()
+    .length(6, "Enter the 6-digit code from your authenticator app"),
+})
+
 type LoginForm = z.infer<typeof loginSchema>
+type MFAForm = z.infer<typeof mfaSchema>
 
 export default function LoginPage() {
   const router = useRouter()
   const { setUser, isAuthenticated, initialize } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [mfaToken, setMfaToken] = useState<string | null>(null)
 
   useEffect(() => {
     initialize()
@@ -42,18 +51,37 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   })
 
+  const {
+    register: registerMfa,
+    handleSubmit: handleSubmitMfa,
+    formState: { errors: mfaErrors },
+  } = useForm<MFAForm>({
+    resolver: zodResolver(mfaSchema),
+  })
+
+  const completeAuth = (response: AuthResponse) => {
+    localStorage.setItem("access_token", response.access_token)
+    localStorage.setItem("refresh_token", response.refresh_token)
+    localStorage.setItem("user", JSON.stringify(response.user))
+    setUser(response.user)
+    toast.success("Welcome back!", {
+      description: `Logged in as ${response.user.username}`,
+    })
+    router.push("/dashboard")
+  }
+
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true)
     try {
       const response = await authService.login(data)
-      localStorage.setItem("access_token", response.access_token)
-      localStorage.setItem("refresh_token", response.refresh_token)
-      localStorage.setItem("user", JSON.stringify(response.user))
-      setUser(response.user)
-      toast.success("Welcome back!", {
-        description: `Logged in as ${response.user.username}`,
-      })
-      router.push("/dashboard")
+      if ("requires_2fa" in response && response.requires_2fa) {
+        setMfaToken(response.mfa_token)
+        toast.info("Two-factor authentication required", {
+          description: "Enter the code from your authenticator app",
+        })
+      } else {
+        completeAuth(response)
+      }
     } catch (error: any) {
       const message =
         error.response?.data?.detail || "Invalid credentials. Please try again."
@@ -61,6 +89,80 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const onMfaSubmit = async (data: MFAForm) => {
+    if (!mfaToken) return
+    setIsLoading(true)
+    try {
+      const response = await authService.verify2fa({
+        mfa_token: mfaToken,
+        code: data.code,
+      })
+      completeAuth(response)
+    } catch (error: any) {
+      toast.error("Verification failed", {
+        description: error.response?.data?.detail || "Invalid code",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (mfaToken) {
+    return (
+      <AuthShell
+        title="Two-factor authentication"
+        subtitle="Enter the 6-digit code from your authenticator app"
+      >
+        <form onSubmit={handleSubmitMfa(onMfaSubmit)} className="space-y-5">
+          <div className="flex justify-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10 border border-blue-500/20">
+              <ShieldCheck className="h-7 w-7 text-blue-400" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-zinc-300">Verification code</label>
+            <Input
+              {...registerMfa("code")}
+              placeholder="000000"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              autoFocus
+              maxLength={6}
+              className="text-center text-lg tracking-[0.4em] font-mono"
+            />
+            {mfaErrors.code && (
+              <p className="text-xs text-red-400">{mfaErrors.code.message}</p>
+            )}
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full h-11 text-[15px] bg-gradient-to-r from-blue-600 to-cyan-600 shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                Verifying...
+              </>
+            ) : (
+              "Verify & Sign In"
+            )}
+          </Button>
+
+          <button
+            type="button"
+            onClick={() => setMfaToken(null)}
+            className="w-full text-center text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+          >
+            Back to sign in
+          </button>
+        </form>
+      </AuthShell>
+    )
   }
 
   return (

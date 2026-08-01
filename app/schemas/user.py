@@ -63,6 +63,7 @@ class UserOut(BaseModel):
     role: str
     is_active: bool
     is_verified: bool
+    totp_enabled: bool = False
     created_at: datetime
     updated_at: datetime
 

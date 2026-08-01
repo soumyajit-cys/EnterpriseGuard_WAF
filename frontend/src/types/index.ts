@@ -5,6 +5,7 @@ export interface User {
   role: "admin" | "analyst" | "operator" | "viewer"
   is_active: boolean
   is_verified: boolean
+  totp_enabled?: boolean
   created_at: string
   updated_at: string
 }
