@@ -40,7 +40,7 @@ class RequestLogger:
             from sqlalchemy import select, func, and_
             from datetime import datetime, timedelta
 
-            now = datetime.utcnow()
+            now = datetime.now()
             if period == "24h":
                 since = now - timedelta(hours=24)
             elif period == "7d":

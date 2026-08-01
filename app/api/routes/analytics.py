@@ -14,7 +14,7 @@ router = APIRouter(
     tags=["Analytics"],
 )
 
-SERVER_START = datetime.utcnow()
+SERVER_START = datetime.now()
 
 
 @router.get("/traffic")
@@ -23,7 +23,7 @@ async def traffic_analytics(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
-    now = datetime.utcnow()
+    now = datetime.now()
     if period == "24h":
         since = now - timedelta(hours=24)
         trunc = "hour"
@@ -101,7 +101,7 @@ async def attack_analytics(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
-    now = datetime.utcnow()
+    now = datetime.now()
     if period == "24h":
         since = now - timedelta(hours=24)
     elif period == "7d":
