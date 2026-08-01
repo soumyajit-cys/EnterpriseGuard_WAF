@@ -74,6 +74,9 @@ class WAFMiddleware(BaseHTTPMiddleware):
 
         ip = get_client_ip(request)
 
+        if request.url.path in ("/waf/test",):
+            return await call_next(request)
+
         if AllowList.contains(ip):
             return await call_next(request)
 
