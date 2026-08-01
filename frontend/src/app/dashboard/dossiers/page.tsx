@@ -152,22 +152,23 @@ export default function DossiersPage() {
                               <Loader2 className="h-4 w-4 animate-spin" /> Loading timeline...
                             </div>
                           ) : (
-                            <div className="flex flex-wrap items-center gap-3 mb-3">
-                              <span className="flex items-center gap-1.5 text-xs text-zinc-500">
-                                <Activity className="h-3.5 w-3.5" />
-                                {detail?.timeline?.length ?? 0} events
-                              </span>
-                              <span className="flex items-center gap-1.5 text-xs text-zinc-500">
-                                <Globe2 className="h-3.5 w-3.5" />
-                                {detail?.country ?? "Unknown"}
-                              </span>
-                              {d.user_agents?.[0] && (
-                                <span className="text-[10px] text-zinc-600 font-mono truncate max-w-xs">
-                                  {d.user_agents[0]}
+                            <>
+                              <div className="flex flex-wrap items-center gap-3 mb-3">
+                                <span className="flex items-center gap-1.5 text-xs text-zinc-500">
+                                  <Activity className="h-3.5 w-3.5" />
+                                  {detail?.timeline?.length ?? 0} events
                                 </span>
-                              )}
-                            </div>
-                            <div className="max-h-72 space-y-1.5 overflow-y-auto pr-1">
+                                <span className="flex items-center gap-1.5 text-xs text-zinc-500">
+                                  <Globe2 className="h-3.5 w-3.5" />
+                                  {detail?.country ?? "Unknown"}
+                                </span>
+                                {d.user_agents?.[0] && (
+                                  <span className="text-[10px] text-zinc-600 font-mono truncate max-w-xs">
+                                    {d.user_agents[0]}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="max-h-72 space-y-1.5 overflow-y-auto pr-1">
                               {(detail?.timeline ?? []).map((e: any, idx: number) => (
                                 <div
                                   key={idx}
