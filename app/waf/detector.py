@@ -11,6 +11,10 @@ from app.waf.rules.ssti import SSTIDetector
 from app.waf.rules.ldap_injection import LDAPInjectionDetector
 from app.waf.rules.header_injection import HeaderInjectionDetector
 from app.waf.rules.hpp import HTTPParameterPollutionDetector
+from app.waf.rules.smuggling import HTTPRequestSmugglingDetector
+from app.waf.rules.graphql import GraphQLDetector
+from app.waf.rules.upload import FileUploadDetector
+from app.waf.rules.encoded import decode_candidates
 from app.services.runtime_sync import custom_rules
 
 
@@ -32,6 +36,9 @@ class Detector:
         ]
         self.bot = BotDetector()
         self.hpp = HTTPParameterPollutionDetector()
+        self.smuggling = HTTPRequestSmugglingDetector()
+        self.graphql = GraphQLDetector()
+        self.upload = FileUploadDetector()
 
     async def detect(self, request) -> list[dict]:
         findings = []
@@ -85,6 +92,46 @@ class Detector:
                         "score": score,
                         "source": source_name,
                     })
+
+        smuggling_score = self.smuggling.inspect_headers(request.headers)
+        if smuggling_score >= 80:
+            findings.append({
+                "type": "HTTP_SMUGGLING",
+                "score": smuggling_score,
+                "source": "headers",
+            })
+
+        graphql_score = self.graphql.inspect(body)
+        if graphql_score >= 35:
+            findings.append({
+                "type": "GRAPHQL_ABUSE",
+                "score": graphql_score,
+                "source": "body",
+            })
+
+        upload_score = self.upload.inspect(body)
+        if upload_score >= 70:
+            findings.append({
+                "type": "MALICIOUS_UPLOAD",
+                "score": upload_score,
+                "source": "body",
+            })
+
+        for source_name, source_value in targets:
+            for candidate in decode_candidates(source_value):
+                for attack_type, detector, threshold in self.detectors:
+                    if not hasattr(detector, "inspect"):
+                        continue
+                    try:
+                        score = detector.inspect(candidate["value"])
+                    except Exception:
+                        continue
+                    if score >= threshold:
+                        findings.append({
+                            "type": f"{attack_type}_ENCODED",
+                            "score": min(score + 10, 100),
+                            "source": f"{source_name}:{candidate['kind']}",
+                        })
 
         hpp_score = self.hpp.inspect_string(query_params)
         if hpp_score >= 30:
