@@ -2,7 +2,6 @@ import ipaddress
 
 import httpx
 
-from app.core.config import settings
 from app.core.redis_client import redis_client
 
 CACHE_TTL = 86400 * 7

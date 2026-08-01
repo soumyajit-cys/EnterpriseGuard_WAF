@@ -3,6 +3,7 @@ from app.waf.actions import should_block
 from app.services.alert_service import alert_service
 from app.services.request_logger import request_logger
 from app.services.traffic_stream import traffic_stream
+from app.services.geo_service import get_country
 
 detector = Detector()
 
