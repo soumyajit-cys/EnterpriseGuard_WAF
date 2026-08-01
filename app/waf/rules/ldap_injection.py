@@ -5,20 +5,20 @@ class LDAPInjectionDetector:
 
     def __init__(self):
         self.patterns = [
-            re.compile(r"[()&|!]=?[()&|!]"),
-            re.compile(r"\(\|\([^)]+\)"),
-            re.compile(r"\(&\([^)]+\)"),
-            re.compile(r"admin\*", re.I),
+            re.compile(r"\([&|!]\s*\(.+?\)\s*\)"),
+            re.compile(r"\(uid=\*\)", re.I),
+            re.compile(r"\(cn=\*\)", re.I),
+            re.compile(r"\(sn=\*\)", re.I),
+            re.compile(r"\(mail=\*\)", re.I),
+            re.compile(r"admin\)\s*\(", re.I),
             re.compile(r"admin\s*=\s*\*", re.I),
-            re.compile(r"\(\w+=\*\)"),
-            re.compile(r"\(\w+=\w+\)"),
+            re.compile(r"\(\w+=\*\)", re.I),
             re.compile(r"\*\)\s*\(", re.I),
-            re.compile(r"admin\(|admin", re.I),
-            re.compile(r"admin\)\(admin", re.I),
-            re.compile(r"\|\(uid="),
-            re.compile(r"&\(uid="),
-            re.compile(r"\(cn="),
-            re.compile(r"\(sn="),
+            re.compile(r"\|\(uid=", re.I),
+            re.compile(r"&\(uid=", re.I),
+            re.compile(r"\(cn=", re.I),
+            re.compile(r"\(sn=", re.I),
+            re.compile(r"\(objectClass=", re.I),
         ]
 
     def inspect(self, value: str) -> int:
