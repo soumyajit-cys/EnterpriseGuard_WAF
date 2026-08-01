@@ -14,6 +14,58 @@ router = APIRouter(
 )
 
 
+@router.post("/playground/test")
+async def public_playground_test(payload: dict):
+    """Public rule-testing playground (no auth) — powers shareable links.
+
+    Mirrors the authenticated /waf/test endpoint so anyone can evaluate a
+    payload against the detection engine without an account.
+    """
+    from app.waf.detector import Detector
+    from app.waf.actions import should_block
+    from app.waf.engine import get_severity
+    from app.waf.runtime import waf_mode
+
+    input_value = str(payload.get("input") or "")
+    source = payload.get("source") or "query"
+
+    class _PlaygroundRequest:
+        pass
+
+    request = _PlaygroundRequest()
+    request.headers = {
+        "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36"
+    }
+    for header in ("content-length", "transfer-encoding"):
+        if header in payload.get("headers", {}):
+            request.headers[header] = str(payload["headers"][header])
+
+    request.query_params = {source: input_value} if source == "query" else {}
+    request.url = type("_Url", (), {"path": str(payload.get("path") or "/")})()
+    request.cookies = {}
+
+    async def _body():
+        return str(payload.get("body") or "").encode()
+
+    request.body = _body
+
+    detector = Detector()
+    findings = await detector.detect(request)
+    max_score = max((f["score"] for f in findings), default=0)
+    total_score = sum(f["score"] for f in findings)
+    effective_score = min(max_score + (total_score - max_score) // 2, 100)
+    block = should_block(effective_score)
+
+    return {
+        "input": input_value,
+        "findings": findings,
+        "effective_score": effective_score,
+        "severity": get_severity(effective_score),
+        "verdict": "BLOCK" if block else "ALLOW",
+        "mode": waf_mode.get(),
+    }
+
+
 @router.get("/stats")
 async def public_stats(db: AsyncSession = Depends(get_db)):
     now = datetime.now()
