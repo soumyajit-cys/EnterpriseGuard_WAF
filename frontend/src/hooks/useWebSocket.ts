@@ -29,6 +29,14 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
     if (!mountedRef.current || retriesRef.current >= maxRetries) return
 
     try {
+      if (
+        wsRef.current &&
+        (wsRef.current.readyState === WebSocket.CONNECTING ||
+          wsRef.current.readyState === WebSocket.OPEN)
+      ) {
+        wsRef.current.close()
+      }
+
       const ws = new WebSocket(url)
       wsRef.current = ws
 

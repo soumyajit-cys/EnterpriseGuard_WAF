@@ -32,6 +32,7 @@ export default function LiveTrafficPage() {
     },
     onMessage: (data) => {
       setEvents(prev => {
+        if (prev.some(e => e.id === data.id)) return prev
         const next = [data, ...prev]
         return next.slice(0, 100)
       })
