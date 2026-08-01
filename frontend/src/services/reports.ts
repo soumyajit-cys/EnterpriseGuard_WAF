@@ -10,7 +10,7 @@ export const reportsService = {
     return res.data
   },
 
-  async generateReport(range: string, format: "csv" | "json"): Promise<Blob> {
+  async generateReport(range: string, format: "pdf" | "csv" | "json"): Promise<Blob> {
     const days = { "24h": 1, "7d": 7, "30d": 30, "90d": 90 }[range] || 7
     const start_date = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10)
     const end_date = new Date().toISOString().slice(0, 10)

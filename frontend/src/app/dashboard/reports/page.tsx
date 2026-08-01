@@ -26,7 +26,7 @@ export default function ReportsPage() {
     queryFn: () => reportsService.getAttackData(range),
   })
 
-  const downloadReport = async (type: "csv" | "json") => {
+  const downloadReport = async (type: "pdf" | "csv" | "json") => {
     setLoading(type)
     try {
       const blob = await reportsService.generateReport(range, type)
