@@ -232,6 +232,11 @@ export default function LandingPage() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <Link href="/login">
+              <button className="h-9 px-4 rounded-lg border border-zinc-700 bg-zinc-900/50 text-zinc-200 text-sm font-medium hover:bg-zinc-800/70 hover:border-zinc-600 transition-all">
+                Sign in
+              </button>
+            </Link>
             {isAuthenticated ? (
               <Link href="/dashboard">
                 <button className="h-9 px-4 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-blue-600/25">
@@ -239,19 +244,11 @@ export default function LandingPage() {
                 </button>
               </Link>
             ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="hidden sm:block text-sm text-zinc-400 hover:text-white transition-colors"
-                >
-                  Sign in
-                </Link>
-                <Link href="/register">
-                  <button className="h-9 px-4 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-blue-600/25">
-                    Get Started
-                  </button>
-                </Link>
-              </>
+              <Link href="/register">
+                <button className="h-9 px-4 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-blue-600/25">
+                  Get Started
+                </button>
+              </Link>
             )}
           </div>
         </div>
