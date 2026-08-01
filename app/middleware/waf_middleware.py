@@ -113,6 +113,25 @@ class WAFMiddleware(BaseHTTPMiddleware):
                 }
             )
 
+        route_allowed = await rate_limit.check_route(ip, request.url.path)
+
+        if not route_allowed:
+
+            await _log_blocked_request(
+                request,
+                ip,
+                "route_rate_limit",
+                "RATE_LIMIT",
+            )
+
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "status": "blocked",
+                    "reason": "route_rate_limit"
+                }
+            )
+
         csrf_valid = (
             await csrf_validator.validate(
                 request

@@ -31,19 +31,24 @@ def decode_candidates(value: str, max_candidates: int = 12) -> list[dict]:
         if len(candidates) < max_candidates:
             candidates.append({"kind": kind, "value": decoded})
 
-    if _B64_LIKE.match(stripped.replace("\n", "").replace("\r", "")):
+    for run in _re.finditer(r"[A-Za-z0-9+/]{8,}={0,2}", stripped):
+        token = run.group(0)
+        if not _B64_LIKE.match(token):
+            continue
         try:
-            raw = base64.b64decode(stripped, validate=False)
+            raw = base64.b64decode(token, validate=False)
             text = raw.decode("utf-8", errors="ignore")
-            if any(ord(c) < 32 and c not in "\t\n\r" for c in text) is False and len(text) >= 4:
+            if len(text) >= 4:
                 add("base64", text)
         except (binascii.Error, ValueError):
             pass
 
-    compact = re.sub(r"\s+", "", stripped)
-    if _HEX_CHARS.match(compact) and len(compact) >= 8 and len(compact) % 2 == 0:
+    for run in _re.finditer(r"[0-9a-fA-F]{8,}", stripped):
+        token = run.group(0)
+        if len(token) % 2 != 0:
+            continue
         try:
-            raw = bytes.fromhex(compact)
+            raw = bytes.fromhex(token)
             text = raw.decode("utf-8", errors="ignore")
             if len(text) >= 4:
                 add("hex", text)

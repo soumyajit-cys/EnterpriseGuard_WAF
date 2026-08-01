@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.jwt import (
     create_access_token,
     create_refresh_token,
+    create_mfa_token,
     decode_token,
 )
 from app.auth.password import hash_password, verify_password
@@ -111,6 +112,67 @@ class AuthService:
 
         await bruteforce_service.register_success(payload.username, ip)
 
+        user_payload = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "role": user.role,
+            "is_active": user.is_active,
+            "is_verified": user.is_verified,
+        }
+
+        if user.totp_enabled:
+            await audit_service.log(
+                action="LOGIN_2FA_STEP",
+                resource="auth",
+                username=user.username,
+                ip_address=ip,
+            )
+            return {
+                "requires_2fa": True,
+                "mfa_token": create_mfa_token(user.id),
+                "user": user_payload,
+            }
+
+        access_token = create_access_token(user.id, user.role)
+        refresh_token = create_refresh_token(user.id, user.role)
+
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "user": user_payload,
+        }
+
+    async def verify_2fa(
+        self,
+        db: AsyncSession,
+        mfa_token: str,
+        code: str,
+    ) -> dict:
+        payload = decode_token(mfa_token)
+        if not payload or payload.get("type") != "mfa":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="2FA session expired. Log in again.",
+            )
+
+        user = await repo.get_by_id(db, int(payload["sub"]))
+        if not user or not user.totp_enabled or not user.totp_secret:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="2FA is not enabled for this account",
+            )
+
+        import pyotp
+
+        totp = pyotp.TOTP(user.totp_secret)
+        if not totp.verify(code.strip(), valid_window=1):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid 2FA code",
+            )
+
         access_token = create_access_token(user.id, user.role)
         refresh_token = create_refresh_token(user.id, user.role)
 
@@ -127,6 +189,70 @@ class AuthService:
                 "is_verified": user.is_verified,
             },
         }
+
+    async def setup_2fa(self, db: AsyncSession, user: User) -> dict:
+        import pyotp
+
+        if user.totp_enabled:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="2FA is already enabled. Disable it first to regenerate.",
+            )
+
+        secret = pyotp.random_base32()
+        user.totp_secret = secret
+        await db.commit()
+
+        uri = pyotp.totp.TOTP(secret).provisioning_uri(
+            name=user.username,
+            issuer_name="EnterpriseGuard WAF",
+        )
+        return {
+            "secret": secret,
+            "otpauth_uri": uri,
+            "enabled": False,
+        }
+
+    async def enable_2fa(self, db: AsyncSession, user: User, code: str) -> dict:
+        if not user.totp_secret:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Request a setup secret first",
+            )
+
+        import pyotp
+
+        if not pyotp.TOTP(user.totp_secret).verify(code.strip(), valid_window=1):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid 2FA code",
+            )
+
+        user.totp_enabled = True
+        await db.commit()
+        return {"enabled": True}
+
+    async def disable_2fa(self, db: AsyncSession, user: User, code: str) -> dict:
+        if not user.totp_enabled:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="2FA is not enabled",
+            )
+
+        import pyotp
+
+        if not user.totp_secret or not pyotp.TOTP(user.totp_secret).verify(
+            code.strip(), valid_window=1
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid 2FA code",
+            )
+
+        user.totp_enabled = False
+        user.totp_secret = None
+        await db.commit()
+        return {"enabled": False}
 
     async def refresh(
         self,

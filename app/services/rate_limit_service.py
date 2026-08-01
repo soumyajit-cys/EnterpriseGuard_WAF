@@ -11,6 +11,10 @@ class RateLimitService:
 
     LOGIN_MAX_REQUESTS = 20
 
+    ROUTE_WINDOW_SECONDS = 60
+
+    ROUTE_MAX_REQUESTS = 60
+
     async def check(self, ip: str | None):
 
         if not ip:
@@ -27,6 +31,29 @@ class RateLimitService:
             )
 
         return count <= self.MAX_REQUESTS
+
+    async def check_route(self, ip: str | None, path: str | None):
+
+        if not ip or not path:
+            return True
+
+        from urllib.parse import urlsplit
+
+        normalized = (path or "").split("?")[0].rstrip("/") or "/"
+        if normalized in ("/docs", "/redoc", "/openapi.json", "/metrics", "/health"):
+            return True
+
+        key = f"rlr:{len(normalized)}:{normalized}:{ip}"
+
+        count = await redis_client.incr(key)
+
+        if count == 1:
+            await redis_client.expire(
+                key,
+                self.ROUTE_WINDOW_SECONDS
+            )
+
+        return count <= self.ROUTE_MAX_REQUESTS
 
     async def check_login(self, ip: str | None):
 

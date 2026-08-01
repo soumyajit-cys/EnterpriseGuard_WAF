@@ -54,6 +54,15 @@ class ChangePasswordRequest(BaseModel):
         return v
 
 
+class Verify2FARequest(BaseModel):
+    mfa_token: str
+    code: str
+
+
+class CodeRequest(BaseModel):
+    code: str
+
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str

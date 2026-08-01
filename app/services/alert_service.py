@@ -21,7 +21,24 @@ class AlertService:
             )
             db.add(alert)
             await db.commit()
-            return alert
+            await db.refresh(alert)
+
+        try:
+            from app.services.webhook_service import fire_alert_webhook
+
+            fire_alert_webhook(
+                "alert_created",
+                {
+                    "severity": alert.severity,
+                    "message": alert.message,
+                    "source": alert.source,
+                    "ip_address": alert.ip_address,
+                },
+            )
+        except Exception:
+            pass
+
+        return alert
 
     async def get_all(
         self,

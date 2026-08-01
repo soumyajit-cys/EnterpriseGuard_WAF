@@ -69,3 +69,29 @@ async def update_mode(
         details=f"WAF mode changed to: {mode}",
     )
     return {"mode": mode}
+
+
+@router.post("/webhooks/test")
+async def test_webhook(
+    payload: dict,
+    current_user: User = Depends(require_admin()),
+):
+    from app.services.webhook_service import test_webhook as send_test
+
+    url = (payload.get("url") or "").strip()
+    webhook_type = payload.get("type", "generic")
+    if not url:
+        raise HTTPException(status_code=400, detail="Webhook URL is required")
+
+    ok, message = await send_test(url, webhook_type)
+    if not ok:
+        raise HTTPException(status_code=400, detail=message)
+
+    await audit_service.log(
+        action="WEBHOOK_TESTED",
+        user_id=current_user.id,
+        username=current_user.username,
+        resource="settings",
+        details=f"Test webhook delivered ({webhook_type})",
+    )
+    return {"ok": True, "message": message}

@@ -44,6 +44,47 @@ async def analytics_overview(
     }
 
 
+@router.get("/geo")
+async def geo_analytics(
+    hours: int = Query(24, ge=1, le=720),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_analyst()),
+):
+    """Attack heatmap data: blocked requests grouped by country."""
+    since = datetime.now() - timedelta(hours=hours)
+
+    rows = await db.execute(
+        select(
+            RequestLog.country,
+            RequestLog.attack_type,
+            func.count(RequestLog.id).label("cnt"),
+        )
+        .where(
+            and_(
+                RequestLog.action == "BLOCK",
+                RequestLog.created_at >= since,
+                RequestLog.country.isnot(None),
+            )
+        )
+        .group_by(RequestLog.country, RequestLog.attack_type)
+        .order_by(func.count(RequestLog.id).desc())
+    )
+
+    countries: dict[str, dict] = {}
+    for country, attack_type, cnt in rows:
+        entry = countries.setdefault(
+            country,
+            {"country": country, "total": 0, "attacks": []},
+        )
+        entry["total"] += cnt
+        entry["attacks"].append({"type": attack_type or "unknown", "count": cnt})
+
+    return {
+        "countries": list(countries.values()),
+        "window_hours": hours,
+    }
+
+
 @router.get("/traffic")
 async def traffic_analytics(
     period: str = Query("7d", regex="^(24h|7d|30d|live)$"),

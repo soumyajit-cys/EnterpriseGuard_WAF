@@ -199,3 +199,54 @@ async def get_audit_logs(
         "page_size": page_size,
         "total_pages": (total + page_size - 1) // page_size,
     }
+
+
+@router.post("/test")
+async def test_payload(
+    payload: dict,
+    current_user: User = Depends(require_analyst()),
+):
+    """Rule-testing playground: score an arbitrary payload offline and get
+    the full detector breakdown + verdict. Never hits the network/logs."""
+    from app.waf.detector import Detector
+    from app.waf.actions import should_block
+    from app.waf.engine import get_severity
+
+    input_value = str(payload.get("input") or "")
+    source = payload.get("source") or "query"
+
+    class _PlaygroundRequest:
+        pass
+
+    request = _PlaygroundRequest()
+    request.headers = {
+        "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36"
+    }
+    for header in ("content-length", "transfer-encoding"):
+        if header in payload.get("headers", {}):
+            request.headers[header] = str(payload["headers"][header])
+
+    request.query_params = {source: input_value} if source == "query" else {}
+    request.url = type("_Url", (), {"path": str(payload.get("path") or "/")})()
+    request.cookies = {}
+
+    async def _body():
+        return str(payload.get("body") or "").encode()
+
+    request.body = _body
+
+    detector = Detector()
+    findings = await detector.detect(request)
+    max_score = max((f["score"] for f in findings), default=0)
+    total_score = sum(f["score"] for f in findings)
+    effective_score = min(max_score + (total_score - max_score) // 2, 100)
+    block = should_block(effective_score)
+
+    return {
+        "input": input_value,
+        "findings": findings,
+        "effective_score": effective_score,
+        "severity": get_severity(effective_score),
+        "verdict": "BLOCK" if block else "ALLOW",
+        "mode": waf_mode.get(),
+    }

@@ -10,6 +10,8 @@ from app.schemas.auth import (
     LoginRequest,
     RefreshRequest,
     ChangePasswordRequest,
+    Verify2FARequest,
+    CodeRequest,
     TokenResponse,
     AuthResponse,
     UserResponse,
@@ -17,6 +19,7 @@ from app.schemas.auth import (
 )
 from app.services.auth_service import auth_service
 from app.services.rate_limit_service import RateLimitService
+from app.services.audit_service import audit_service
 
 router = APIRouter(
     prefix="/auth",
@@ -56,6 +59,75 @@ async def login(
             detail="Too many login attempts from this IP. Try again later.",
         )
     return await auth_service.login(db, payload, ip)
+
+
+@router.post(
+    "/verify-2fa",
+    response_model=AuthResponse,
+    summary="Complete login with a 2FA code",
+)
+async def verify_2fa(
+    payload: Verify2FARequest,
+    db: AsyncSession = Depends(get_db),
+):
+    return await auth_service.verify_2fa(db, payload.mfa_token, payload.code)
+
+
+@router.get(
+    "/2fa/setup",
+    summary="Generate a TOTP secret for the current user",
+)
+async def setup_2fa(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await auth_service.setup_2fa(db, current_user)
+    await audit_service.log(
+        action="2FA_SETUP",
+        user_id=current_user.id,
+        username=current_user.username,
+        resource="auth",
+        ip_address=None,
+    )
+    return result
+
+
+@router.post(
+    "/2fa/enable",
+    summary="Enable 2FA after confirming a TOTP code",
+)
+async def enable_2fa(
+    payload: CodeRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await auth_service.enable_2fa(db, current_user, payload.code)
+    await audit_service.log(
+        action="2FA_ENABLED",
+        user_id=current_user.id,
+        username=current_user.username,
+        resource="auth",
+    )
+    return result
+
+
+@router.post(
+    "/2fa/disable",
+    summary="Disable 2FA after confirming a TOTP code",
+)
+async def disable_2fa(
+    payload: CodeRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await auth_service.disable_2fa(db, current_user, payload.code)
+    await audit_service.log(
+        action="2FA_DISABLED",
+        user_id=current_user.id,
+        username=current_user.username,
+        resource="auth",
+    )
+    return result
 
 
 @router.post(

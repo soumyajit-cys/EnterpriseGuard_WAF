@@ -39,6 +39,18 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+        # Lightweight column migrations for existing deployments
+        for column_def in (
+            "ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(64)",
+            "ADD COLUMN IF NOT EXISTS totp_enabled BOOLEAN NOT NULL DEFAULT FALSE",
+        ):
+            try:
+                await conn.execute(
+                    text(f'ALTER TABLE users {column_def}')
+                )
+            except Exception:
+                pass
+
     await _run_migrations()
 
 

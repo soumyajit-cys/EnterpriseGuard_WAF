@@ -8,10 +8,16 @@ WINDOW_SECONDS = 300
 
 AUTO_BAN_SECONDS = 3600
 
+KILLCHAIN_DISTINCT_TYPES = 3
+
+KILLCHAIN_MIN_BLOCKS = 2
+
 
 class AutoBanService:
     """Tracks blocked-request counts per IP and auto-adds repeat offenders
-    to the persistent blocklist after THRESHOLD blocks within a window."""
+    to the persistent blocklist after THRESHOLD blocks within a window.
+    Also escalates kill-chain behavior: 3+ distinct attack types from the
+    same IP within the window trigger an immediate ban."""
 
     async def record_block(
         self,
@@ -23,14 +29,46 @@ class AutoBanService:
             return False
 
         key = f"autoban:{ip}"
+        types_key = f"autoban_types:{ip}"
         count = await redis_client.incr(key)
         if count == 1:
             await redis_client.expire(key, WINDOW_SECONDS)
-        elif count >= THRESHOLD:
+            await redis_client.expire(types_key, WINDOW_SECONDS)
+
+        distinct = await redis_client.sadd(types_key, reason or "waf")
+
+        killchain = (
+            count >= KILLCHAIN_MIN_BLOCKS
+            and distinct >= KILLCHAIN_DISTINCT_TYPES
+        )
+
+        if killchain:
+            await redis_client.expire(key, 1)
+            await self._persist_ban(ip, f"killchain:{reason}")
+            await self._notify_killchain(ip, count, distinct)
+            return True
+
+        if count >= THRESHOLD:
             await redis_client.expire(key, 1)
             await self._persist_ban(ip, reason)
             return True
         return False
+
+    async def _notify_killchain(self, ip: str, blocks: int, distinct: int):
+        try:
+            from app.services.alert_service import alert_service
+
+            await alert_service.create(
+                severity="critical",
+                message=(
+                    f"Kill-chain escalation: {ip} triggered {distinct} distinct "
+                    f"attack classes across {blocks} blocked requests — auto-banned."
+                ),
+                source="killchain",
+                ip_address=ip,
+            )
+        except Exception as exc:
+            print(f"[WAF] Kill-chain alert failed for {ip}: {exc}")
 
     async def _persist_ban(self, ip: str, reason: str):
         try:

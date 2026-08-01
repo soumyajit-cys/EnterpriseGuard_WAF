@@ -59,3 +59,18 @@ def create_token(
     role: str
 ) -> str:
     return create_access_token(user_id, role)
+
+
+def create_mfa_token(
+    user_id: int,
+    expires_minutes: int = 5,
+) -> str:
+    now = datetime.now(timezone.utc)
+    expire = now + timedelta(minutes=expires_minutes)
+    payload = {
+        "sub": str(user_id),
+        "type": "mfa",
+        "exp": expire,
+        "iat": now,
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=ALGORITHM)
