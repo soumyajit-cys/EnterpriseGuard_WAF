@@ -33,6 +33,7 @@ import { publicService } from "@/services/public"
 
 const navLinks = [
   { label: "Features", href: "#features" },
+  { label: "Playground", href: "#playground" },
   { label: "How it works", href: "#how-it-works" },
   { label: "Threats blocked", href: "#threats" },
   { label: "Live stats", href: "#stats" },
@@ -113,11 +114,11 @@ const features = [
     icon: BrainCircuit,
     title: "Scoring Engine",
     description:
-      "Every request is scored across 9 rule detectors. High scores auto-block in prevention mode.",
+      "Every request is layered across 16 detection engines — SQLi, XSS, SSRF, smuggling, GraphQL abuse, malicious uploads and more. High scores auto-block in prevention mode.",
     iconBg: "from-pink-500 to-fuchsia-600",
     iconShadow: "shadow-pink-500/25",
     hoverBorder: "hover:border-pink-500/40",
-    tag: "9 ENGINES",
+    tag: "16 ENGINES",
   },
 ]
 
@@ -134,7 +135,7 @@ const steps = [
     step: "02",
     title: "Score",
     description:
-      "9 detection engines analyze the request across patterns, headers, and body — producing a threat score.",
+      "16 detection engines analyze the request across patterns, headers, and body — producing a threat score.",
   },
   {
     icon: ShieldBan,
