@@ -43,7 +43,7 @@ export function TrafficChart() {
   const trend = data?.traffic_trend ?? []
   const isHourly = period === "24h" || period === "live"
 
-  const chartData = trend.map((row) => ({
+  const chartData = (trend as Array<{ date: string; requests: number; blocked: number; allowed: number }>).map((row) => ({
     time: isHourly ? formatTime(row.date) : formatDay(row.date),
     requests: row.requests,
     blocked: row.blocked,
