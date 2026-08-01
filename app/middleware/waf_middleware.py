@@ -2,6 +2,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import JSONResponse
 from app.waf.engine import waf_engine
 from app.services.rate_limit_service import RateLimitService
+from app.services.autoban_service import autoban
 from app.waf.rules.blocklist import BlockList
 from app.waf.rules.allowlist import AllowList
 from app.waf.rules.csrf import CSRFValidator
@@ -43,6 +44,8 @@ async def _log_blocked_request(
                 "status": 403 if action == "BLOCK" else 429,
             }
         )
+        if action == "BLOCK":
+            await autoban.record_block(ip or "unknown", reason)
     except Exception:
         pass
 

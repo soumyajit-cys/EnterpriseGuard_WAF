@@ -86,7 +86,7 @@ class BlockedIPRepository:
                     BlockedIP.ip_address == ip,
                     or_(
                         BlockedIP.is_permanent == True,
-                        BlockedIP.expires_at > datetime.utcnow(),
+                        BlockedIP.expires_at > datetime.now(),
                     ),
                 )
             )
