@@ -64,7 +64,7 @@ export default function LiveTrafficPage() {
           <AnimatePresence>
             {events.map((event, i) => (
               <motion.div
-                key={event.id || i}
+                key={event.id ? `${event.id}-${i}` : i}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
