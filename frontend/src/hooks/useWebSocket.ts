@@ -2,11 +2,12 @@ import { useEffect, useRef, useCallback } from "react"
 
 interface UseWebSocketOptions {
   onOpen?: () => void
-  onClose?: () => void
+  onClose?: (code: number) => void
   onMessage?: (data: any) => void
   onError?: (error: Event) => void
   reconnectInterval?: number
   maxRetries?: number
+  noRetryCodes?: number[]
 }
 
 export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
@@ -17,6 +18,7 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
     onError,
     reconnectInterval = 3000,
     maxRetries = 10,
+    noRetryCodes = [],
   } = options
 
   const wsRef = useRef<WebSocket | null>(null)
@@ -35,9 +37,10 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
         onOpen?.()
       }
 
-      ws.onclose = () => {
-        onClose?.()
-        if (mountedRef.current) {
+      ws.onclose = (event) => {
+        onClose?.(event.code)
+        const fatal = noRetryCodes.includes(event.code)
+        if (mountedRef.current && !fatal) {
           setTimeout(() => {
             retriesRef.current++
             connect()
@@ -65,7 +68,7 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
         }, reconnectInterval)
       }
     }
-  }, [url, onOpen, onClose, onMessage, onError, reconnectInterval, maxRetries])
+  }, [url, onOpen, onClose, onMessage, onError, reconnectInterval, maxRetries, noRetryCodes])
 
   useEffect(() => {
     mountedRef.current = true

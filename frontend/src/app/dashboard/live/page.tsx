@@ -10,6 +10,7 @@ import { useWebSocket } from "@/hooks/useWebSocket"
 export default function LiveTrafficPage() {
   const [events, setEvents] = useState<any[]>([])
   const [isConnected, setIsConnected] = useState(false)
+  const [authError, setAuthError] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const wsUrl = typeof window !== "undefined"
@@ -21,14 +22,21 @@ export default function LiveTrafficPage() {
     : "ws://localhost:8000/ws/traffic"
 
   useWebSocket(wsUrl, {
-    onOpen: () => setIsConnected(true),
-    onClose: () => setIsConnected(false),
+    onOpen: () => {
+      setIsConnected(true)
+      setAuthError(false)
+    },
+    onClose: (code) => {
+      setIsConnected(false)
+      if (code === 4401) setAuthError(true)
+    },
     onMessage: (data) => {
       setEvents(prev => {
         const next = [JSON.parse(data), ...prev]
         return next.slice(0, 100)
       })
     },
+    noRetryCodes: [4401],
   })
 
   useEffect(() => {
