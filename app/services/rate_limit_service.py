@@ -7,7 +7,14 @@ class RateLimitService:
 
     MAX_REQUESTS = 120
 
-    async def check(self, ip: str):
+    LOGIN_WINDOW_SECONDS = 60
+
+    LOGIN_MAX_REQUESTS = 20
+
+    async def check(self, ip: str | None):
+
+        if not ip:
+            return True
 
         key = f"rl:{ip}"
 
@@ -20,3 +27,20 @@ class RateLimitService:
             )
 
         return count <= self.MAX_REQUESTS
+
+    async def check_login(self, ip: str | None):
+
+        if not ip:
+            return True
+
+        key = f"rl_login:{ip}"
+
+        count = await redis_client.incr(key)
+
+        if count == 1:
+            await redis_client.expire(
+                key,
+                self.LOGIN_WINDOW_SECONDS
+            )
+
+        return count <= self.LOGIN_MAX_REQUESTS
