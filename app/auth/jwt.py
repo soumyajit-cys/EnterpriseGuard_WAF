@@ -1,6 +1,6 @@
 from jose import jwt, JWTError
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from app.core.config import settings
@@ -13,7 +13,8 @@ def create_access_token(
     role: str,
     expires_delta: Optional[timedelta] = None
 ) -> str:
-    expire = datetime.utcnow() + (
+    now = datetime.now(timezone.utc)
+    expire = now + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     payload = {
@@ -21,7 +22,7 @@ def create_access_token(
         "role": role,
         "type": "access",
         "exp": expire,
-        "iat": datetime.utcnow(),
+        "iat": now,
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=ALGORITHM)
 
@@ -31,7 +32,8 @@ def create_refresh_token(
     role: str,
     expires_delta: Optional[timedelta] = None
 ) -> str:
-    expire = datetime.utcnow() + (
+    now = datetime.now(timezone.utc)
+    expire = now + (
         expires_delta or timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     )
     payload = {
@@ -39,7 +41,7 @@ def create_refresh_token(
         "role": role,
         "type": "refresh",
         "exp": expire,
-        "iat": datetime.utcnow(),
+        "iat": now,
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=ALGORITHM)
 
