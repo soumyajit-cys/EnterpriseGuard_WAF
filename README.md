@@ -1,307 +1,313 @@
 # EnterpriseGuard WAF
 
-EnterpriseGuard WAF is a modern, enterprise-grade Web Application Firewall (WAF) built with FastAPI and PostgreSQL. It provides centralized request inspection, security rule management, authentication, monitoring dashboards, alert generation, and attack detection capabilities for protecting web applications against common web-based threats.
-
-## Features
-
-- Web Application Firewall Middleware
-- SQL Injection Detection (incl. base64 / hex encoded payloads)
-- Cross-Site Scripting (XSS) Detection
-- Command Injection, Path Traversal, LFI / RFI, XXE, SSRF, SSTI, LDAP Injection Detection
-- HTTP Request Smuggling Detection (CL.TE / TE.CL)
-- GraphQL Abuse Detection (introspection, depth, alias bombing)
-- Malicious File Upload Detection
-- Bot Traffic Detection and CSRF Protection
-- Per-Route Rate Limiting
-- Multi-Stage Kill-Chain Autoban (persistent bans + critical alerts)
-- Credential Stuffing Protection
-- Request Monitoring and Logging
-- Security Alert Management with Webhook Notifications (Slack / Discord / Telegram / generic)
-- Two-Factor Authentication (TOTP)
-- Rule-Testing Playground (offline `POST /waf/test`)
-- Geographic Threat Analytics
-- Immutable Audit Trail
-- Authentication and Authorization System (JWT + RBAC)
-- Administrative Dashboard (Next.js)
-- RESTful API Architecture
-- OpenAPI / Swagger Documentation
-- Security Headers Enforcement
-- Real-Time Request Analytics
-
-## CI
+EnterpriseGuard is a modern, enterprise-grade Web Application Firewall built with **FastAPI** and **PostgreSQL**, shipped with a full **Next.js** administration dashboard. It inspects every request in real time, scores it across **16 detection engines**, and blocks malicious traffic before it reaches your application — no proxies, no agents.
 
 [![CI](https://github.com/yourusername/EnterpriseGuard_WAF/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/EnterpriseGuard_WAF/actions/workflows/ci.yml)
 
-- Backend: `pytest` (unit tests for detectors, playground pipeline, webhooks, 2FA flow) against a PostgreSQL + Redis service
-- Frontend: ESLint + production build
+---
+
+## Highlights
+
+- **16 detection engines** — SQLi (incl. base64/hex/double-encoded), XSS, command injection, path traversal, LFI, RFI, XXE, SSRF, SSTI, LDAP injection, header injection, HTTP request smuggling (CL.TE / TE.CL), GraphQL abuse (introspection, depth, alias bombing), malicious uploads, bot traffic, and CSRF validation.
+- **Explainable verdicts** — every finding carries an `evidence` snippet showing the exact input that tripped the rule.
+- **Multi-stage kill-chain autoban** — IPs exhibiting 3+ distinct attack signatures are persistently banned, raising a critical alert.
+- **Attacker dossiers** — per-IP profiles with kill-chain detection, threat-type breakdown, top paths, geo-location, and full event timelines.
+- **Public playground** — `POST /public/playground/test` lets anyone (or your customers) throw payloads at the live engine and get scored verdicts — no login required. Shareable via URL-encoded payload links.
+- **Real-time traffic feed** — WebSocket (`/ws/traffic`) streaming every request verdict into the dashboard.
+- **Attack map** — animated global view of blocked traffic in real time.
+- **2FA (TOTP)** — opt-in per user; login issues an MFA challenge when enabled.
+- **Webhooks** — alerts forwarded to Slack, Discord, Telegram, or any generic HTTP endpoint, severity-gated.
+- **Immutable audit trail**, RBAC user management, per-IP rate limiting, block/allow lists, and full analytics.
+
+## Tech Stack
+
+| Layer       | Technologies                                                        |
+| ----------- | ------------------------------------------------------------------- |
+| Backend     | FastAPI, Uvicorn, SQLAlchemy 2.0 (async), AsyncPG, Pydantic v2, Alembic |
+| Database    | PostgreSQL                                                            |
+| Cache       | Redis (optional — fails open if unavailable)                          |
+| Auth        | JWT (access + refresh), passlib/bcrypt, TOTP (2FA)                    |
+| Frontend    | Next.js 16, React, TypeScript, Tailwind, Framer Motion, TanStack Table, React Hook Form, Zustand |
+| DevOps      | GitHub Actions CI, pytest (backend), ESLint + production build (frontend) |
 
 ## Architecture
-                    ┌───────────────────┐
-                    │   Client Request  │
-                    └─────────┬─────────┘
-                              │
-                              ▼
-                  ┌──────────────────────┐
-                  │ EnterpriseGuard WAF  │
-                  │      Middleware      │
-                  └─────────┬────────────┘
-                            │
-          ┌─────────────────┼─────────────────┐
-          ▼                 ▼                 ▼
- ┌────────────────┐ ┌───────────────┐ ┌──────────────┐
- │ Threat Checks  │ │ Rule Engine   │ │ Rate Limits  │
- └────────────────┘ └───────────────┘ └──────────────┘
-          │                 │                 │
-          └─────────┬───────┴─────────┬──────┘
-                    ▼                 ▼
-          ┌──────────────────┐ ┌─────────────┐
-          │ Request Logging  │ │ Alert Engine│
-          └─────────┬────────┘ └──────┬──────┘
-                    ▼                 ▼
-              ┌──────────────────────────┐
-              │ PostgreSQL Database      │
-              └──────────────────────────┘
-Technology Stack
-Backend
-FastAPI
-Python 3.13+
-SQLAlchemy
-AsyncPG
-Pydantic
-Alembic
-Database
-PostgreSQL
-Cache & Queue
-Redis
-Security
-JWT Authentication
-Security Headers
-WAF Middleware
-Rule-Based Detection Engine
-Project Structure
+
+```
+                ┌───────────────────┐
+                │   Client Request  │
+                └─────────┬─────────┘
+                          ▼
+              ┌───────────────────────────┐
+              │   WAF Middleware (ASGI)   │
+              │  blocklist → rate limit → │
+              │   engine → CSRF → call    │
+              └─────────┬─────────────────┘
+                        ▼
+        ┌───────────────────────────────┐
+        │         WAF Engine            │
+        │  16 detectors + scoring +     │
+        │  evidence + severity          │
+        └───┬───────────┬───────────┬───┘
+            ▼           ▼           ▼
+   ┌────────────┐ ┌──────────┐ ┌──────────┐
+   │ Request    │ │ Alerts + │ │ Traffic  │
+   │ Logging    │ │ Autoban  │ │ Stream   │
+   └─────┬──────┘ └────┬─────┘ └────┬─────┘
+         ▼             ▼            ▼
+   ┌──────────────────────────────────────┐
+   │        PostgreSQL / Redis / WS       │
+   └──────────────────────────────────────┘
+            ▲
+            │ REST API + WebSocket
+   ┌────────┴────────┐
+   │  Next.js Admin  │  /dashboard + public /playground
+   │   Dashboard     │
+   └─────────────────┘
+```
+
+## Project Structure
+
+```
 EnterpriseGuard_WAF/
-│
+├── main.py                 # FastAPI app, middleware, routers, startup
 ├── app/
-│   ├── api/
-│   │   └── routes/
-│   │
-│   ├── core/
-│   │   ├── config.py
-│   │   ├── database.py
-│   │   └── security_headers.py
-│   │
-│   ├── middleware/
-│   │   └── waf_middleware.py
-│   │
-│   ├── models/
-│   ├── repositories/
-│   ├── services/
-│   └── schemas/
-│
-├── main.py
-├── requirements.txt
-├── .env
-└── README.md
-Installation
-Clone Repository
+│   ├── api/routes/         # auth, admin, alerts, analytics, dashboard,
+│   │                       # health, public_stats, reports, requests,
+│   │                       # rules, settings, traffic_ws, waf
+│   ├── auth/               # JWT encoding/decoding, auth dependencies
+│   ├── core/               # config, database, security_headers
+│   ├── middleware/         # waf_middleware, audit_middleware
+│   ├── models/             # SQLAlchemy models (users, logs, alerts, ...)
+│   ├── repositories/       # data access layer
+│   ├── schemas/            # Pydantic request/response models
+│   ├── services/           # auth, alert, audit, geo, metrics, rate_limit,
+│   │                       # request_logger, runtime_sync, traffic_stream
+│   └── waf/                # detector, engine, actions, rules/ (16 detectors)
+├── tests/                  # pytest suite (detectors, playground, webhooks, 2FA)
+├── frontend/               # Next.js admin dashboard + public playground
+└── .github/workflows/      # ci.yml (backend tests + frontend lint/build)
+```
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.13+
+- Node.js 20+
+- PostgreSQL (15+)
+- Redis (optional)
+
+### 1. Backend
+
+```bash
 git clone https://github.com/yourusername/EnterpriseGuard_WAF.git
-
 cd EnterpriseGuard_WAF
-Create Virtual Environment
+
 python3 -m venv venv
-
 source venv/bin/activate
-Install Dependencies
 pip install -r requirements.txt
-PostgreSQL Setup
+```
 
-Login as postgres:
+Create the database:
 
+```bash
 sudo -u postgres psql
-
-Create database user:
-
-CREATE ROLE wafuser WITH LOGIN PASSWORD 'yourpassword';
-
-Create database:
-
+CREATE ROLE wafuser WITH LOGIN PASSWORD 'waf123';
 CREATE DATABASE wafdb OWNER wafuser;
-
-Exit:
-
 \q
-Environment Variables
+```
 
-Create a .env file:
+Create `.env` in the project root:
 
-DATABASE_URL=postgresql+asyncpg://wafuser:yourpassword@localhost/wafdb
+```env
+DATABASE_URL=postgresql+asyncpg://wafuser:waf123@localhost/wafdb
 REDIS_URL=redis://localhost:6379
-SECRET_KEY=change_this_secret_key
-Running the Application
-uvicorn main:app --reload --env-file .env
+SECRET_KEY=change_this_to_a_long_random_string
+WAF_MODE=detection        # "detection" logs only · "prevention" blocks
+```
 
-Application will start at:
+Run the API:
 
-http://127.0.0.1:8000
-API Documentation
+```bash
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
 
-Swagger UI:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
-http://127.0.0.1:8000/docs
+### 2. Frontend
 
-ReDoc:
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-http://127.0.0.1:8000/redoc
-Available API Endpoints
-System
-Method	Endpoint
-GET	/
-GET	/ping
-Health
-Method	Endpoint
-GET	/health/
-Authentication
-Method	Endpoint
-POST	/auth/login
-POST	/auth/verify-2fa
-GET	/auth/2fa/setup
-POST	/auth/2fa/enable
-POST	/auth/2fa/disable
-Dashboard
-Method	Endpoint
-GET	/dashboard/stats
-Alerts
-Method	Endpoint
-GET	/alerts/
-Requests
-Method	Endpoint
-GET	/requests/
-Rules
-Method	Endpoint
-GET	/rules/
-Settings
-Method	Endpoint
-GET	/settings/
-PUT	/settings/{key}
-POST	/settings/webhooks/test
-WAF
-Method	Endpoint
-POST	/waf/test	Offline rule-testing playground
-GET	/waf/audit-logs	Admin audit trail (paginated)
-Analytics
-Method	Endpoint
-GET	/analytics/traffic
-GET	/analytics/attacks
-GET	/analytics/overview
-GET	/analytics/geo	Source-country threat breakdown
-Admin
-Method	Endpoint
-GET	/admin/health
-Security Features
-SQL Injection Protection
+The dashboard runs at http://localhost:3000.
 
-Detects patterns such as:
+> **Note:** the WAF inspects all traffic, including the frontend's own API calls. Authenticated requests must send the `X-CSRF-Token` header (any value ≥ 32 chars) on state-changing methods, and should use a browser `User-Agent` to avoid being flagged as bot traffic.
 
-' OR 1=1 --
-UNION SELECT
-DROP TABLE
+## Dashboard
 
-Also decodes base64, hex, and double-URL-encoded payloads before scanning (SQL_INJECTION_ENCODED).
+| Page                    | Path                      | What it does                                          |
+| ----------------------- | ------------------------- | ----------------------------------------------------- |
+| Overview                | `/dashboard`              | Live stats, charts, recent alerts                     |
+| Live Traffic            | `/dashboard/live`         | Real-time request stream (WebSocket)                  |
+| Analytics               | `/dashboard/analytics`    | Traffic, attacks, geo, and timing charts              |
+| Attack Map              | `/dashboard/attack-map`   | Animated global map of blocked traffic                |
+| Attacker Dossiers       | `/dashboard/dossiers`     | Per-IP kill chains, threat types, timelines, bans     |
+| Alerts                  | `/dashboard/alerts`       | Alert inbox with severity filtering                   |
+| Requests                | `/dashboard/logs`         | Historical request logs                              |
+| Blocked / Allowed IPs   | `/dashboard/blocked-ips`  | Blocklist & allowlist management (with expiry)        |
+| Rules                   | `/dashboard/rules`        | Rule catalog, thresholds, custom rules                |
+| Users                   | `/dashboard/users`        | Admin user management (RBAC)                          |
+| Audit Log               | `/dashboard/audit`        | Immutable admin audit trail                           |
+| Settings                | `/dashboard/settings`     | WAF mode, webhook config, 2FA                         |
+| Playground              | `/playground`             | **Public** — test payloads against the live engine, share links |
 
-Cross-Site Scripting (XSS)
+## API Reference
 
-Detects malicious payloads:
+### System & Health
 
-<script>alert('xss')</script>
+| Method | Endpoint     | Description                          |
+| ------ | ------------ | ------------------------------------ |
+| GET    | `/`          | App metadata                         |
+| GET    | `/ping`      | Liveness check                       |
+| GET    | `/health/`   | Health + dependency status           |
+| GET    | `/metrics`   | Prometheus-formatted metrics         |
 
-HTTP Request Smuggling
+### Public (no auth, WAF-exempt)
 
-Blocks conflicting framing headers (CL+TE, duplicate Content-Length / Transfer-Encoding).
+| Method | Endpoint                | Description                                    |
+| ------ | ----------------------- | ---------------------------------------------- |
+| GET    | `/public/stats`         | Global stats, attack rate, top threats         |
+| POST   | `/public/playground/test` | Score a payload against the live WAF engine  |
 
-GraphQL Abuse
+### Authentication
 
-Flags introspection queries (__schema, __type), deep nesting, and alias bombing.
+| Method | Endpoint            | Description                          |
+| ------ | ------------------- | ------------------------------------ |
+| POST   | `/auth/register`    | Create an account                    |
+| POST   | `/auth/login`       | JWT login (returns MFA challenge if 2FA enabled) |
+| POST   | `/auth/verify-2fa`  | Complete login with TOTP code        |
+| POST   | `/auth/refresh`     | Rotate tokens                        |
+| POST   | `/auth/logout`      | Revoke tokens                        |
+| GET    | `/auth/me`          | Current user                         |
+| PUT    | `/auth/password`    | Change password                      |
+| GET    | `/auth/2fa/setup`   | Generate TOTP secret                 |
+| POST   | `/auth/2fa/enable`  | Enable 2FA (after code confirmation) |
+| POST   | `/auth/2fa/disable` | Disable 2FA                          |
 
-Malicious Uploads
+### Admin (admin role)
 
-Scores multipart uploads carrying executable scripts or disguised file types (double extensions, PHP/JSP/ASP shells).
+| Method | Endpoint        | Description              |
+| ------ | --------------- | ------------------------ |
+| GET    | `/users/`       | Paginated user list      |
+| GET    | `/users/{id}`   | User detail              |
+| POST   | `/users/`       | Create user              |
+| PUT    | `/users/{id}`   | Update user / role       |
+| DELETE | `/users/{id}`   | Delete user              |
 
-Webhooks
+### Analytics
 
-Alerts are forwarded to Slack, Discord, Telegram, or any HTTP endpoint when they meet the configured minimum severity (critical / high / medium / low).
+| Method | Endpoint                      | Description                                  |
+| ------ | ----------------------------- | -------------------------------------------- |
+| GET    | `/analytics/overview`         | Aggregated overview metrics                  |
+| GET    | `/analytics/traffic`          | Traffic time series                          |
+| GET    | `/analytics/attacks`          | Attack time series                           |
+| GET    | `/analytics/geo`              | Country-level threat breakdown               |
+| GET    | `/analytics/attackers`        | Attacker dossiers (kill chain, bans, threats) |
+| GET    | `/analytics/attackers/{ip}`   | Full event timeline for one attacker         |
 
-Two-Factor Authentication
+### WAF & Rules
 
-TOTP-based 2FA using any authenticator app. Enabled per user via /auth/2fa/setup, /auth/2fa/enable, and /auth/2fa/disable; login returns an mfa_token challenge when 2FA is active.
+| Method | Endpoint               | Description                          |
+| ------ | ---------------------- | ------------------------------------ |
+| GET    | `/waf/mode`            | Current mode (detection/prevention)  |
+| POST   | `/waf/test`            | Authenticated payload test           |
+| GET/POST/DELETE | `/waf/blocklist` | Manage blocklisted IPs               |
+| GET/POST/DELETE | `/waf/allowlist` | Manage allowlisted IPs               |
+| GET    | `/waf/audit-logs`      | Admin audit trail (paginated)        |
+| GET/POST/PUT/DELETE | `/rules`      | Rule catalog + custom rules          |
 
-Rate Limiting
+### Operational
 
-Global (per-IP) and per-route limits with 429 responses and reason codes.
+| Method | Endpoint                      | Description                    |
+| ------ | ----------------------------- | ------------------------------ |
+| GET    | `/dashboard/stats`            | Dashboard aggregate stats      |
+| GET    | `/alerts/`, `/alerts/stats`   | Alerts and alert stats         |
+| DELETE | `/alerts/{id}`                | Dismiss an alert               |
+| GET    | `/requests/`                  | Paginated request logs         |
+| GET    | `/requests/{id}`              | Request log detail             |
+| GET    | `/settings/`, `PUT /settings/`| Webhook / global settings      |
+| PUT    | `/settings/mode/{mode}`       | Switch WAF mode                |
+| POST   | `/settings/webhooks/test`     | Send a test webhook            |
+| GET    | `/reports/generate`           | Generate security report       |
+| WS     | `/ws/traffic?token=`          | Live traffic stream (JWT token) |
 
-Kill-Chain Autoban
+## Security Features
 
-IPs exhibiting 3+ distinct attack signatures are automatically and persistently banned, raising a critical kill-chain alert.
+### Detection Engines
 
-Security Headers
-X-Frame-Options
-X-Content-Type-Options
-Referrer-Policy
-Content-Security-Policy
-Permissions-Policy
-Authentication
-JWT-based Authentication
-Role-Based Access Control
-Two-Factor Authentication (TOTP)
-Testing
+Every request is scanned across 16 engines. Findings are scored (0–100); the effective score is `max + (sum − max) / 2`, capped at 100. In **prevention** mode, scores ≥ 50 return `403` with the top reason:
 
-Run the test suite:
+```
+HTTP/1.1 403 Forbidden
+{"status": "blocked", "reason": "SQL_INJECTION"}
+```
 
-python -m pytest tests/ -v
+Encoded payloads (base64, hex, double-URL-encoded) are decoded before scanning. Layered scoring means a single attack often trips multiple detectors at once.
 
-The suite covers:
+### Kill-Chain Autoban
 
-- WAF detectors (SQLi, encoded SQLi, XSS, smuggling, GraphQL, uploads, ...)
-- The /waf/test playground scoring pipeline
-- Webhook payload formatting, severity gating, and delivery
-- The full 2FA lifecycle against PostgreSQL (skipped if the DB is unavailable)
+IPs exhibiting 3+ distinct attack signatures are automatically and persistently banned, generating a critical `KILL_CHAIN` alert. Bans are visible in the Attacker Dossiers page with the exact reason.
 
-Frontend:
+### Webhooks
 
+Alerts are forwarded to Slack, Discord, Telegram, or any generic HTTP endpoint (configurable from Settings) when they meet the configured minimum severity. Delivery is async with retries.
+
+### Two-Factor Authentication
+
+TOTP-based 2FA (Google Authenticator, Aegis, etc.) per user. When enabled, `/auth/login` returns an `mfa_token` challenge that must be completed via `/auth/verify-2fa` before tokens are issued.
+
+### Security Headers
+
+All responses receive `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Content-Security-Policy`, and `Permissions-Policy` headers.
+
+### CSRF & Rate Limiting
+
+- State-changing requests require an `X-CSRF-Token` header (≥ 32 chars) or a same-origin `Origin`/`Referer`.
+- Per-IP sliding-window rate limits return `429` with a reason code, and feed the live traffic stream.
+
+## Testing
+
+```bash
+# Backend (61 tests)
+pytest tests/ -v
+
+# Frontend
 cd frontend
 npm run lint
 npm run build
+```
 
-Example Response
-{
-  "application": "EnterpriseGuard WAF",
-  "version": "1.0.0",
-  "status": "running",
-  "swagger": "/docs",
-  "redoc": "/redoc"
-}
-Future Enhancements
-Machine Learning Based Threat Detection
-Threat Intelligence Integration
-SIEM Integration
-Kubernetes Deployment
-API Schema Validation on the Frontend
-Contributing
-Fork the repository
-Create a feature branch
-git checkout -b feature/new-feature
-Commit changes
-git commit -m "Add new feature"
-Push branch
-git push origin feature/new-feature
-Open a Pull Request
-License
+The suite covers WAF detectors (SQLi, encoded payloads, XSS, smuggling, GraphQL, uploads, ...), the playground scoring pipeline, webhook formatting/severity gating/delivery, and the full 2FA lifecycle against PostgreSQL (auto-skips if the DB is unavailable). CI runs everything on PostgreSQL 16 + Redis 7 services.
 
-This project is licensed under the MIT License.
+## CI/CD
 
-Author
+`.github/workflows/ci.yml`:
 
-Soumyajit Dutta
+- **Backend job** — PostgreSQL 16 + Redis 7 services, initializes the DB, runs `pytest`
+- **Frontend job** — `npm ci`, ESLint, production build
 
-Cybersecurity Enthusiast | Backend Developer | Security Researcher
+## Roadmap
 
-GitHub: https://github.com/<your-username>
+- Machine-learning-based threat detection
+- Threat intelligence feed integration
+- SIEM integrations (Splunk, ELK)
+- Kubernetes / Helm deployment
+- Schema validation of request bodies
+
+## License
+
+MIT
