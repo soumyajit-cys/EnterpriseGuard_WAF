@@ -4,6 +4,13 @@ from app.services.alert_service import alert_service
 from app.services.request_logger import request_logger
 from app.services.traffic_stream import traffic_stream
 from app.services.geo_service import get_country
+from app.services.metrics import (
+    REQUESTS_TOTAL,
+    BLOCKS_TOTAL,
+    ALERTS_TOTAL,
+    RULES_MATCHED,
+    REQUEST_DURATION,
+)
 
 detector = Detector()
 
@@ -25,6 +32,9 @@ def get_severity(score: int) -> str:
 class WAFEngine:
 
     async def inspect(self, request):
+        import time as _time
+
+        start = _time.monotonic()
         findings = await detector.detect(request)
         max_score = max((f["score"] for f in findings), default=0)
         total_score = sum(f["score"] for f in findings)
@@ -34,6 +44,18 @@ class WAFEngine:
         ip = request.client.host
         action = "BLOCK" if block else "ALLOW"
         attack_types = [f["type"] for f in findings]
+
+        for finding in findings:
+            RULES_MATCHED.labels(
+                rule_id=finding.get("rule", finding["type"]),
+                category=finding["type"],
+            ).inc()
+        REQUESTS_TOTAL.labels(
+            action=action,
+            attack_type=",".join(attack_types) if attack_types else "none",
+        ).inc()
+        if block:
+            BLOCKS_TOTAL.labels(reason=attack_types[0] if attack_types else "waf").inc()
 
         country = None
         if block:
