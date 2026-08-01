@@ -102,11 +102,13 @@ class Detector:
             })
 
         graphql_score = self.graphql.inspect(body)
+        if graphql_score < 35:
+            graphql_score = self.graphql.inspect(query_params)
         if graphql_score >= 35:
             findings.append({
                 "type": "GRAPHQL_ABUSE",
                 "score": graphql_score,
-                "source": "body",
+                "source": "body" if body else "query",
             })
 
         upload_score = self.upload.inspect(body)

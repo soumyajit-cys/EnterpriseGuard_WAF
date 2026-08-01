@@ -20,4 +20,9 @@ export const analyticsService = {
     const res = await api.get("/analytics/overview")
     return res.data
   },
+
+  async getGeo(hours: number = 24): Promise<any> {
+    const res = await api.get("/analytics/geo", { params: { hours } })
+    return res.data
+  },
 }

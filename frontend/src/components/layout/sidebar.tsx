@@ -24,6 +24,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
+  FlaskConical,
+  History,
 } from "lucide-react"
 
 interface NavItem {
@@ -48,11 +50,13 @@ const securityNav: NavItem[] = [
 
 const analyticsNav: NavItem[] = [
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+  { label: "Playground", href: "/dashboard/playground", icon: FlaskConical },
 ]
 
 const adminNav: NavItem[] = [
   { label: "Reports", href: "/dashboard/reports", icon: FileText },
   { label: "Users", href: "/dashboard/users", icon: Users },
+  { label: "Audit Log", href: "/dashboard/audit", icon: History },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
   { label: "Profile", href: "/dashboard/profile", icon: UserCircle },
 ]
