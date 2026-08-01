@@ -64,7 +64,7 @@ class AlertRepository:
         if not alert:
             return None
         alert.resolved = True
-        alert.resolved_at = datetime.utcnow()
+        alert.resolved_at = datetime.now()
         await db.commit()
         await db.refresh(alert)
         return alert
