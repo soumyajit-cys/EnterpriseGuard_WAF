@@ -86,10 +86,11 @@ export function AttackPieChart() {
                     borderRadius: "8px",
                   }}
                   labelStyle={{ color: "#E4E4E7" }}
-                  formatter={(value: number | string, _name: string, item: any) => [
-                    `${value} requests`,
-                    item?.payload?.fullName ?? _name,
-                  ]}
+                  formatter={(value, name, item) => {
+                    const fullName =
+                      (item as any)?.payload?.fullName ?? String(name)
+                    return [`${value} requests`, fullName]
+                  }}
                 />
                 <Legend
                   wrapperStyle={{ paddingTop: "12px" }}
