@@ -11,6 +11,7 @@ from app.middleware.audit_middleware import AuditMiddleware
 
 # Routers
 from app.api.routes.health import router as health_router
+from app.api.routes.public_stats import router as public_router
 from app.api.routes.dashboard import router as dashboard_router
 from app.api.routes.rules import router as rules_router
 from app.api.routes.waf import router as waf_router
@@ -104,6 +105,7 @@ async def security_headers_middleware(
 # ==========================
 
 app.include_router(health_router)
+app.include_router(public_router)
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(alert_router)
