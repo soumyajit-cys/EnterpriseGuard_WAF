@@ -1,16 +1,65 @@
 import asyncio
+import re
 from sqlalchemy import select
 
 from app.core.database import AsyncSessionLocal
 from app.core.config import settings
 from app.models.blocked_ip import BlockedIP
 from app.models.allowed_ip import AllowedIP
+from app.models.rule import Rule
 from app.models.waf_setting import WAFSetting
 from app.waf.rules.blocklist import BlockList
 from app.waf.rules.allowlist import AllowList
 from app.waf.runtime import waf_mode
 
 SYNC_INTERVAL_SECONDS = 30
+
+
+class CustomRuleSet:
+    """Compiled custom rules loaded from the rules table."""
+
+    def __init__(self):
+        self._rules: list[dict] = []
+
+    def load(self, rows):
+        rules = []
+        for row in rows:
+            if not row.pattern or not row.enabled:
+                continue
+            try:
+                regex = re.compile(row.pattern, re.IGNORECASE)
+            except re.error:
+                continue
+            rules.append(
+                {
+                    "id": row.id,
+                    "name": row.name,
+                    "regex": regex,
+                    "score": max(min(row.priority or 50, 100), 1),
+                    "category": row.category or "CUSTOM_RULE",
+                }
+            )
+        self._rules = rules
+
+    def match(self, text: str) -> list[dict]:
+        hits = []
+        for rule in self._rules:
+            if rule["regex"].search(text):
+                hits.append(
+                    {
+                        "type": f"CUSTOM:{rule['category']}",
+                        "score": rule["score"],
+                        "source": "custom_rule",
+                        "rule": rule["name"],
+                    }
+                )
+        return hits
+
+    def count(self) -> int:
+        return len(self._rules)
+
+
+custom_rules = CustomRuleSet()
 
 
 class RuntimeSyncService:
@@ -60,6 +109,11 @@ class RuntimeSyncService:
                 mode = mode_row.scalar_one_or_none()
                 if mode and mode.value in ("detection", "prevention"):
                     waf_mode.set(mode.value)
+
+                rule_rows = await db.execute(
+                    select(Rule).where(Rule.enabled == True)
+                )
+                custom_rules.load(rule_rows.scalars().all())
         except Exception as exc:
             print(f"[WAF] Runtime sync failed: {exc}")
 
@@ -67,7 +121,7 @@ class RuntimeSyncService:
         AllowList.ALLOWED_IPS = allowed | {"::1"}
         print(
             f"[WAF] Runtime synced: {len(blocked)} blocked, {len(allowed)} allowed, "
-            f"mode={waf_mode.get()}"
+            f"mode={waf_mode.get()}, custom_rules={custom_rules.count()}"
         )
 
         await self._purge_expired()
