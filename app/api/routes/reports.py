@@ -3,7 +3,7 @@ import json
 import io
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,6 +20,53 @@ router = APIRouter(
 )
 
 
+def _parse_date(value: str, field: str) -> datetime:
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid {field}. Use ISO format, e.g. 2026-08-01 or 2026-08-01T12:00:00",
+        )
+
+
+def _to_pdf(data: list[dict], title: str) -> bytes:
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), title=title)
+    styles = getSampleStyleSheet()
+
+    elements = [Paragraph(f"EnterpriseGuard WAF — {title}", styles["Title"])]
+    if not data:
+        elements.append(Paragraph("No records found for the selected period.", styles["Normal"]))
+    else:
+        headers = list(data[0].keys())
+        table_data = [headers]
+        for row in data:
+            table_data.append([str(row.get(h, "")) for h in headers])
+        table = Table(table_data, repeatRows=1)
+        table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 7),
+                    ("GRID", (0, 0), (-1, -1), 0.4, colors.grey),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ]
+            )
+        )
+        elements.append(table)
+
+    doc.build(elements)
+    return buffer.getvalue()
+
+
 @router.get("/generate")
 async def generate_report(
     type: str = Query("traffic", regex="^(attack|traffic|alert)$"),
@@ -30,8 +77,14 @@ async def generate_report(
     current_user: User = Depends(require_admin()),
 ):
     now = datetime.now()
-    since = datetime.fromisoformat(start_date) if start_date else now - timedelta(days=7)
-    until = datetime.fromisoformat(end_date) if end_date else now
+    since = _parse_date(start_date, "start_date") if start_date else now - timedelta(days=7)
+    until = _parse_date(end_date, "end_date") if end_date else now
+
+    if since > until:
+        raise HTTPException(
+            status_code=400,
+            detail="start_date must be before or equal to end_date",
+        )
 
     if type == "traffic" or type == "attack":
         result = await db.execute(
@@ -61,6 +114,7 @@ async def generate_report(
             }
             for r in rows
         ]
+        title = f"{type.upper()} Report"
     else:
         result = await db.execute(
             select(Alert)
@@ -86,11 +140,14 @@ async def generate_report(
             }
             for a in rows
         ]
+        title = "ALERT Report"
+
+    filename = f"{type}_report_{now.strftime('%Y%m%d_%H%M%S')}"
 
     if format == "json":
         content = json.dumps(data, indent=2)
         media_type = "application/json"
-        filename = f"{type}_report.json"
+        filename += ".json"
     elif format == "csv":
         output = io.StringIO()
         if data:
@@ -99,11 +156,11 @@ async def generate_report(
             writer.writerows(data)
         content = output.getvalue()
         media_type = "text/csv"
-        filename = f"{type}_report.csv"
+        filename += ".csv"
     else:
-        content = json.dumps(data, indent=2)
-        media_type = "application/json"
-        filename = f"{type}_report.json"
+        content = _to_pdf(data, title)
+        media_type = "application/pdf"
+        filename += ".pdf"
 
     return StreamingResponse(
         iter([content]),
