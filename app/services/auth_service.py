@@ -47,7 +47,7 @@ class AuthService:
             username=payload.username,
             email=payload.email,
             password_hash=hashed,
-            role=payload.role,
+            role="analyst",
         )
 
         access_token = create_access_token(user.id, user.role)

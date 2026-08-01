@@ -5,7 +5,6 @@ class RegisterRequest(BaseModel):
     username: str
     email: EmailStr
     password: str
-    role: str = "analyst"
 
     @field_validator("username")
     @classmethod
@@ -26,14 +25,6 @@ class RegisterRequest(BaseModel):
         if not any(c.isdigit() for c in v):
             raise ValueError("Password must contain a digit")
         return v
-
-    @field_validator("role")
-    @classmethod
-    def validate_role(cls, v: str) -> str:
-        allowed = {"admin", "analyst", "operator", "viewer"}
-        if v.lower() not in allowed:
-            raise ValueError(f"Role must be one of: {allowed}")
-        return v.lower()
 
 
 class LoginRequest(BaseModel):
