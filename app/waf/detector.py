@@ -29,8 +29,8 @@ class Detector:
             ("SSTI", SSTIDetector(), 50),
             ("LDAP_INJECTION", LDAPInjectionDetector(), 40),
             ("HEADER_INJECTION", HeaderInjectionDetector(), 80),
-            ("BOT_TRAFFIC", BotDetector(), 20),
         ]
+        self.bot = BotDetector()
         self.hpp = HTTPParameterPollutionDetector()
 
     async def detect(self, request) -> list[dict]:
@@ -92,6 +92,14 @@ class Detector:
                 "type": "HTTP_PARAMETER_POLLUTION",
                 "score": hpp_score,
                 "source": "query",
+            })
+
+        bot_score = self.bot.inspect(request.headers.get("user-agent"))
+        if bot_score >= 20:
+            findings.append({
+                "type": "BOT_TRAFFIC",
+                "score": bot_score,
+                "source": "user-agent",
             })
 
         for source_name, source_value in targets:
