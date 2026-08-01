@@ -80,6 +80,8 @@ class WAFEngine:
 
         import time as _time
 
+        REQUEST_DURATION.observe(_time.monotonic() - start)
+
         await traffic_stream.broadcast(
             {
                 "event": "request",
@@ -98,6 +100,7 @@ class WAFEngine:
 
         severity = get_severity(effective_score)
         if findings and effective_score >= 30:
+            ALERTS_TOTAL.labels(severity=severity).inc()
             await alert_service.create(
                 severity=severity,
                 message=f"{attack_types[0]} detected from {ip} on {request.url.path} (score: {effective_score})",
