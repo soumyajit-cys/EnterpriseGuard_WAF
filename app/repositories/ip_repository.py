@@ -79,14 +79,14 @@ class BlockedIPRepository:
         return True
 
     async def is_blocked(self, db: AsyncSession, ip: str) -> bool:
-        from datetime import datetime
+        from datetime import datetime, timezone
         result = await db.execute(
             select(BlockedIP).where(
                 and_(
                     BlockedIP.ip_address == ip,
                     or_(
                         BlockedIP.is_permanent == True,
-                        BlockedIP.expires_at > datetime.now(),
+                        BlockedIP.expires_at > datetime.now(timezone.utc),
                     ),
                 )
             )

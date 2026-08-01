@@ -68,13 +68,13 @@ class RuntimeSyncService:
         self._task = None
 
     async def _purge_expired(self):
-        from datetime import datetime
+        from datetime import datetime, timezone
         async with AsyncSessionLocal() as db:
             result = await db.execute(
                 select(BlockedIP).where(
                     BlockedIP.is_permanent == False,
                     BlockedIP.expires_at != None,
-                    BlockedIP.expires_at <= datetime.now(),
+                    BlockedIP.expires_at <= datetime.now(timezone.utc),
                 )
             )
             expired = list(result.scalars().all())
@@ -85,7 +85,7 @@ class RuntimeSyncService:
                 print(f"[WAF] Purged {len(expired)} expired blocked IPs")
 
     async def sync_once(self):
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         blocked = set()
         allowed = set()
@@ -96,7 +96,7 @@ class RuntimeSyncService:
                 for entry in blocked_rows.scalars().all():
                     if entry.is_permanent:
                         blocked.add(entry.ip_address)
-                    elif entry.expires_at and entry.expires_at > datetime.now():
+                    elif entry.expires_at and entry.expires_at > datetime.now(timezone.utc):
                         blocked.add(entry.ip_address)
 
                 allowed_rows = await db.execute(select(AllowedIP))
