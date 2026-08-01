@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
@@ -37,6 +37,20 @@ const severityVariant: Record<string, "default" | "success" | "danger" | "warnin
 }
 
 export default function PublicPlaygroundPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#09090B]">
+          <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
+        </div>
+      }
+    >
+      <Playground />
+    </Suspense>
+  )
+}
+
+function Playground() {
   const searchParams = useSearchParams()
   const [input, setInput] = useState("")
   const [source, setSource] = useState("query")
