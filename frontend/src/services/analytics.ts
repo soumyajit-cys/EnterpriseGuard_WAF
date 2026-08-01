@@ -6,6 +6,11 @@ export const analyticsService = {
     return res.data
   },
 
+  async getTraffic(period: string = "live"): Promise<any> {
+    const res = await api.get("/analytics/traffic", { params: { period } })
+    return res.data
+  },
+
   async getAttackStats(period: string = "7d"): Promise<any> {
     const res = await api.get("/analytics/attacks", { params: { period } })
     return res.data
