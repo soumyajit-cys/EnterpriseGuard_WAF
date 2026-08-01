@@ -137,6 +137,14 @@ async def startup_event():
     except Exception as e:
         print(f"[!] Database initialization failed: {e}")
 
+    try:
+        from app.services.runtime_sync import runtime_sync
+        await runtime_sync.sync_once()
+        await runtime_sync.start()
+        print("[+] WAF runtime sync started")
+    except Exception as e:
+        print(f"[!] WAF runtime sync failed to start: {e}")
+
     print("[+] Application startup completed")
 
 
@@ -146,6 +154,11 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
+    try:
+        from app.services.runtime_sync import runtime_sync
+        await runtime_sync.stop()
+    except Exception:
+        pass
     print("[+] EnterpriseGuard WAF stopped")
 
 
