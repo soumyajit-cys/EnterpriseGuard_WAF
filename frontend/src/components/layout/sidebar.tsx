@@ -26,6 +26,8 @@ import {
   ShieldCheck,
   FlaskConical,
   History,
+  Globe2,
+  Crosshair,
 } from "lucide-react"
 
 interface NavItem {
@@ -50,6 +52,8 @@ const securityNav: NavItem[] = [
 
 const analyticsNav: NavItem[] = [
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+  { label: "Attack Map", href: "/dashboard/attack-map", icon: Globe2 },
+  { label: "Attacker Dossiers", href: "/dashboard/dossiers", icon: Crosshair },
   { label: "Playground", href: "/dashboard/playground", icon: FlaskConical },
 ]
 

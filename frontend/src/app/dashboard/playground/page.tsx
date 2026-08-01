@@ -171,23 +171,34 @@ export default function PlaygroundPage() {
               </div>
             )}
 
-            <Button
-              onClick={run}
-              disabled={isLoading || !input.trim()}
-              className="w-full h-11 text-[15px] bg-gradient-to-r from-blue-600 to-cyan-600 shadow-lg shadow-blue-600/25"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                  Scoring...
-                </>
-              ) : (
-                <>
-                  <Play className="h-4 w-4 mr-2" />
-                  Run Detection
-                </>
-              )}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={run}
+                disabled={isLoading || !input.trim()}
+                className="flex-1 h-11 text-[15px] bg-gradient-to-r from-blue-600 to-cyan-600 shadow-lg shadow-blue-600/25"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    Scoring...
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 mr-2" />
+                    Run Detection
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={share}
+                disabled={!input.trim()}
+                className="h-11 px-4"
+                title="Copy public share link"
+              >
+                <Link2 className="h-4 w-4" />
+              </Button>
+            </div>
 
             <div>
               <p className="text-xs text-zinc-600 mb-2 font-semibold uppercase tracking-widest">
