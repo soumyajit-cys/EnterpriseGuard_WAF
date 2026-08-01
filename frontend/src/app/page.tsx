@@ -372,7 +372,7 @@ export default function LandingPage() {
               className="mt-6 text-base sm:text-lg text-zinc-400 max-w-xl mx-auto leading-relaxed"
             >
               EnterpriseGuard inspects every request in real time, scores it against
-              9 attack detection engines, and blocks malicious traffic before it
+              16 attack detection engines, and blocks malicious traffic before it
               touches your application. No proxies. No agents. Just protection.
             </motion.p>
 
@@ -687,7 +687,7 @@ export default function LandingPage() {
               { label: "Requests Analyzed", value: stats?.total_requests ?? 0, icon: Activity, chip: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
               { label: "Attacks Blocked", value: stats?.total_blocked ?? 0, icon: ShieldBan, chip: "bg-red-500/10 text-red-400 border-red-500/20" },
               { label: "Alerts Raised", value: stats?.total_alerts ?? 0, icon: AlertTriangle, chip: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" },
-              { label: "Active Rules", value: stats?.active_rules ?? 9, icon: Layers, chip: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" },
+              { label: "Active Rules", value: stats?.active_rules ?? 16, icon: Layers, chip: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
