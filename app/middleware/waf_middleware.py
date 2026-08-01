@@ -21,6 +21,16 @@ async def _log_blocked_request(
     action: str,
 ):
     try:
+        country = None
+        if action == "BLOCK":
+            try:
+                import asyncio
+
+                from app.services.geo_service import get_country
+
+                country = await asyncio.wait_for(get_country(ip or "unknown"), timeout=1.5)
+            except Exception:
+                country = None
         await request_logger.log(
             ip=ip or "unknown",
             path=request.url.path,
@@ -30,6 +40,7 @@ async def _log_blocked_request(
             attack_type=reason,
             status_code=403 if action == "BLOCK" else 429,
             user_agent=request.headers.get("user-agent"),
+            country=country,
         )
         await traffic_stream.broadcast(
             {
