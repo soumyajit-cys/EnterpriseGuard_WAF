@@ -112,6 +112,11 @@ export interface WAFSettings {
   redis_url?: string
   smtp_host?: string
   smtp_port?: number
+  webhook_url?: string
+  webhook_type?: string
+  webhook_events?: string
+  webhook_enabled?: string
+  [key: string]: any
 }
 
 export interface PaginatedResponse<T> {
