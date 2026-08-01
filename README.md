@@ -1,22 +1,41 @@
-EnterpriseGuard WAF
+# EnterpriseGuard WAF
 
 EnterpriseGuard WAF is a modern, enterprise-grade Web Application Firewall (WAF) built with FastAPI and PostgreSQL. It provides centralized request inspection, security rule management, authentication, monitoring dashboards, alert generation, and attack detection capabilities for protecting web applications against common web-based threats.
 
-Features
-Web Application Firewall Middleware
-SQL Injection Detection
-Cross-Site Scripting (XSS) Detection
-Request Monitoring and Logging
-Security Alert Management
-Rule-Based Traffic Inspection
-Authentication and Authorization System
-Administrative Dashboard
-PostgreSQL Integration
-RESTful API Architecture
-OpenAPI / Swagger Documentation
-Security Headers Enforcement
-Real-Time Request Analytics
-Architecture
+## Features
+
+- Web Application Firewall Middleware
+- SQL Injection Detection (incl. base64 / hex encoded payloads)
+- Cross-Site Scripting (XSS) Detection
+- Command Injection, Path Traversal, LFI / RFI, XXE, SSRF, SSTI, LDAP Injection Detection
+- HTTP Request Smuggling Detection (CL.TE / TE.CL)
+- GraphQL Abuse Detection (introspection, depth, alias bombing)
+- Malicious File Upload Detection
+- Bot Traffic Detection and CSRF Protection
+- Per-Route Rate Limiting
+- Multi-Stage Kill-Chain Autoban (persistent bans + critical alerts)
+- Credential Stuffing Protection
+- Request Monitoring and Logging
+- Security Alert Management with Webhook Notifications (Slack / Discord / Telegram / generic)
+- Two-Factor Authentication (TOTP)
+- Rule-Testing Playground (offline `POST /waf/test`)
+- Geographic Threat Analytics
+- Immutable Audit Trail
+- Authentication and Authorization System (JWT + RBAC)
+- Administrative Dashboard (Next.js)
+- RESTful API Architecture
+- OpenAPI / Swagger Documentation
+- Security Headers Enforcement
+- Real-Time Request Analytics
+
+## CI
+
+[![CI](https://github.com/yourusername/EnterpriseGuard_WAF/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/EnterpriseGuard_WAF/actions/workflows/ci.yml)
+
+- Backend: `pytest` (unit tests for detectors, playground pipeline, webhooks, 2FA flow) against a PostgreSQL + Redis service
+- Frontend: ESLint + production build
+
+## Architecture
                     ┌───────────────────┐
                     │   Client Request  │
                     └─────────┬─────────┘
@@ -144,6 +163,10 @@ GET	/health/
 Authentication
 Method	Endpoint
 POST	/auth/login
+POST	/auth/verify-2fa
+GET	/auth/2fa/setup
+POST	/auth/2fa/enable
+POST	/auth/2fa/disable
 Dashboard
 Method	Endpoint
 GET	/dashboard/stats
@@ -159,6 +182,18 @@ GET	/rules/
 Settings
 Method	Endpoint
 GET	/settings/
+PUT	/settings/{key}
+POST	/settings/webhooks/test
+WAF
+Method	Endpoint
+POST	/waf/test	Offline rule-testing playground
+GET	/waf/audit-logs	Admin audit trail (paginated)
+Analytics
+Method	Endpoint
+GET	/analytics/traffic
+GET	/analytics/attacks
+GET	/analytics/overview
+GET	/analytics/geo	Source-country threat breakdown
 Admin
 Method	Endpoint
 GET	/admin/health
@@ -170,11 +205,43 @@ Detects patterns such as:
 ' OR 1=1 --
 UNION SELECT
 DROP TABLE
+
+Also decodes base64, hex, and double-URL-encoded payloads before scanning (SQL_INJECTION_ENCODED).
+
 Cross-Site Scripting (XSS)
 
 Detects malicious payloads:
 
 <script>alert('xss')</script>
+
+HTTP Request Smuggling
+
+Blocks conflicting framing headers (CL+TE, duplicate Content-Length / Transfer-Encoding).
+
+GraphQL Abuse
+
+Flags introspection queries (__schema, __type), deep nesting, and alias bombing.
+
+Malicious Uploads
+
+Scores multipart uploads carrying executable scripts or disguised file types (double extensions, PHP/JSP/ASP shells).
+
+Webhooks
+
+Alerts are forwarded to Slack, Discord, Telegram, or any HTTP endpoint when they meet the configured minimum severity (critical / high / medium / low).
+
+Two-Factor Authentication
+
+TOTP-based 2FA using any authenticator app. Enabled per user via /auth/2fa/setup, /auth/2fa/enable, and /auth/2fa/disable; login returns an mfa_token challenge when 2FA is active.
+
+Rate Limiting
+
+Global (per-IP) and per-route limits with 429 responses and reason codes.
+
+Kill-Chain Autoban
+
+IPs exhibiting 3+ distinct attack signatures are automatically and persistently banned, raising a critical kill-chain alert.
+
 Security Headers
 X-Frame-Options
 X-Content-Type-Options
@@ -184,6 +251,26 @@ Permissions-Policy
 Authentication
 JWT-based Authentication
 Role-Based Access Control
+Two-Factor Authentication (TOTP)
+Testing
+
+Run the test suite:
+
+python -m pytest tests/ -v
+
+The suite covers:
+
+- WAF detectors (SQLi, encoded SQLi, XSS, smuggling, GraphQL, uploads, ...)
+- The /waf/test playground scoring pipeline
+- Webhook payload formatting, severity gating, and delivery
+- The full 2FA lifecycle against PostgreSQL (skipped if the DB is unavailable)
+
+Frontend:
+
+cd frontend
+npm run lint
+npm run build
+
 Example Response
 {
   "application": "EnterpriseGuard WAF",
@@ -194,13 +281,10 @@ Example Response
 }
 Future Enhancements
 Machine Learning Based Threat Detection
-Geo-IP Blocking
-Advanced Rate Limiting
 Threat Intelligence Integration
 SIEM Integration
-Email and Slack Alerting
 Kubernetes Deployment
-Real-Time Monitoring Dashboard
+API Schema Validation on the Frontend
 Contributing
 Fork the repository
 Create a feature branch
