@@ -1,38 +1,53 @@
-from starlette.middleware.base import (
-    BaseHTTPMiddleware
-)
-
-from fastapi.responses import (
-    JSONResponse
-)
-
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.responses import JSONResponse
 from app.waf.engine import waf_engine
-
-from app.services.rate_limit_service import (
-    RateLimitService
-)
-
-from app.waf.rules.blocklist import (
-    BlockList
-)
-
-from app.waf.rules.allowlist import (
-    AllowList
-)
-
-from app.waf.rules.csrf import (
-    CSRFValidator
-)
-
+from app.services.rate_limit_service import RateLimitService
+from app.waf.rules.blocklist import BlockList
+from app.waf.rules.allowlist import AllowList
+from app.waf.rules.csrf import CSRFValidator
+from app.core.client_ip import get_client_ip
+from app.services.request_logger import request_logger
+from app.services.traffic_stream import traffic_stream
 
 rate_limit = RateLimitService()
-
 csrf_validator = CSRFValidator()
 
 
-class WAFMiddleware(
-    BaseHTTPMiddleware
+async def _log_blocked_request(
+    request,
+    ip: str | None,
+    reason: str,
+    action: str,
 ):
+    try:
+        await request_logger.log(
+            ip=ip or "unknown",
+            path=request.url.path,
+            action=action,
+            score=100 if action == "BLOCK" else 0,
+            method=request.method,
+            attack_type=reason,
+            status_code=403 if action == "BLOCK" else 429,
+            user_agent=request.headers.get("user-agent"),
+        )
+        await traffic_stream.broadcast(
+            {
+                "event": "blocked",
+                "id": f"blk-{request.method}-{request.url.path}-{id(request)}",
+                "ip_address": ip or "unknown",
+                "method": request.method,
+                "path": request.url.path,
+                "action": action,
+                "score": 100 if action == "BLOCK" else 0,
+                "attack_type": reason,
+                "status": 403 if action == "BLOCK" else 429,
+            }
+        )
+    except Exception:
+        pass
+
+
+class WAFMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(
         self,
@@ -40,12 +55,19 @@ class WAFMiddleware(
         call_next
     ):
 
-        ip = request.client.host
+        ip = get_client_ip(request)
 
         if AllowList.contains(ip):
             return await call_next(request)
 
         if BlockList.contains(ip):
+
+            await _log_blocked_request(
+                request,
+                ip,
+                "blocklist",
+                "BLOCK",
+            )
 
             return JSONResponse(
                 status_code=403,
@@ -58,6 +80,13 @@ class WAFMiddleware(
         allowed = await rate_limit.check(ip)
 
         if not allowed:
+
+            await _log_blocked_request(
+                request,
+                ip,
+                "rate_limit",
+                "RATE_LIMIT",
+            )
 
             return JSONResponse(
                 status_code=429,
@@ -74,6 +103,13 @@ class WAFMiddleware(
         )
 
         if not csrf_valid:
+
+            await _log_blocked_request(
+                request,
+                ip,
+                "csrf",
+                "BLOCK",
+            )
 
             return JSONResponse(
                 status_code=403,
