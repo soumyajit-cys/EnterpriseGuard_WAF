@@ -1,5 +1,5 @@
-# Terminal 1 - Backend (already running on :8000)
-$ cd /cd /home/babai/Desktop/codeing/EnterpriseGuard_WAF
+# Terminal 1 - Backend
+cd /home/babai/Desktop/codeing/EnterpriseGuard_WAF
 source venv/bin/activate
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
