@@ -80,6 +80,7 @@ async def create_rule(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
+    _validate_pattern(payload.get("pattern"))
     rule = await repo.create(
         db,
         name=payload["name"],
@@ -98,6 +99,7 @@ async def create_rule(
         resource=f"rule:{rule.id}",
         details=f"Created rule: {rule.name}",
     )
+    await runtime_sync.sync_once()
     return rule
 
 
@@ -108,6 +110,7 @@ async def update_rule(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
+    _validate_pattern(payload.get("pattern"))
     rule = await repo.update(db, rule_id, **payload)
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
@@ -118,6 +121,7 @@ async def update_rule(
         resource=f"rule:{rule.id}",
         details=f"Updated rule: {rule.name}",
     )
+    await runtime_sync.sync_once()
     return rule
 
 
