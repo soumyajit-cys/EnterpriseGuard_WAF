@@ -36,6 +36,8 @@ class Detector:
     async def detect(self, request) -> list[dict]:
         findings = []
 
+        from urllib.parse import unquote
+
         body = ""
         try:
             body = await request.body()
@@ -47,10 +49,16 @@ class Detector:
         headers_str = str({k: v for k, v in request.headers.items() if k.lower() not in ("host", "origin", "referer")})
         uri = str(request.url.path)
 
+        query_plain = unquote(query_params.replace("+", " "))
+        body_plain = unquote(body)
+
         targets = [
             ("query", query_params),
+            ("query_decoded", query_plain),
             ("body", body),
+            ("body_decoded", body_plain),
             ("uri", uri),
+            ("uri_decoded", unquote(uri)),
             ("headers", headers_str),
             ("cookies", str(request.cookies)),
         ]
