@@ -6,6 +6,7 @@ from app.auth.password import hash_password
 from app.core.database import get_db
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
+from app.schemas.user import UserCreate, UserUpdate, UserOut, PaginatedUsers
 from app.services.audit_service import audit_service
 
 router = APIRouter(
@@ -16,7 +17,7 @@ router = APIRouter(
 repo = UserRepository()
 
 
-@router.get("/")
+@router.get("/", response_model=PaginatedUsers)
 async def list_users(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -41,7 +42,7 @@ async def list_users(
     }
 
 
-@router.get("/{user_id}")
+@router.get("/{user_id}", response_model=UserOut)
 async def get_user(
     user_id: int,
     db: AsyncSession = Depends(get_db),
@@ -53,26 +54,26 @@ async def get_user(
     return user
 
 
-@router.post("/", status_code=201)
+@router.post("/", status_code=201, response_model=UserOut)
 async def create_user(
-    payload: dict,
+    payload: UserCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin()),
 ):
-    existing = await repo.get_by_username(db, payload["username"])
+    existing = await repo.get_by_username(db, payload.username)
     if existing:
         raise HTTPException(status_code=409, detail="Username already taken")
-    existing_email = await repo.get_by_email(db, payload["email"])
+    existing_email = await repo.get_by_email(db, payload.email)
     if existing_email:
         raise HTTPException(status_code=409, detail="Email already registered")
 
-    password_hash_value = hash_password(payload["password"])
+    password_hash_value = hash_password(payload.password)
     user = await repo.create(
         db,
-        username=payload["username"],
-        email=payload["email"],
+        username=payload.username,
+        email=payload.email,
         password_hash=password_hash_value,
-        role=payload.get("role", "analyst"),
+        role=payload.role,
     )
     await audit_service.log(
         action="USER_CREATED",
@@ -84,15 +85,14 @@ async def create_user(
     return user
 
 
-@router.put("/{user_id}")
+@router.put("/{user_id}", response_model=UserOut)
 async def update_user(
     user_id: int,
-    payload: dict,
+    payload: UserUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin()),
 ):
-    allowed = {"username", "email", "role", "is_active"}
-    update_data = {k: v for k, v in payload.items() if k in allowed and v is not None}
+    update_data = payload.model_dump(exclude_unset=True)
     if not update_data:
         raise HTTPException(status_code=400, detail="No valid fields to update")
 
