@@ -142,6 +142,7 @@ async def delete_rule(
         resource=f"rule:{rule_id}",
         details=f"Deleted rule: {rule.name}",
     )
+    await runtime_sync.sync_once()
 
 
 @router.patch("/{rule_id}/toggle")
@@ -160,4 +161,5 @@ async def toggle_rule(
         resource=f"rule:{rule.id}",
         details=f"{'Enabled' if rule.enabled else 'Disabled'} rule: {rule.name}",
     )
+    await runtime_sync.sync_once()
     return rule
