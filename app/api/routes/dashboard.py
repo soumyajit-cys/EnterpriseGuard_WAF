@@ -19,7 +19,7 @@ async def dashboard_stats(
     period: str = Query("24h", pattern="^(24h|7d|30d)$"),
     db: AsyncSession = Depends(get_db),
 ):
-    now = datetime.utcnow()
+    now = datetime.now()
     if period == "24h":
         since = now - timedelta(hours=24)
     elif period == "7d":
