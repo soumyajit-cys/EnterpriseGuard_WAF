@@ -2,10 +2,15 @@ import ipaddress
 
 import httpx
 
+from app.core.config import settings
 from app.core.redis_client import redis_client
-from app.settings import settings
 
 CACHE_TTL = 86400 * 7
+
+GEO_PROVIDERS = (
+    "https://ipapi.co/{ip}/json/",
+    "https://ipinfo.io/{ip}/json",
+)
 
 
 def _is_private(ip: str) -> bool:
@@ -34,12 +39,7 @@ async def get_country(ip: str) -> str | None:
     except Exception:
         pass
 
-    providers = []
-    token = getattr(settings, "IPINFO_TOKEN", None)
-    if token:
-        providers.append(f"https://ipinfo.io/{ip}/json?token={token}")
-    providers.append(f"https://ipinfo.io/{ip}/json")
-    providers.append(f"https://ipapi.co/{ip}/json/")
+    providers = [url.format(ip=ip) for url in GEO_PROVIDERS]
 
     country = None
     async with httpx.AsyncClient(timeout=3) as client:
