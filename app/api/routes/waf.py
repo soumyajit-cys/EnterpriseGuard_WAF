@@ -140,7 +140,7 @@ async def add_allowed_ip(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin()),
 ):
-    ip = payload["ip_address"]
+    ip = _validate_ip(payload["ip_address"])
     existing = await allowed_repo.get_by_ip(db, ip)
     if existing:
         raise HTTPException(status_code=409, detail="IP already allowed")
@@ -155,6 +155,7 @@ async def add_allowed_ip(
         resource=f"allowed_ip:{entry.id}",
         details=f"Allowed IP: {ip}",
     )
+    await runtime_sync.sync_once()
     return entry
 
 
@@ -174,6 +175,7 @@ async def remove_allowed_ip(
         resource=f"allowed_ip:{ip_id}",
         details=f"Removed allowed IP ID: {ip_id}",
     )
+    await runtime_sync.sync_once()
 
 
 @router.get("/audit-logs")
