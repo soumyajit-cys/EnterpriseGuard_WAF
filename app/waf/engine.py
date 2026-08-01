@@ -35,6 +35,15 @@ class WAFEngine:
         action = "BLOCK" if block else "ALLOW"
         attack_types = [f["type"] for f in findings]
 
+        country = None
+        if block:
+            try:
+                import asyncio
+
+                country = await asyncio.wait_for(get_country(ip), timeout=1.5)
+            except Exception:
+                country = None
+
         await request_logger.log(
             ip=ip,
             path=request.url.path,
@@ -44,6 +53,7 @@ class WAFEngine:
             attack_type=",".join(attack_types) if attack_types else None,
             status_code=403 if block else None,
             user_agent=request.headers.get("user-agent"),
+            country=country,
         )
 
         import time as _time
