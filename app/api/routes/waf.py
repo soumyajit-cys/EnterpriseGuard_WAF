@@ -61,14 +61,20 @@ async def add_blocked_ip(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin()),
 ):
-    ip = payload["ip_address"]
+    ip = _validate_ip(payload["ip_address"])
     existing = await blocked_repo.get_by_ip(db, ip)
     if existing:
         raise HTTPException(status_code=409, detail="IP already blocked")
 
     expires_at = None
     if not payload.get("is_permanent") and payload.get("duration_hours"):
-        expires_at = datetime.utcnow() + timedelta(hours=int(payload["duration_hours"]))
+        try:
+            hours = int(payload["duration_hours"])
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="duration_hours must be an integer")
+        if hours <= 0:
+            raise HTTPException(status_code=400, detail="duration_hours must be positive")
+        expires_at = datetime.now() + timedelta(hours=hours)
 
     entry = await blocked_repo.create(
         db,
@@ -84,6 +90,7 @@ async def add_blocked_ip(
         resource=f"blocked_ip:{entry.id}",
         details=f"Blocked IP: {ip}",
     )
+    await runtime_sync.sync_once()
     return entry
 
 
@@ -103,6 +110,7 @@ async def remove_blocked_ip(
         resource=f"blocked_ip:{ip_id}",
         details=f"Unblocked IP ID: {ip_id}",
     )
+    await runtime_sync.sync_once()
 
 
 @router.get("/allowlist")
