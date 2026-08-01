@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from app.core.database import get_db
 from app.models.request_log import RequestLog
 from app.models.alert import Alert
+from app.models.blocked_ip import BlockedIP
 from app.auth.dependencies import require_analyst
 from app.models.user import User
 
@@ -15,6 +16,32 @@ router = APIRouter(
 )
 
 SERVER_START = datetime.now()
+
+
+@router.get("/overview")
+async def analytics_overview(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_analyst()),
+):
+    total_requests = await db.scalar(
+        select(func.count(RequestLog.id))
+    ) or 0
+    blocked = await db.scalar(
+        select(func.count(RequestLog.id)).where(RequestLog.action == "BLOCK")
+    ) or 0
+    alerts = await db.scalar(
+        select(func.count(Alert.id)).where(Alert.resolved == False)
+    ) or 0
+    blocked_ips = await db.scalar(
+        select(func.count(BlockedIP.id)).where(BlockedIP.is_permanent == True)
+    ) or 0
+
+    return {
+        "total_requests": total_requests,
+        "blocked": blocked,
+        "alerts": alerts,
+        "blocked_ips": blocked_ips,
+    }
 
 
 @router.get("/traffic")

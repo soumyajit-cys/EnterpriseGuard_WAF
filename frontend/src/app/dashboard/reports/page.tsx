@@ -26,6 +26,10 @@ export default function ReportsPage() {
     queryFn: () => reportsService.getAttackData(range),
   })
 
+  const attackTypes = trafficData?.attack_distribution ?? []
+
+  const trafficSummary = attackData ?? {}
+
   const downloadReport = async (type: "pdf" | "csv" | "json") => {
     setLoading(type)
     try {
@@ -84,21 +88,23 @@ export default function ReportsPage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500">Total Requests</span>
-                  <span className="font-mono text-zinc-200">{trafficData.total_requests || 0}</span>
+                  <span className="font-mono text-zinc-200">{trafficSummary.total_requests || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500">Allowed</span>
-                  <span className="font-mono text-green-400">{trafficData.allowed || 0}</span>
+                  <span className="font-mono text-green-400">
+                    {(trafficSummary.total_requests || 0) - (trafficSummary.total_blocked || 0)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500">Blocked</span>
-                  <span className="font-mono text-red-400">{trafficData.blocked || 0}</span>
+                  <span className="font-mono text-red-400">{trafficSummary.total_blocked || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500">Block Rate</span>
                   <span className="font-mono text-zinc-200">
-                    {trafficData.total_requests
-                      ? ((trafficData.blocked / trafficData.total_requests) * 100).toFixed(1)
+                    {trafficSummary.total_requests
+                      ? ((trafficSummary.total_blocked / trafficSummary.total_requests) * 100).toFixed(1)
                       : 0}%
                   </span>
                 </div>

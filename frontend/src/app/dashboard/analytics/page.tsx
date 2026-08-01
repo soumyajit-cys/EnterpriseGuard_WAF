@@ -15,26 +15,21 @@ export default function AnalyticsPage() {
     queryFn: () => analyticsService.getTrafficStats("7d"),
   })
 
-  const { data: attackData } = useQuery({
-    queryKey: ["analytics", "attacks"],
-    queryFn: () => analyticsService.getAttackStats("7d"),
-  })
-
   const { data: overview } = useQuery({
     queryKey: ["analytics", "overview"],
     queryFn: () => analyticsService.getOverview(),
   })
 
-  const trafficChart = trafficData?.map((d: any) => ({
+  const trafficChart = trafficData?.traffic_trend?.map((d: any) => ({
     date: d.date?.slice(5, 10) || d.date,
-    requests: d.total_requests || d.count || 0,
+    requests: d.requests || d.total_requests || d.count || 0,
     blocked: d.blocked || 0,
     allowed: d.allowed || 0,
   })) || []
 
-  const attackChart = attackData?.map((d: any) => ({
-    name: d.attack_type || d.name || "Unknown",
-    count: d.count || 0,
+  const attackChart = trafficData?.attack_distribution?.map((d: any) => ({
+    name: d.name || d.attack_type || "Unknown",
+    count: d.value || d.count || 0,
   })) || []
 
   return (
