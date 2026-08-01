@@ -14,10 +14,12 @@ router = APIRouter(
     tags=["Analytics"],
 )
 
+SERVER_START = datetime.utcnow()
+
 
 @router.get("/traffic")
 async def traffic_analytics(
-    period: str = Query("7d", regex="^(24h|7d|30d)$"),
+    period: str = Query("7d", regex="^(24h|7d|30d|live)$"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
@@ -28,9 +30,12 @@ async def traffic_analytics(
     elif period == "7d":
         since = now - timedelta(days=7)
         trunc = "day"
-    else:
+    elif period == "30d":
         since = now - timedelta(days=30)
         trunc = "day"
+    else:
+        since = SERVER_START
+        trunc = "minute" if (now - SERVER_START).total_seconds() < 7200 else "hour"
 
     trunc_expr = func.date_trunc(text(f"'{trunc}'"), RequestLog.created_at).label("date")
     traffic = await db.execute(
@@ -73,6 +78,7 @@ async def traffic_analytics(
     )
 
     return {
+        "server_started": SERVER_START.isoformat(),
         "traffic_trend": [
             {
                 "date": row[0].isoformat() if row[0] else "",
