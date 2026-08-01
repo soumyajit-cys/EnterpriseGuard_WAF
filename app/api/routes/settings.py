@@ -6,6 +6,8 @@ from app.repositories.settings_repository import SettingsRepository
 from app.auth.dependencies import require_admin
 from app.models.user import User
 from app.services.audit_service import audit_service
+from app.services.runtime_sync import runtime_sync
+from app.waf.runtime import waf_mode
 
 router = APIRouter(
     prefix="/settings",

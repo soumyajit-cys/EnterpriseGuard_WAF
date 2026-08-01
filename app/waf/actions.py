@@ -1,9 +1,9 @@
-from app.core.config import settings
+from app.waf.runtime import waf_mode
 
 
 def should_block(score: int):
 
-    if settings.WAF_MODE == "prevention":
+    if waf_mode.is_prevention:
         return score >= 50
 
     return False
