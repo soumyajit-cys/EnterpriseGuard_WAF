@@ -130,8 +130,8 @@ export function Sidebar() {
         )}
       >
         <div className="flex h-16 items-center border-b border-zinc-800 px-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 shadow-lg shadow-blue-600/30">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 shadow-lg shadow-blue-600/30 group-hover:shadow-blue-500/50 transition-all">
               <ShieldCheck className="h-5 w-5 text-white" />
             </div>
             {!isCollapsed && (
@@ -140,11 +140,13 @@ export function Sidebar() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                <p className="text-sm font-bold text-zinc-100">EnterpriseGuard</p>
+                <p className="text-sm font-bold text-zinc-100">
+                  Enterprise<span className="text-gradient">Guard</span>
+                </p>
                 <p className="text-[10px] font-medium text-zinc-500">WAF Dashboard</p>
               </motion.div>
             )}
-          </div>
+          </Link>
         </div>
 
         <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700">
