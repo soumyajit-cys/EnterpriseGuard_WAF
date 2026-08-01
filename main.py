@@ -174,17 +174,23 @@ async def shutdown_event():
 # ==========================
 
 import traceback
+import logging
+
+logger = logging.getLogger("waf.app")
 
 @app.exception_handler(Exception)
 async def global_exception_handler(
     request: Request,
     exc: Exception
 ):
-    traceback.print_exc()
+    logger.exception(
+        f"Unhandled error on {request.method} {request.url.path}",
+        exc_info=exc,
+    )
 
     return JSONResponse(
         status_code=500,
         content={
-            "error": str(exc)
+            "error": "Internal Server Error"
         }
     )
