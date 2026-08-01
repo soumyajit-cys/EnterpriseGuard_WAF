@@ -1,4 +1,5 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
+from app.auth.jwt import decode_token
 from app.services.traffic_stream import traffic_stream
 
 router = APIRouter(
@@ -7,7 +8,15 @@ router = APIRouter(
 
 
 @router.websocket("/ws/traffic")
-async def ws_traffic(websocket: WebSocket):
+async def ws_traffic(
+    websocket: WebSocket,
+    token: str = Query(""),
+):
+    payload = decode_token(token)
+    if not payload.get("sub") or payload.get("type") != "access":
+        await websocket.close(code=4401, reason="Unauthorized")
+        return
+
     await websocket.accept()
     queue = await traffic_stream.connect()
     try:
