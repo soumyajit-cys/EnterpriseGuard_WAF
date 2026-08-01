@@ -11,6 +11,7 @@ from app.waf.rules.ssti import SSTIDetector
 from app.waf.rules.ldap_injection import LDAPInjectionDetector
 from app.waf.rules.header_injection import HeaderInjectionDetector
 from app.waf.rules.hpp import HTTPParameterPollutionDetector
+from app.services.runtime_sync import custom_rules
 
 
 class Detector:
@@ -73,6 +74,10 @@ class Detector:
                 "score": hpp_score,
                 "source": "query",
             })
+
+        for source_name, source_value in targets:
+            for hit in custom_rules.match(source_value):
+                findings.append(hit)
 
         seen = {}
         deduped = []
