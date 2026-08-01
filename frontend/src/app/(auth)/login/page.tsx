@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
-import { ShieldCheck, Eye, EyeOff, Loader2 } from "lucide-react"
+import { ShieldCheck, Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { authService } from "@/services/auth"
@@ -23,9 +23,16 @@ type LoginForm = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const router = useRouter()
-  const { setUser } = useAuthStore()
+  const { setUser, isAuthenticated, initialize } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    initialize()
+    if (isAuthenticated) {
+      router.push("/dashboard")
+    }
+  }, [isAuthenticated, router, initialize])
 
   const {
     register,
@@ -74,15 +81,31 @@ export default function LoginPage() {
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
             className="flex justify-center mb-4"
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600 shadow-2xl shadow-blue-600/30">
-              <ShieldCheck className="h-8 w-8 text-white" />
+            <div className="relative">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 shadow-2xl shadow-blue-600/30">
+                <ShieldCheck className="h-8 w-8 text-white" />
+              </div>
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+              </span>
             </div>
           </motion.div>
-          <h1 className="text-2xl font-bold text-zinc-100">EnterpriseGuard WAF</h1>
+          <h1 className="text-2xl font-bold text-zinc-100">
+            Enterprise<span className="text-gradient">Guard</span> WAF
+          </h1>
           <p className="mt-2 text-sm text-zinc-500">
             Sign in to access the security dashboard
           </p>
         </div>
+
+        <Link
+          href="/"
+          className="mb-4 inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to home
+        </Link>
 
         <div className="glass rounded-2xl p-8 glow">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
