@@ -1,59 +1,93 @@
 "use client"
 
+import { useQuery } from "@tanstack/react-query"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ShieldOff } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Skeleton } from "@/components/ui/skeleton"
+import { ShieldOff, ChevronRight } from "lucide-react"
+import { analyticsService } from "@/services/analytics"
 
-const attackers = [
-  { ip: "192.168.1.105", attacks: 1456, country: "RU", threat: "critical" },
-  { ip: "10.0.0.45", attacks: 892, country: "CN", threat: "high" },
-  { ip: "172.16.0.88", attacks: 654, country: "US", threat: "high" },
-  { ip: "203.0.113.50", attacks: 432, country: "NG", threat: "medium" },
-  { ip: "198.51.100.22", attacks: 321, country: "BR", threat: "medium" },
-]
+function threatLevel(count: number) {
+  if (count >= 20) return { label: "critical", variant: "danger" as const }
+  if (count >= 10) return { label: "high", variant: "warning" as const }
+  return { label: "medium", variant: "info" as const }
+}
 
 export function TopAttackers() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["top-attackers"],
+    queryFn: () => analyticsService.getTraffic("7d"),
+    refetchInterval: 30000,
+  })
+
+  const attackers = (data?.top_ips ?? []) as Array<{ ip: string; count: number }>
+
   return (
-    <Card>
+    <Card className="flex flex-col">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ShieldOff className="h-5 w-5 text-red-400" />
-          Top Attacker IPs
+        <CardTitle className="flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <ShieldOff className="h-5 w-5 text-red-400" />
+            Top Attacker IPs
+          </span>
+          <Link
+            href="/dashboard/blocked-ips"
+            className="flex items-center gap-0.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+          >
+            Blocked IPs <ChevronRight className="h-3 w-3" />
+          </Link>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {attackers.map((attacker, i) => (
-            <div
-              key={attacker.ip}
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-800/30 transition-colors"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-800 text-xs font-bold text-zinc-400">
-                #{i + 1}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-mono text-zinc-300">{attacker.ip}</p>
-                  <span className="text-xs text-zinc-600">{attacker.country}</span>
-                </div>
-                <p className="text-xs text-zinc-600 mt-0.5">
-                  {attacker.attacks.toLocaleString()} attacks
-                </p>
-              </div>
-              <Badge
-                variant={
-                  attacker.threat === "critical"
-                    ? "danger"
-                    : attacker.threat === "high"
-                    ? "warning"
-                    : "info"
-                }
-              >
-                {attacker.threat}
-              </Badge>
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))
+          ) : attackers.length === 0 ? (
+            <div className="py-8 text-center text-sm text-zinc-500">
+              No attackers detected — great job
             </div>
-          ))}
+          ) : (
+            attackers.slice(0, 5).map((attacker, i) => {
+              const level = threatLevel(attacker.count)
+              return (
+                <div
+                  key={attacker.ip}
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-800/30 transition-colors"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-800 text-xs font-bold text-zinc-400">
+                    #{i + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-mono text-zinc-300 truncate">
+                        {attacker.ip}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="h-1 flex-1 rounded-full bg-zinc-800 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-red-500/70"
+                          style={{
+                            width: `${Math.min(
+                              (attacker.count / (attackers[0]?.count || 1)) * 100,
+                              100
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-zinc-600 w-20 text-right">
+                        {attacker.count.toLocaleString()} attacks
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={level.variant}>{level.label}</Badge>
+                </div>
+              )
+            })
+          )}
         </div>
       </CardContent>
     </Card>
