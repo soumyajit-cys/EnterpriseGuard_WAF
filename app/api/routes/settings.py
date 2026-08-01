@@ -60,6 +60,7 @@ async def update_mode(
     if mode not in ["detection", "prevention"]:
         raise HTTPException(status_code=400, detail="Mode must be 'detection' or 'prevention'")
     await repo.set_mode(db, mode)
+    waf_mode.set(mode)
     await audit_service.log(
         action="MODE_CHANGED",
         user_id=current_user.id,
