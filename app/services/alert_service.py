@@ -63,7 +63,7 @@ class AlertService:
             if not alert:
                 return None
             alert.resolved = True
-            alert.resolved_at = datetime.utcnow()
+            alert.resolved_at = datetime.now()
             await db.commit()
             await db.refresh(alert)
             return alert
@@ -82,7 +82,7 @@ class AlertService:
             from sqlalchemy import select, func
             from datetime import datetime, timedelta
 
-            now = datetime.utcnow()
+            now = datetime.now()
             today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
             total = await db.scalar(select(func.count(Alert.id)))
