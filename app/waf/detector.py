@@ -18,6 +18,13 @@ from app.waf.rules.encoded import decode_candidates
 from app.services.runtime_sync import custom_rules
 
 
+def _evidence(value: str | None, max_len: int = 120) -> str:
+    """Truncated snippet of the input that triggered a finding."""
+    if not value:
+        return ""
+    return " ".join(str(value).split())[:max_len]
+
+
 class Detector:
 
     def __init__(self):
@@ -91,6 +98,7 @@ class Detector:
                         "type": attack_type,
                         "score": score,
                         "source": source_name,
+                        "evidence": _evidence(source_value),
                     })
 
         smuggling_score = self.smuggling.inspect_headers(request.headers)
@@ -99,6 +107,7 @@ class Detector:
                 "type": "HTTP_SMUGGLING",
                 "score": smuggling_score,
                 "source": "headers",
+                "evidence": _evidence(str({k: v for k, v in request.headers.items() if k.lower() in ("content-length", "transfer-encoding")})),
             })
 
         graphql_score = self.graphql.inspect(body)
@@ -109,6 +118,7 @@ class Detector:
                 "type": "GRAPHQL_ABUSE",
                 "score": graphql_score,
                 "source": "body" if body else "query",
+                "evidence": _evidence(body or query_params),
             })
 
         upload_score = self.upload.inspect(body)
@@ -117,6 +127,7 @@ class Detector:
                 "type": "MALICIOUS_UPLOAD",
                 "score": upload_score,
                 "source": "body",
+                "evidence": _evidence(body),
             })
 
         for source_name, source_value in targets:
@@ -133,6 +144,7 @@ class Detector:
                             "type": f"{attack_type}_ENCODED",
                             "score": min(score + 10, 100),
                             "source": f"{source_name}:{candidate['kind']}",
+                            "evidence": _evidence(candidate["value"]),
                         })
 
         hpp_score = self.hpp.inspect_string(query_params)
@@ -141,6 +153,7 @@ class Detector:
                 "type": "HTTP_PARAMETER_POLLUTION",
                 "score": hpp_score,
                 "source": "query",
+                "evidence": _evidence(query_params),
             })
 
         bot_score = self.bot.inspect(request.headers.get("user-agent"))
@@ -149,6 +162,7 @@ class Detector:
                 "type": "BOT_TRAFFIC",
                 "score": bot_score,
                 "source": "user-agent",
+                "evidence": _evidence(request.headers.get("user-agent")),
             })
 
         for source_name, source_value in targets:
