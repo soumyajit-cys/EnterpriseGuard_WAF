@@ -16,6 +16,18 @@ export interface AuthResponse {
   user: User
 }
 
+export interface MFARequiredResponse {
+  requires_2fa: boolean
+  mfa_token: string
+}
+
+export type LoginResponse = AuthResponse | MFARequiredResponse
+
+export interface VerifyMFARequest {
+  mfa_token: string
+  code: string
+}
+
 export interface TokenResponse {
   access_token: string
   refresh_token: string

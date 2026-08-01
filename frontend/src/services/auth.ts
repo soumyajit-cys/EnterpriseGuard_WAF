@@ -2,14 +2,21 @@ import api from "./api"
 import type {
   AuthResponse,
   LoginRequest,
+  LoginResponse,
   RegisterRequest,
   TokenResponse,
   User,
+  VerifyMFARequest,
 } from "@/types"
 
 export const authService = {
-  async login(data: LoginRequest): Promise<AuthResponse> {
+  async login(data: LoginRequest): Promise<LoginResponse> {
     const res = await api.post("/auth/login", data)
+    return res.data
+  },
+
+  async verify2fa(data: VerifyMFARequest): Promise<AuthResponse> {
+    const res = await api.post("/auth/verify-2fa", data)
     return res.data
   },
 
