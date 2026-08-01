@@ -12,7 +12,11 @@ export default function LiveTrafficPage() {
   const [isConnected, setIsConnected] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  useWebSocket("ws://localhost:8000/ws/traffic", {
+  const wsUrl = typeof window !== "undefined"
+    ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:8000/ws/traffic`
+    : "ws://localhost:8000/ws/traffic"
+
+  useWebSocket(wsUrl, {
     onOpen: () => setIsConnected(true),
     onClose: () => setIsConnected(false),
     onMessage: (data) => {
