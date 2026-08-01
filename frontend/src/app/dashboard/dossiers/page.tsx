@@ -199,7 +199,8 @@ export default function DossiersPage() {
                                   No logged events in this window.
                                 </p>
                               )}
-                            </div>
+                              </div>
+                            </>
                           )}
                         </div>
                       </motion.div>
