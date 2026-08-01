@@ -3,10 +3,12 @@ from sqlalchemy import select, func, and_, cast, Integer
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
+from app.auth.dependencies import require_analyst
 from app.core.database import get_db
 from app.models.request_log import RequestLog
 from app.models.alert import Alert
 from app.models.rule import Rule
+from app.models.user import User
 
 router = APIRouter(
     prefix="/dashboard",
@@ -18,6 +20,7 @@ router = APIRouter(
 async def dashboard_stats(
     period: str = Query("24h", pattern="^(24h|7d|30d)$"),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_analyst()),
 ):
     now = datetime.now()
     if period == "24h":
