@@ -152,8 +152,13 @@ const threatTypes = [
   { name: "SSRF", risk: "High", color: "text-cyan-400", bar: "bg-cyan-500" },
   { name: "LDAP Injection", risk: "Critical", color: "text-red-400", bar: "bg-red-500" },
   { name: "Command Injection", risk: "Critical", color: "text-red-400", bar: "bg-red-500" },
+  { name: "GraphQL Abuse", risk: "High", color: "text-fuchsia-400", bar: "bg-fuchsia-500" },
+  { name: "HTTP Smuggling", risk: "Critical", color: "text-red-400", bar: "bg-red-500" },
+  { name: "Malicious Upload", risk: "High", color: "text-amber-400", bar: "bg-amber-500" },
   { name: "Bot Traffic", risk: "Medium", color: "text-purple-400", bar: "bg-purple-500" },
   { name: "CSRF Abuse", risk: "High", color: "text-yellow-400", bar: "bg-yellow-500" },
+  { name: "Path Traversal", risk: "Critical", color: "text-red-400", bar: "bg-red-500" },
+  { name: "SSTI", risk: "High", color: "text-blue-400", bar: "bg-blue-500" },
 ]
 
 function AnimatedCounter({
@@ -344,7 +349,7 @@ export default function LandingPage() {
               </span>
               <span className="h-3 w-px bg-zinc-700" />
               <span className="text-xs text-zinc-500">
-                {stats ? `${stats.active_rules} detection engines` : "9 detection engines"}
+                {stats ? `${stats.active_rules} detection engines` : "16 detection engines"}
               </span>
             </motion.div>
 
