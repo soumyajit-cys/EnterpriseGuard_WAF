@@ -92,6 +92,7 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
     is_verified: bool
+    totp_enabled: bool = False
 
     model_config = {"from_attributes": True}
 

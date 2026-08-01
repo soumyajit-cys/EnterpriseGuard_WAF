@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import { toast } from "sonner"
-import { Plus, Search, Shield, ToggleLeft, ToggleRight, Trash2, Pencil } from "lucide-react"
+import { Plus, Search, Shield, ToggleLeft, ToggleRight, Trash2, Pencil, Cpu } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from "@/components/ui/switch"
 import { rulesService } from "@/services/rules"
 import type { Rule } from "@/types"
+
+const BUILT_IN_RULES = [
+  { name: "SQL_INJECTION", description: "Classic SQLi payloads in params, headers and body", score: 30, severity: "medium" },
+  { name: "SQL_INJECTION_ENCODED", description: "Base64 / hex-encoded SQLi runs inside tokens", score: 35, severity: "medium" },
+  { name: "XSS", description: "Cross-site scripting payloads and event handlers", score: 25, severity: "medium" },
+  { name: "COMMAND_INJECTION", description: "OS command chaining and shell metacharacters", score: 85, severity: "critical" },
+  { name: "PATH_TRAVERSAL", description: "Directory traversal sequences (../, ..\\)", score: 40, severity: "medium" },
+  { name: "LFI", description: "Local file inclusion via wrappers and proc paths", score: 70, severity: "high" },
+  { name: "RFI", description: "Remote file inclusion and URL loaders", score: 85, severity: "critical" },
+  { name: "XXE", description: "XML external entity payloads", score: 80, severity: "critical" },
+  { name: "SSRF", description: "Server-side request forgery — internal/metadata targets", score: 75, severity: "high" },
+  { name: "SSTI", description: "Server-side template injection expressions", score: 50, severity: "high" },
+  { name: "LDAP_INJECTION", description: "LDAP filter injection operators", score: 40, severity: "medium" },
+  { name: "HEADER_INJECTION", description: "CRLF and response header splitting", score: 80, severity: "critical" },
+  { name: "HTTP_SMUGGLING", description: "CL+TE / TE+CL conflicting transfer headers", score: 90, severity: "critical" },
+  { name: "GRAPHQL_ABUSE", description: "Introspection queries and batching abuse", score: 55, severity: "high" },
+  { name: "MALICIOUS_UPLOAD", description: "Dangerous filenames and content in multipart uploads", score: 75, severity: "high" },
+]
 
 export default function RulesPage() {
   const queryClient = useQueryClient()
@@ -133,6 +151,43 @@ export default function RulesPage() {
           {editingRule && <RuleForm rule={editingRule} onSuccess={() => { setEditingRule(null); queryClient.invalidateQueries({ queryKey: ["rules"] }) }} />}
         </DialogContent>
       </Dialog>
+
+      <Card>
+        <CardContent className="p-5">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 border border-purple-500/20">
+              <Cpu className="h-5 w-5 text-purple-400" />
+            </div>
+            <div>
+              <h3 className="font-medium text-zinc-200">Built-in Engine Rules</h3>
+              <p className="text-xs text-zinc-500">
+                Always-on detectors compiled into the WAF engine — no management needed
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            {BUILT_IN_RULES.map((r) => (
+              <div
+                key={r.name}
+                className="flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/40 px-4 py-3"
+              >
+                <Shield className="h-4 w-4 text-purple-400 mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-xs font-medium text-zinc-200">{r.name}</span>
+                    <Badge variant={r.severity === "critical" ? "danger" : r.severity === "high" ? "warning" : "info"}>
+                      {r.severity}
+                    </Badge>
+                    <Badge variant="outline">{r.score} pts</Badge>
+                  </div>
+                  <p className="text-xs text-zinc-500 mt-1">{r.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   )
 }
