@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
+import ipaddress
 
 from app.core.database import get_db
 from app.core.config import settings
@@ -8,6 +9,8 @@ from app.repositories.ip_repository import BlockedIPRepository, AllowedIPReposit
 from app.auth.dependencies import require_admin, require_analyst
 from app.models.user import User
 from app.services.audit_service import audit_service
+from app.services.runtime_sync import runtime_sync
+from app.waf.runtime import waf_mode
 
 router = APIRouter(
     prefix="/waf",
@@ -18,9 +21,16 @@ blocked_repo = BlockedIPRepository()
 allowed_repo = AllowedIPRepository()
 
 
+def _validate_ip(ip: str) -> str:
+    try:
+        return str(ipaddress.ip_address(ip))
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid IP address: {ip}")
+
+
 @router.get("/mode")
 async def get_mode():
-    return {"mode": settings.WAF_MODE}
+    return {"mode": waf_mode.get()}
 
 
 @router.get("/blocklist")
