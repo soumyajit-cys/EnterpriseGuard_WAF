@@ -74,8 +74,6 @@ class WAFMiddleware(BaseHTTPMiddleware):
 
         ip = get_client_ip(request)
 
-        print(f"[WAF-DEBUG] {request.method} {request.url.path} ip={ip} allow={AllowList.contains(ip)} block={BlockList.contains(ip)}")
-
         if AllowList.contains(ip):
             return await call_next(request)
 
@@ -143,8 +141,6 @@ class WAFMiddleware(BaseHTTPMiddleware):
                 request
             )
         )
-
-        print(f"[WAF-DEBUG] decision for {request.url.path}: {decision['block']} reason={decision['reason']} score={decision['score']} qs={str(request.query_params)}")
 
         if decision["block"]:
 

@@ -46,7 +46,18 @@ class Detector:
             pass
 
         query_params = str(request.query_params)
-        headers_str = str({k: v for k, v in request.headers.items() if k.lower() not in ("host", "origin", "referer")})
+        _header_exclusions = (
+            "host",
+            "origin",
+            "referer",
+            "x-forwarded-for",
+            "x-real-ip",
+            "forwarded",
+            "cf-connecting-ip",
+            "true-client-ip",
+            "x-client-ip",
+        )
+        headers_str = str({k: v for k, v in request.headers.items() if k.lower() not in _header_exclusions})
         uri = str(request.url.path)
 
         query_plain = unquote(query_params.replace("+", " "))
