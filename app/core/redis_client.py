@@ -36,6 +36,12 @@ class SafeRedis:
         if not self._reported_down:
             self._reported_down = True
             logger.warning(f"Redis unavailable, failing open: {exc}")
+            try:
+                from app.services.metrics import REDIS_DOWN
+
+                REDIS_DOWN.inc()
+            except Exception:
+                pass
         try:
             self._reconnect()
         except Exception:

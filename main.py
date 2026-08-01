@@ -56,6 +56,13 @@ async def ping():
     }
 
 
+@app.get("/metrics", tags=["System"])
+async def metrics():
+    from app.services.metrics import metrics_response
+
+    return metrics_response()
+
+
 # ==========================
 # CORS
 # ==========================

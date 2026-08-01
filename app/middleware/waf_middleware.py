@@ -56,6 +56,9 @@ async def _log_blocked_request(
             }
         )
         if action == "BLOCK":
+            from app.services.metrics import BLOCKS_TOTAL
+
+            BLOCKS_TOTAL.labels(reason=reason).inc()
             await autoban.record_block(ip or "unknown", reason)
     except Exception:
         pass
