@@ -2,6 +2,7 @@ from app.waf.detector import Detector
 from app.waf.actions import should_block
 from app.services.alert_service import alert_service
 from app.services.request_logger import request_logger
+from app.services.traffic_stream import traffic_stream
 
 detector = Detector()
 
@@ -42,6 +43,24 @@ class WAFEngine:
             attack_type=",".join(attack_types) if attack_types else None,
             status_code=403 if block else None,
             user_agent=request.headers.get("user-agent"),
+        )
+
+        import time as _time
+
+        await traffic_stream.broadcast(
+            {
+                "event": "request",
+                "id": f"req-{_time.time_ns()}",
+                "timestamp": _time.time(),
+                "ip_address": ip,
+                "method": request.method,
+                "path": request.url.path,
+                "action": action,
+                "score": effective_score,
+                "attack_type": ",".join(attack_types) if attack_types else None,
+                "status": 403 if block else 200,
+                "user_agent": request.headers.get("user-agent"),
+            }
         )
 
         severity = get_severity(effective_score)

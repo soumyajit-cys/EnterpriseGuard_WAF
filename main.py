@@ -12,6 +12,7 @@ from app.middleware.audit_middleware import AuditMiddleware
 # Routers
 from app.api.routes.health import router as health_router
 from app.api.routes.public_stats import router as public_router
+from app.api.routes.traffic_ws import router as traffic_ws_router
 from app.api.routes.dashboard import router as dashboard_router
 from app.api.routes.rules import router as rules_router
 from app.api.routes.waf import router as waf_router
@@ -116,6 +117,7 @@ app.include_router(dashboard_router)
 app.include_router(waf_router)
 app.include_router(analytics_router)
 app.include_router(reports_router)
+app.include_router(traffic_ws_router)
 
 
 # ==========================
