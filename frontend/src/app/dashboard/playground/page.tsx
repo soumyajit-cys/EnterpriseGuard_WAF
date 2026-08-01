@@ -15,7 +15,9 @@ import {
   ShieldAlert,
   ShieldCheck,
   Terminal,
+  Link2,
 } from "lucide-react"
+import { buildShareUrl } from "@/services/playground"
 
 const sources = [
   { value: "query", label: "Query string" },
@@ -88,6 +90,18 @@ export default function PlaygroundPage() {
       })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const share = async () => {
+    const url = buildShareUrl({ input, source, body })
+    try {
+      await navigator.clipboard.writeText(url)
+      toast.success("Public share link copied", {
+        description: "Anyone can run this test without an account",
+      })
+    } catch {
+      toast.error("Clipboard unavailable")
     }
   }
 
