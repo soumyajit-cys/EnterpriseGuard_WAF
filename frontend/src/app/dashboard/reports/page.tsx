@@ -121,20 +121,17 @@ export default function ReportsPage() {
               <h3 className="font-medium text-zinc-200">Attack Summary</h3>
               <FileText className="h-5 w-5 text-zinc-600" />
             </div>
-            {attackData ? (
+            {attackTypes.length > 0 ? (
               <div className="space-y-2">
-                {attackData.attack_types?.map((at: any) => (
-                  <div key={at.type} className="flex items-center justify-between text-sm">
-                    <Badge variant="warning">{at.type || at.name}</Badge>
-                    <span className="font-mono text-zinc-200">{at.count}</span>
+                {attackTypes.map((at: any) => (
+                  <div key={at.name || at.type} className="flex items-center justify-between text-sm">
+                    <Badge variant="warning">{at.name || at.type}</Badge>
+                    <span className="font-mono text-zinc-200">{at.value || at.count}</span>
                   </div>
                 ))}
-                {(!attackData.attack_types || attackData.attack_types.length === 0) && (
-                  <p className="text-zinc-500">No attacks in this period</p>
-                )}
               </div>
             ) : (
-              <p className="text-zinc-500 text-sm">Loading...</p>
+              <p className="text-zinc-500">No attacks in this period</p>
             )}
           </CardContent>
         </Card>
