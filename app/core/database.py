@@ -105,3 +105,20 @@ async def _run_migrations():
                 )
             except Exception:
                 pass
+
+        indexes = [
+            "CREATE INDEX IF NOT EXISTS ix_request_logs_ip_created ON request_logs (ip_address, created_at)",
+            "CREATE INDEX IF NOT EXISTS ix_request_logs_action ON request_logs (action)",
+            "CREATE INDEX IF NOT EXISTS ix_request_logs_attack_type ON request_logs (attack_type)",
+            "CREATE INDEX IF NOT EXISTS ix_request_logs_created_at ON request_logs (created_at)",
+            "CREATE INDEX IF NOT EXISTS ix_alerts_created_at ON alerts (created_at)",
+            "CREATE INDEX IF NOT EXISTS ix_alerts_severity ON alerts (severity)",
+            "CREATE INDEX IF NOT EXISTS ix_audit_logs_created_at ON audit_logs (created_at)",
+            "CREATE INDEX IF NOT EXISTS ix_blocked_ips_ip ON blocked_ips (ip_address)",
+            "CREATE INDEX IF NOT EXISTS ix_allowed_ips_ip ON allowed_ips (ip_address)",
+        ]
+        for statement in indexes:
+            try:
+                await conn.execute(text(statement))
+            except Exception:
+                pass
