@@ -74,9 +74,23 @@ class AuthService:
         self,
         db: AsyncSession,
         payload: LoginRequest,
+        ip: str | None = None,
     ) -> dict:
+        if await bruteforce_service.is_locked(payload.username, ip):
+            await audit_service.log(
+                action="LOGIN_BLOCKED",
+                resource="auth",
+                username=payload.username,
+                ip_address=ip,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many failed login attempts. Try again later.",
+            )
+
         user = await repo.get_by_username(db, payload.username)
         if not user:
+            await bruteforce_service.register_failure(payload.username, ip)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid credentials",
@@ -89,10 +103,13 @@ class AuthService:
             )
 
         if not verify_password(payload.password, user.password_hash):
+            await bruteforce_service.register_failure(payload.username, ip)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid credentials",
             )
+
+        await bruteforce_service.register_success(payload.username, ip)
 
         access_token = create_access_token(user.id, user.role)
         refresh_token = create_refresh_token(user.id, user.role)
