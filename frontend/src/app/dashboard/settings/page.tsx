@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { settingsService } from "@/services/settings"
-import { api } from "@/services/api"
+import api from "@/services/api"
 import { Bell, Save, Send, Loader2 } from "lucide-react"
 
 export default function SettingsPage() {

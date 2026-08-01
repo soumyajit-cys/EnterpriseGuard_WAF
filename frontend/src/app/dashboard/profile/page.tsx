@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useAuthStore } from "@/store/auth-store"
-import { api } from "@/services/api"
+import api from "@/services/api"
 import { Plus, Trash2, Save, ShieldCheck, KeyRound, Loader2 } from "lucide-react"
 
 export default function ProfilePage() {
