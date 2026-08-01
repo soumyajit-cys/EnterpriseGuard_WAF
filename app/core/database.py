@@ -122,3 +122,13 @@ async def _run_migrations():
                 await conn.execute(text(statement))
             except Exception:
                 pass
+
+        legacy_fixes = [
+            "ALTER TABLE waf_settings ALTER COLUMN mode SET DEFAULT 'detection'",
+            "ALTER TABLE waf_settings ALTER COLUMN mode DROP NOT NULL",
+        ]
+        for statement in legacy_fixes:
+            try:
+                await conn.execute(text(statement))
+            except Exception:
+                pass
