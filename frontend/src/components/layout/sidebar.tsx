@@ -86,7 +86,7 @@ export function Sidebar() {
             className={cn(
               "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
               isActive
-                ? "bg-blue-600/10 text-blue-400 border border-blue-500/20"
+                ? "bg-blue-500/10 text-blue-300 border border-blue-500/20 shadow-lg shadow-blue-500/5"
                 : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
             )}
           >
@@ -124,12 +124,12 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 flex h-full flex-col border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl transition-all duration-300",
+          "fixed left-0 top-0 z-50 flex h-full flex-col border-r border-white/5 bg-zinc-950/95 backdrop-blur-xl transition-all duration-300",
           isCollapsed ? "w-[72px]" : "w-[260px]",
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        <div className="flex h-16 items-center border-b border-zinc-800 px-4">
+        <div className="flex h-16 items-center border-b border-white/5 px-4">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 shadow-lg shadow-blue-600/30 group-hover:shadow-blue-500/50 transition-all">
               <ShieldCheck className="h-5 w-5 text-white" />
@@ -152,27 +152,30 @@ export function Sidebar() {
         <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700">
           <NavSection items={mainNav} />
           {!isCollapsed && (
-            <div className="my-2 border-t border-zinc-800" />
+            <div className="my-2 border-t border-white/5" />
           )}
           <NavSection items={securityNav} />
           {!isCollapsed && (
-            <div className="my-2 border-t border-zinc-800" />
+            <div className="my-2 border-t border-white/5" />
           )}
           <NavSection items={analyticsNav} />
           {user?.role === "admin" && (
             <>
               {!isCollapsed && (
-                <div className="my-2 border-t border-zinc-800" />
+                <div className="my-2 border-t border-white/5" />
               )}
               <NavSection items={adminNav} />
             </>
           )}
         </nav>
 
-        <div className="border-t border-zinc-800 p-3">
+        <div className="border-t border-white/5 p-3">
           {!isCollapsed && user && (
-            <div className="mb-3 flex items-center gap-3 rounded-lg bg-zinc-800/50 p-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600/20 text-blue-400 text-xs font-bold">
+            <Link
+              href="/dashboard/profile"
+              className="mb-3 flex items-center gap-3 rounded-lg bg-zinc-800/50 p-2 hover:bg-zinc-800/80 transition-all"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 text-white text-xs font-bold shadow-lg shadow-blue-600/25">
                 {user.username.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -181,7 +184,7 @@ export function Sidebar() {
                 </p>
                 <p className="text-xs text-zinc-500 capitalize">{user.role}</p>
               </div>
-            </div>
+            </Link>
           )}
           <button
             onClick={logout}
@@ -194,7 +197,7 @@ export function Sidebar() {
 
         <button
           onClick={toggle}
-          className="absolute -right-3 top-20 hidden h-6 w-6 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-zinc-200 lg:flex"
+          className="absolute -right-3 top-20 hidden h-6 w-6 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-zinc-200 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/20 transition-all lg:flex"
         >
           {isCollapsed ? (
             <ChevronRight className="h-3 w-3" />

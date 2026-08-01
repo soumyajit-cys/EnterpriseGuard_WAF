@@ -33,10 +33,10 @@ export function StatCard({
   }
 
   const iconStyles = {
-    default: "text-blue-400 bg-blue-500/10",
-    danger: "text-red-400 bg-red-500/10",
-    success: "text-green-400 bg-green-500/10",
-    warning: "text-yellow-400 bg-yellow-500/10",
+    default: "text-blue-400 bg-blue-500/10 border-blue-500/20 shadow-blue-500/10",
+    danger: "text-red-400 bg-red-500/10 border-red-500/20 shadow-red-500/10",
+    success: "text-green-400 bg-green-500/10 border-green-500/20 shadow-green-500/10",
+    warning: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20 shadow-yellow-500/10",
   }
 
   return (
@@ -45,14 +45,14 @@ export function StatCard({
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "relative overflow-hidden rounded-xl border p-5 transition-all duration-200 cursor-pointer",
+        "relative overflow-hidden rounded-xl border p-5 transition-all duration-200 cursor-pointer ring-1 ring-inset ring-white/5 backdrop-blur-sm",
         variantStyles[variant]
       )}
     >
       <div className="flex items-start justify-between">
         <div className="space-y-2">
           <p className="text-sm font-medium text-zinc-500">{title}</p>
-          <p className="text-3xl font-bold tracking-tight text-zinc-100">
+          <p className="text-3xl font-bold tracking-tight text-zinc-100 tabular-nums">
             {value}
           </p>
           {trend && (
@@ -72,7 +72,7 @@ export function StatCard({
         </div>
         <div
           className={cn(
-            "flex h-12 w-12 items-center justify-center rounded-xl",
+            "flex h-12 w-12 items-center justify-center rounded-xl border shadow-lg",
             iconStyles[variant]
           )}
         >

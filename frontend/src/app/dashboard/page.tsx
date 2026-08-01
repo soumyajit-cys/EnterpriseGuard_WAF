@@ -62,8 +62,23 @@ export default function DashboardPage() {
       className="space-y-6"
     >
       <PageHeader
-        title="Dashboard"
+        title="Security Overview"
         description="Real-time overview of your WAF security posture"
+        actions={
+          <>
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/[0.06] px-3 py-1.5 text-xs font-medium text-emerald-400">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+              </span>
+              Live
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/[0.06] px-3 py-1.5 text-xs font-medium text-blue-400 capitalize">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              {stats?.mode ?? "prevention"} mode
+            </span>
+          </>
+        }
       />
 
       <motion.div

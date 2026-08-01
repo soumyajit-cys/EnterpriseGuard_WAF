@@ -85,6 +85,28 @@
     border-color: rgb(63, 63, 70);
   }
 
+  .card-surface {
+    background: linear-gradient(
+      180deg,
+      rgba(39, 39, 42, 0.55) 0%,
+      rgba(24, 24, 27, 0.35) 100%
+    );
+    border: 1px solid rgba(63, 63, 70, 0.55);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .glow-ring {
+    box-shadow:
+      0 0 0 1px rgba(37, 99, 235, 0.28),
+      0 0 40px rgba(37, 99, 235, 0.12);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
   .text-gradient {
     background-clip: text;
     -webkit-background-clip: text;
