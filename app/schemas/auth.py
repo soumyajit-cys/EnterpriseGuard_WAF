@@ -76,6 +76,15 @@ class AuthResponse(BaseModel):
     user: "UserResponse"
 
 
+class MFARequiredResponse(BaseModel):
+    requires_2fa: bool = True
+    mfa_token: str
+    user: "UserResponse"
+
+
+LoginResponse = AuthResponse | MFARequiredResponse
+
+
 class UserResponse(BaseModel):
     id: int
     username: str

@@ -14,6 +14,7 @@ from app.schemas.auth import (
     CodeRequest,
     TokenResponse,
     AuthResponse,
+    LoginResponse,
     UserResponse,
     MessageResponse,
 )
@@ -44,8 +45,8 @@ async def register(
 
 @router.post(
     "/login",
-    response_model=AuthResponse,
-    summary="Login and receive JWT tokens",
+    response_model=LoginResponse,
+    summary="Login and receive JWT tokens (or a 2FA challenge)",
 )
 async def login(
     request: Request,
