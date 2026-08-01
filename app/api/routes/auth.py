@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
+from app.core.client_ip import get_client_ip
 from app.models.user import User
 from app.schemas.auth import (
     RegisterRequest,
@@ -15,11 +16,14 @@ from app.schemas.auth import (
     MessageResponse,
 )
 from app.services.auth_service import auth_service
+from app.services.rate_limit_service import RateLimitService
 
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"],
 )
+
+login_rate_limit = RateLimitService()
 
 
 @router.post(
@@ -45,7 +49,13 @@ async def login(
     payload: LoginRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    return await auth_service.login(db, payload, request.client.host if request.client else None)
+    ip = get_client_ip(request)
+    if not await login_rate_limit.check_login(ip):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many login attempts from this IP. Try again later.",
+        )
+    return await auth_service.login(db, payload, ip)
 
 
 @router.post(
