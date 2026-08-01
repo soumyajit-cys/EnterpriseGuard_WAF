@@ -130,6 +130,11 @@ class WAFMiddleware(BaseHTTPMiddleware):
 
         if decision["block"]:
 
+            try:
+                await autoban.record_block(ip or "unknown", decision["reason"] or "waf")
+            except Exception:
+                pass
+
             return JSONResponse(
                 status_code=403,
                 content={
