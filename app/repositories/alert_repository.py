@@ -80,7 +80,7 @@ class AlertRepository:
     async def get_stats(self, db: AsyncSession) -> dict:
         from datetime import datetime
 
-        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
         total = await db.scalar(select(func.count(Alert.id)))
         unresolved = await db.scalar(

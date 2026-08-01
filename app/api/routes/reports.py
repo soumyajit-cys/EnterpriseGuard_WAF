@@ -29,7 +29,7 @@ async def generate_report(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin()),
 ):
-    now = datetime.utcnow()
+    now = datetime.now()
     since = datetime.fromisoformat(start_date) if start_date else now - timedelta(days=7)
     until = datetime.fromisoformat(end_date) if end_date else now
 
