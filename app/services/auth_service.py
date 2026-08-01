@@ -16,6 +16,8 @@ from app.schemas.auth import (
     RefreshRequest,
     ChangePasswordRequest,
 )
+from app.services.bruteforce_service import bruteforce_service
+from app.services.audit_service import audit_service
 
 repo = UserRepository()
 
@@ -26,6 +28,7 @@ class AuthService:
         self,
         db: AsyncSession,
         payload: RegisterRequest,
+        ip: str | None = None,
     ) -> dict:
         existing = await repo.get_by_username(db, payload.username)
         if existing:

@@ -41,10 +41,11 @@ async def register(
     summary="Login and receive JWT tokens",
 )
 async def login(
+    request: Request,
     payload: LoginRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    return await auth_service.login(db, payload)
+    return await auth_service.login(db, payload, request.client.host if request.client else None)
 
 
 @router.post(
