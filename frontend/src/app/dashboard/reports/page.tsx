@@ -60,6 +60,9 @@ export default function ReportsPage() {
               <option value="30d">Last 30 Days</option>
               <option value="90d">Last 90 Days</option>
             </select>
+            <Button variant="outline" disabled={loading === "pdf"} onClick={() => downloadReport("pdf")}>
+              <Download className="h-4 w-4 mr-2" /> PDF
+            </Button>
             <Button variant="outline" disabled={loading === "csv"} onClick={() => downloadReport("csv")}>
               <Download className="h-4 w-4 mr-2" /> CSV
             </Button>
