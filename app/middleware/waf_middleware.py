@@ -144,7 +144,7 @@ class WAFMiddleware(BaseHTTPMiddleware):
             )
         )
 
-        print(f"[WAF-DEBUG] decision for {request.url.path}: {decision['block']} reason={decision['reason']} score={decision['score']}")
+        print(f"[WAF-DEBUG] decision for {request.url.path}: {decision['block']} reason={decision['reason']} score={decision['score']} qs={str(request.query_params)}")
 
         if decision["block"]:
 
