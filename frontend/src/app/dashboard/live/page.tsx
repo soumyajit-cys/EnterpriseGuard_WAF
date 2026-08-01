@@ -32,7 +32,7 @@ export default function LiveTrafficPage() {
     },
     onMessage: (data) => {
       setEvents(prev => {
-        const next = [JSON.parse(data), ...prev]
+        const next = [data, ...prev]
         return next.slice(0, 100)
       })
     },
