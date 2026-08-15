@@ -11,7 +11,7 @@ def get_client_ip(request: Request) -> str | None:
     raw socket peer is used, so clients cannot spoof their IP by setting
     the header themselves.
     """
-    peer = request.client.host if request.client else None
+    peer = getattr(getattr(request, "client", None), "host", None)
     forwarded = request.headers.get("X-Forwarded-For")
     if forwarded and peer in settings.TRUSTED_PROXIES:
         first = forwarded.split(",")[0].strip()
