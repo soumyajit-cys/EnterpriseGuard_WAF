@@ -87,8 +87,8 @@ export function AttackPieChart() {
                   }}
                   labelStyle={{ color: "#E4E4E7" }}
                   formatter={(value, name, item) => {
-                    const fullName =
-                      (item as any)?.payload?.fullName ?? String(name)
+                    const payload = (item as { payload?: { fullName?: string } } | undefined)?.payload
+                    const fullName = payload?.fullName ?? String(name)
                     return [`${value} requests`, fullName]
                   }}
                 />

@@ -141,7 +141,7 @@ export default function AttackMapPage() {
                     </radialGradient>
                   </defs>
 
-                  {dots.map((d: any, i: number) => (
+                  {dots.map((d, i: number) => (
                     <motion.g
                       key={`${d.country}-${i}`}
                       initial={{ opacity: 0 }}
@@ -203,7 +203,7 @@ export default function AttackMapPage() {
               </div>
             ) : (
               <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
-                {liveEvents.map((e: any, i: number) => (
+                {liveEvents.map((e, i: number) => (
                   <motion.div
                     key={e.id ?? i}
                     initial={{ opacity: 0, x: 16 }}
