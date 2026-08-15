@@ -15,6 +15,27 @@ class RateLimitService:
 
     ROUTE_MAX_REQUESTS = 60
 
+    PLAYGROUND_WINDOW_SECONDS = 60
+
+    PLAYGROUND_MAX_REQUESTS = 30
+
+    async def check_playground(self, ip: str | None):
+
+        if not ip:
+            return True
+
+        key = f"rl_playground:{ip}"
+
+        count = await redis_client.incr(key)
+
+        if count == 1:
+            await redis_client.expire(
+                key,
+                self.PLAYGROUND_WINDOW_SECONDS
+            )
+
+        return count <= self.PLAYGROUND_MAX_REQUESTS
+
     async def check(self, ip: str | None):
 
         if not ip:
