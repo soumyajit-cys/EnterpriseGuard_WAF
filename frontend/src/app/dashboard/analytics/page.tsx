@@ -31,14 +31,14 @@ export default function AnalyticsPage() {
 
   const trafficChart = trafficData?.traffic_trend?.map((d) => ({
     date: d.date?.slice(5, 10) || d.date,
-    requests: d.requests || d.total_requests || d.count || 0,
+    requests: d.requests || 0,
     blocked: d.blocked || 0,
     allowed: d.allowed || 0,
   })) || []
 
   const attackChart = trafficData?.attack_distribution?.map((d) => ({
-    name: d.name || d.attack_type || "Unknown",
-    count: d.value || d.count || 0,
+    name: d.name || "Unknown",
+    count: d.value || 0,
   })) || []
 
   const countries = geoData?.countries ?? []
