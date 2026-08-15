@@ -40,12 +40,16 @@ async def public_playground_test(payload: dict):
         if header in payload.get("headers", {}):
             request.headers[header] = str(payload["headers"][header])
 
+    if source == "headers":
+        request.headers["x-test-input"] = input_value
+
     request.query_params = {source: input_value} if source == "query" else {}
-    request.url = type("_Url", (), {"path": str(payload.get("path") or "/")})()
+    request.url = type("_Url", (), {"path": str(payload.get("path") or (input_value if source == "path" else "/"))})()
     request.cookies = {}
 
     async def _body():
-        return str(payload.get("body") or "").encode()
+        body = payload.get("body") or (input_value if source == "body" else "")
+        return str(body).encode()
 
     request.body = _body
 

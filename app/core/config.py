@@ -8,6 +8,10 @@ class Settings(BaseSettings):
 
     WAF_MODE: str = "detection"
 
+    TRUSTED_PROXIES: list[str] = []
+
+    COOKIE_SECURE: bool = False
+
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
