@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import type { User } from "@/types"
+import { authService } from "@/services/auth"
 
 interface AuthState {
   user: User | null
@@ -7,8 +8,8 @@ interface AuthState {
   isLoading: boolean
   setUser: (user: User | null) => void
   setLoading: (loading: boolean) => void
-  logout: () => void
-  initialize: () => void
+  logout: () => Promise<void>
+  initialize: () => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -18,24 +19,30 @@ export const useAuthStore = create<AuthState>((set) => ({
   setUser: (user) =>
     set({ user, isAuthenticated: !!user, isLoading: false }),
   setLoading: (isLoading) => set({ isLoading }),
-  logout: () => {
-    localStorage.removeItem("access_token")
-    localStorage.removeItem("refresh_token")
+  logout: async () => {
+    try {
+      await authService.logout()
+    } catch {
+      // server cookies will expire on their own if the call fails
+    }
+    localStorage.removeItem("csrf_token")
     localStorage.removeItem("user")
     set({ user: null, isAuthenticated: false, isLoading: false })
   },
-  initialize: () => {
+  initialize: async () => {
     const stored = localStorage.getItem("user")
-    const token = localStorage.getItem("access_token")
-    if (stored && token) {
-      try {
-        const user = JSON.parse(stored) as User
-        set({ user, isAuthenticated: true, isLoading: false })
-      } catch {
-        set({ isLoading: false })
-      }
-    } else {
+    if (!stored) {
       set({ isLoading: false })
+      return
+    }
+    try {
+      const user = await authService.getMe()
+      localStorage.setItem("user", JSON.stringify(user))
+      set({ user, isAuthenticated: true, isLoading: false })
+    } catch {
+      localStorage.removeItem("csrf_token")
+      localStorage.removeItem("user")
+      set({ user: null, isAuthenticated: false, isLoading: false })
     }
   },
 }))

@@ -25,24 +25,13 @@ export const authService = {
     return res.data
   },
 
-  async refresh(refreshToken: string): Promise<TokenResponse> {
-    const res = await api.post("/auth/refresh", {
-      refresh_token: refreshToken,
-    })
+  async refresh(): Promise<TokenResponse> {
+    const res = await api.post("/auth/refresh", {})
     return res.data
   },
 
-  async logout(accessToken: string, refreshToken: string): Promise<void> {
-    await api.post(
-      "/auth/logout",
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "X-Refresh-Token": refreshToken,
-        },
-      }
-    )
+  async logout(): Promise<void> {
+    await api.post("/auth/logout", {})
   },
 
   async getMe(): Promise<User> {

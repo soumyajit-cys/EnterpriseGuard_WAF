@@ -192,9 +192,8 @@ async def refresh(
             status_code=401,
             detail="Missing refresh token",
         )
-    from app.schemas.auth import RefreshRequest as _RefreshRequest
 
-    result = await auth_service.refresh(db, _RefreshRequest(refresh_token=refresh_token))
+    result = await auth_service.refresh(db, RefreshRequest(refresh_token=refresh_token))
     set_auth_cookies(
         response,
         access_token=result["access_token"],

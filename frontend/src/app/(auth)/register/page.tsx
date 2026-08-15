@@ -55,8 +55,7 @@ export default function RegisterPage() {
     setIsLoading(true)
     try {
       const response = await authService.register(data)
-      localStorage.setItem("access_token", response.access_token)
-      localStorage.setItem("refresh_token", response.refresh_token)
+      localStorage.setItem("csrf_token", response.csrf_token)
       localStorage.setItem("user", JSON.stringify(response.user))
       setUser(response.user)
       toast.success("Account created!", {

@@ -56,8 +56,7 @@ export default function AttackMapPage() {
 
   const wsUrl = useMemo(() => {
     if (typeof window === "undefined") return ""
-    const token = localStorage.getItem("access_token") ?? ""
-    return `ws://${window.location.hostname}:8000/ws/traffic?token=${encodeURIComponent(token)}`
+    return `ws://${window.location.hostname}:8000/ws/traffic`
   }, [])
 
   useWebSocket(wsUrl, {

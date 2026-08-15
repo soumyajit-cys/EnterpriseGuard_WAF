@@ -60,8 +60,7 @@ export default function LoginPage() {
   })
 
   const completeAuth = (response: AuthResponse) => {
-    localStorage.setItem("access_token", response.access_token)
-    localStorage.setItem("refresh_token", response.refresh_token)
+    localStorage.setItem("csrf_token", response.csrf_token)
     localStorage.setItem("user", JSON.stringify(response.user))
     setUser(response.user)
     toast.success("Welcome back!", {
@@ -79,7 +78,7 @@ export default function LoginPage() {
         toast.info("Two-factor authentication required", {
           description: "Enter the code from your authenticator app",
         })
-      } else if ("access_token" in response) {
+      } else {
         completeAuth(response)
       }
     } catch (error: any) {

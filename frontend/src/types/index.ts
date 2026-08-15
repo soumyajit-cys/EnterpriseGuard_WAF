@@ -11,9 +11,7 @@ export interface User {
 }
 
 export interface AuthResponse {
-  access_token: string
-  refresh_token: string
-  token_type: string
+  csrf_token: string
   user: User
 }
 
@@ -30,9 +28,7 @@ export interface VerifyMFARequest {
 }
 
 export interface TokenResponse {
-  access_token: string
-  refresh_token: string
-  token_type: string
+  csrf_token: string
 }
 
 export interface LoginRequest {

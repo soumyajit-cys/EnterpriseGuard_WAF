@@ -9,23 +9,40 @@ const getBaseURL = () => {
 
 const api = axios.create({
   baseURL: getBaseURL(),
+  withCredentials: true,
   headers: { "Content-Type": "application/json" },
 })
 
-api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("access_token")
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+const getCsrfToken = (): string | null => {
+  if (typeof window === "undefined") return null
+  const csrf = localStorage.getItem("csrf_token")
+  return csrf && csrf.length >= 32 ? csrf : null
+}
+
+const fetchCsrfToken = async (): Promise<string | null> => {
+  try {
+    const { data } = await axios.get(`${getBaseURL()}/auth/csrf`, {
+      withCredentials: true,
+    })
+    if (data?.csrf_token) {
+      localStorage.setItem("csrf_token", data.csrf_token)
+      return data.csrf_token
     }
-    let csrf = localStorage.getItem("csrf_token")
-    if (!csrf || csrf.length < 32) {
-      const array = new Uint8Array(32)
-      crypto.getRandomValues(array)
-      csrf = Array.from(array, (b) => b.toString(16).padStart(2, "0")).join("")
-      localStorage.setItem("csrf_token", csrf)
+  } catch {
+    // anonymous request (no session) - auth endpoints are CSRF-exempt
+  }
+  return null
+}
+
+api.interceptors.request.use(async (config) => {
+  if (typeof window !== "undefined" && config.method !== "get") {
+    let csrf = getCsrfToken()
+    if (!csrf) {
+      csrf = await fetchCsrfToken()
     }
-    config.headers["X-CSRF-Token"] = csrf
+    if (csrf) {
+      config.headers["X-CSRF-Token"] = csrf
+    }
   }
   return config
 })
@@ -36,26 +53,19 @@ api.interceptors.response.use(
     const originalRequest = error.config
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
-      const refreshToken = localStorage.getItem("refresh_token")
-      if (refreshToken) {
-        try {
-          const { data } = await axios.post(
-            `${api.defaults.baseURL}/auth/refresh`,
-            { refresh_token: refreshToken }
-          )
-          localStorage.setItem("access_token", data.access_token)
-          localStorage.setItem("refresh_token", data.refresh_token)
-          originalRequest.headers.Authorization = `Bearer ${data.access_token}`
-          return api(originalRequest)
-        } catch {
-          localStorage.removeItem("access_token")
-          localStorage.removeItem("refresh_token")
-          localStorage.removeItem("user")
-          if (typeof window !== "undefined") {
-            window.location.href = "/login"
-          }
+      try {
+        const { data } = await axios.post(
+          `${api.defaults.baseURL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        )
+        if (data?.csrf_token) {
+          localStorage.setItem("csrf_token", data.csrf_token)
         }
-      } else {
+        return api(originalRequest)
+      } catch {
+        localStorage.removeItem("csrf_token")
+        localStorage.removeItem("user")
         if (typeof window !== "undefined") {
           window.location.href = "/login"
         }

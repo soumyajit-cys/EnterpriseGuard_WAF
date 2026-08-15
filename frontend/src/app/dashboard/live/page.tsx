@@ -14,11 +14,7 @@ export default function LiveTrafficPage() {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const wsUrl = typeof window !== "undefined"
-    ? (() => {
-        const base = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:8000/ws/traffic`
-        const token = localStorage.getItem("access_token") || ""
-        return `${base}?token=${encodeURIComponent(token)}`
-      })()
+    ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:8000/ws/traffic`
     : "ws://localhost:8000/ws/traffic"
 
   useWebSocket(wsUrl, {

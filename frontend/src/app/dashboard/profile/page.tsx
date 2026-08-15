@@ -21,12 +21,7 @@ export default function ProfilePage() {
 
   const handleUpdate = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-        body: JSON.stringify({ username, email }),
-      })
-      if (!res.ok) throw new Error("Failed to update")
+      await api.put("/auth/me", { username, email })
       toast.success("Profile updated")
     } catch (err: any) {
       toast.error(err.message)

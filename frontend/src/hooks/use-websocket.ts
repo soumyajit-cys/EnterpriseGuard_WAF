@@ -9,9 +9,8 @@ export function useWebSocket(path: string) {
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const connect = useCallback(() => {
-    const token = localStorage.getItem("access_token")
     const baseUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000"
-    const url = `${baseUrl}${path}?token=${token}`
+    const url = `${baseUrl}${path}`
 
     const ws = new WebSocket(url)
     wsRef.current = ws
