@@ -214,8 +214,8 @@ function RuleForm({ rule, onSuccess }: { rule?: Rule; onSuccess: () => void }) {
         toast.success("Rule created")
       }
       onSuccess()
-    } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to save rule")
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to save rule"))
     } finally {
       setLoading(false)
     }

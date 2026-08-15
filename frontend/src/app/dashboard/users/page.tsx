@@ -117,8 +117,8 @@ function UserForm({ onSuccess }: { onSuccess: () => void }) {
       await usersService.create({ username, email, password, role })
       toast.success("User created")
       onSuccess()
-    } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to create user")
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to create user"))
     } finally {
       setLoading(false)
     }

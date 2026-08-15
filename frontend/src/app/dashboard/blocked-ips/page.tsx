@@ -111,8 +111,8 @@ function BlockIPForm({ onSuccess }: { onSuccess: () => void }) {
       })
       toast.success("IP blocked")
       onSuccess()
-    } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to block IP")
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to block IP"))
     } finally {
       setLoading(false)
     }

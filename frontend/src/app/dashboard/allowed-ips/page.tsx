@@ -96,8 +96,8 @@ function AllowIPForm({ onSuccess }: { onSuccess: () => void }) {
       await allowlistService.create({ ip_address, description })
       toast.success("IP allowed")
       onSuccess()
-    } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to add IP")
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to add IP"))
     } finally {
       setLoading(false)
     }
