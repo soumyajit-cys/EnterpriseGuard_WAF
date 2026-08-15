@@ -55,3 +55,20 @@ async def get_current_user(
         )
 
     return user
+
+
+def require_role(required_role: str):
+    async def role_checker(current_user: User = Depends(get_current_user)):
+        if not role_ge(current_user.role, required_role):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Requires role: {required_role} or higher",
+            )
+        return current_user
+    return role_checker
+
+
+require_admin = lambda: require_role(ADMIN)
+require_analyst = lambda: require_role(ANALYST)
+require_operator = lambda: require_role(OPERATOR)
+require_viewer = lambda: require_role(VIEWER)
