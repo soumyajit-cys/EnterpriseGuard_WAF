@@ -3,7 +3,7 @@ import { useEffect, useRef, useCallback } from "react"
 interface UseWebSocketOptions {
   onOpen?: () => void
   onClose?: (code: number) => void
-  onMessage?: (data: any) => void
+  onMessage?: (data: unknown) => void
   onError?: (error: Event) => void
   reconnectInterval?: number
   maxRetries?: number

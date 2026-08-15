@@ -60,7 +60,7 @@ export default function AttackMapPage() {
 
   useWebSocket(wsUrl, {
     onMessage: (data) => {
-      if (data?.event !== "blocked") return
+      if ((data as TrafficEvent | null)?.event !== "blocked") return
       const event = data as TrafficEvent
       setLiveEvents((prev) => [event, ...prev].slice(0, 12))
     },

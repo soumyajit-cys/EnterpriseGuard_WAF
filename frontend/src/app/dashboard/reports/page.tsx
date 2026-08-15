@@ -123,10 +123,10 @@ export default function ReportsPage() {
             </div>
             {attackTypes.length > 0 ? (
               <div className="space-y-2">
-                {attackTypes.map((at: any) => (
-                  <div key={at.name || at.type} className="flex items-center justify-between text-sm">
-                    <Badge variant="warning">{at.name || at.type}</Badge>
-                    <span className="font-mono text-zinc-200">{at.value || at.count}</span>
+                {attackTypes.map((at) => (
+                  <div key={at.name} className="flex items-center justify-between text-sm">
+                    <Badge variant="warning">{at.name}</Badge>
+                    <span className="font-mono text-zinc-200">{at.value}</span>
                   </div>
                 ))}
               </div>
