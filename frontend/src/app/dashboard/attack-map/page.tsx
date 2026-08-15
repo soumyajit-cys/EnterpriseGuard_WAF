@@ -43,7 +43,7 @@ const severityBadge: Record<string, "default" | "danger" | "warning"> = {
 
 export default function AttackMapPage() {
   const [hours, setHours] = useState(24)
-  const [liveEvents, setLiveEvents] = useState<any[]>([])
+  const [liveEvents, setLiveEvents] = useState<TrafficEvent[]>([])
 
   const { data: geoData, isLoading } = useQuery({
     queryKey: ["analytics", "geo", hours],
@@ -51,7 +51,7 @@ export default function AttackMapPage() {
     refetchInterval: 15000,
   })
 
-  const eventsRef = useRef<any[]>([])
+  const eventsRef = useRef<TrafficEvent[]>([])
   useEffect(() => {
     eventsRef.current = liveEvents
   }, [liveEvents])
@@ -61,18 +61,19 @@ export default function AttackMapPage() {
   useWebSocket(wsUrl, {
     onMessage: (data) => {
       if (data?.event !== "blocked") return
-      setLiveEvents((prev) => [data, ...prev].slice(0, 12))
+      const event = data as TrafficEvent
+      setLiveEvents((prev) => [event, ...prev].slice(0, 12))
     },
     reconnectInterval: 4000,
   })
 
   const countries = geoData?.countries ?? []
-  const maxTotal = Math.max(1, ...countries.map((c: any) => c.total ?? 0))
+  const maxTotal = Math.max(1, ...countries.map((c) => c.total ?? 0))
   const mapRef = useRef<SVGSVGElement | null>(null)
   const [mapSize, setMapSize] = useState({ w: 900, h: 460 })
 
   const dots = countries
-    .map((c: any) => {
+    .map((c: GeoCountry) => {
       const coords = COUNTRY_COORDS[c.country]
       if (!coords) return null
       const { x, y } = project(coords[0], coords[1], mapSize.w, mapSize.h)
