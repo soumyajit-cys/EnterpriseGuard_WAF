@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { analyticsService } from "@/services/analytics"
+import type { GeoCountry } from "@/types"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from "recharts"
 import { Activity, Shield, AlertTriangle, Ban, Globe2 } from "lucide-react"
 

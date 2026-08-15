@@ -255,3 +255,17 @@ export interface PayloadTestResult {
 }
 
 export interface PaginatedAuditLogs extends PaginatedResponse<AuditLog> {}
+
+export interface TrafficEvent {
+  event: "request" | "blocked"
+  id: string
+  timestamp?: number
+  ip_address: string
+  method: string
+  path: string
+  action: string
+  score: number
+  attack_type?: string
+  status: number
+  user_agent?: string
+}
