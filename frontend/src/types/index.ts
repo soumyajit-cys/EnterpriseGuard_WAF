@@ -203,6 +203,7 @@ export interface AttackerTimelineEvent {
   action: string
   attack_type?: string
   path: string
+  method?: string
   score?: number
   status_code?: number
   user_agent?: string
@@ -247,6 +248,7 @@ export interface WAFFinding {
 
 export interface PayloadTestResult {
   input: string
+  body?: string
   findings: WAFFinding[]
   effective_score: number
   severity: string
