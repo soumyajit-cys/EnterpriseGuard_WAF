@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, Response, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.cookies import clear_auth_cookies, set_auth_cookies
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from app.core.client_ip import get_client_ip
+from app.core.csrf import issue_csrf_token
 from app.models.user import User
 from app.schemas.auth import (
     RegisterRequest,
@@ -12,7 +14,7 @@ from app.schemas.auth import (
     ChangePasswordRequest,
     Verify2FARequest,
     CodeRequest,
-    TokenResponse,
+    CsrfTokenResponse,
     AuthResponse,
     LoginResponse,
     UserResponse,
@@ -30,6 +32,30 @@ router = APIRouter(
 login_rate_limit = RateLimitService()
 
 
+def _user_payload(user: User) -> dict:
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "role": user.role,
+        "is_active": user.is_active,
+        "is_verified": user.is_verified,
+        "totp_enabled": user.totp_enabled,
+    }
+
+
+def _attach_session(response: Response, result: dict) -> dict:
+    set_auth_cookies(
+        response,
+        access_token=result["access_token"],
+        refresh_token=result["refresh_token"],
+    )
+    return {
+        "csrf_token": result.get("csrf_token") or issue_csrf_token(result["user"]["id"]),
+        "user": result["user"],
+    }
+
+
 @router.post(
     "/register",
     response_model=AuthResponse,
@@ -37,10 +63,12 @@ login_rate_limit = RateLimitService()
     summary="Register a new user",
 )
 async def register(
+    response: Response,
     payload: RegisterRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    return await auth_service.register(db, payload)
+    result = await auth_service.register(db, payload)
+    return _attach_session(response, result)
 
 
 @router.post(
@@ -50,6 +78,7 @@ async def register(
 )
 async def login(
     request: Request,
+    response: Response,
     payload: LoginRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -59,7 +88,10 @@ async def login(
             status_code=429,
             detail="Too many login attempts from this IP. Try again later.",
         )
-    return await auth_service.login(db, payload, ip)
+    result = await auth_service.login(db, payload, ip)
+    if result.get("requires_2fa"):
+        return result
+    return _attach_session(response, result)
 
 
 @router.post(
@@ -68,10 +100,23 @@ async def login(
     summary="Complete login with a 2FA code",
 )
 async def verify_2fa(
+    response: Response,
     payload: Verify2FARequest,
     db: AsyncSession = Depends(get_db),
 ):
-    return await auth_service.verify_2fa(db, payload.mfa_token, payload.code)
+    result = await auth_service.verify_2fa(db, payload.mfa_token, payload.code)
+    return _attach_session(response, result)
+
+
+@router.get(
+    "/csrf",
+    response_model=CsrfTokenResponse,
+    summary="Issue a CSRF token for the authenticated session",
+)
+async def get_csrf_token(
+    current_user: User = Depends(get_current_user),
+):
+    return {"csrf_token": issue_csrf_token(current_user.id)}
 
 
 @router.get(
@@ -133,14 +178,29 @@ async def disable_2fa(
 
 @router.post(
     "/refresh",
-    response_model=TokenResponse,
+    response_model=CsrfTokenResponse,
     summary="Refresh access token using refresh token",
 )
 async def refresh(
-    payload: RefreshRequest,
+    request: Request,
+    response: Response,
     db: AsyncSession = Depends(get_db),
 ):
-    return await auth_service.refresh(db, payload)
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Missing refresh token",
+        )
+    from app.schemas.auth import RefreshRequest as _RefreshRequest
+
+    result = await auth_service.refresh(db, _RefreshRequest(refresh_token=refresh_token))
+    set_auth_cookies(
+        response,
+        access_token=result["access_token"],
+        refresh_token=result["refresh_token"],
+    )
+    return {"csrf_token": result["csrf_token"]}
 
 
 @router.post(
@@ -150,12 +210,14 @@ async def refresh(
 )
 async def logout(
     request: Request,
+    response: Response,
     current_user: User = Depends(get_current_user),
 ):
-    auth_header = request.headers.get("Authorization", "")
-    access_token = auth_header.replace("Bearer ", "")
-    refresh_token = request.headers.get("X-Refresh-Token", "")
-    return await auth_service.logout(access_token, refresh_token)
+    access_token = request.cookies.get("access_token", "")
+    refresh_token = request.cookies.get("refresh_token", "")
+    result = await auth_service.logout(access_token, refresh_token)
+    clear_auth_cookies(response)
+    return result
 
 
 @router.get(
