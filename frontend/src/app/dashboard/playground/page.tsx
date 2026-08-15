@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { wafService } from "@/services/waf"
 import { useAuthStore } from "@/store/auth-store"
 import type { PayloadTestResult } from "@/types"
@@ -17,6 +18,8 @@ import {
   ShieldAlert,
   ShieldCheck,
   Copy,
+  Link2,
+  Terminal,
 } from "lucide-react"
 import { buildShareUrl } from "@/services/playground"
 import { getErrorMessage } from "@/services/api"
