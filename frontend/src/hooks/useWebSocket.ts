@@ -25,7 +25,7 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   const retriesRef = useRef(0)
   const mountedRef = useRef(true)
 
-  const connect = useCallback(() => {
+  const connect = useCallback(function connect() {
     if (!mountedRef.current || retriesRef.current >= maxRetries) return
 
     try {

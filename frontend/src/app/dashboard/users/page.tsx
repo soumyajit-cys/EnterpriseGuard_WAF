@@ -22,7 +22,7 @@ export default function UsersPage() {
   const [search, setSearch] = useState("")
   const [isOpen, setIsOpen] = useState(false)
 
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["users", page, search],
     queryFn: () => usersService.getAll({ page, page_size: 20, search }),
   })

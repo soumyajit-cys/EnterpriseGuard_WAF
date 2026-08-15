@@ -112,7 +112,7 @@ export interface WAFSettings {
   webhook_type?: string
   webhook_events?: string
   webhook_enabled?: string
-  [key: string]: any
+  [key: string]: string | number | boolean | undefined
 }
 
 export interface PaginatedResponse<T> {
@@ -254,7 +254,7 @@ export interface PayloadTestResult {
   mode: string
 }
 
-export interface PaginatedAuditLogs extends PaginatedResponse<AuditLog> {}
+export type PaginatedAuditLogs = PaginatedResponse<AuditLog>
 
 export interface TrafficEvent {
   event: "request" | "blocked"

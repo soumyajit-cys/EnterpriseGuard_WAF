@@ -8,16 +8,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { wafService } from "@/services/waf"
-import { useAuthStore } from "@/store/auth-store"
 import type { PayloadTestResult } from "@/types"
 import {
   FlaskConical,
   Play,
-  Share2,
   Loader2,
   ShieldAlert,
   ShieldCheck,
-  Copy,
   Link2,
   Terminal,
 } from "lucide-react"

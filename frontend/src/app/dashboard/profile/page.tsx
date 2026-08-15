@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { toast } from "sonner"
 import { PageHeader } from "@/components/layout/page-header"
@@ -15,7 +14,7 @@ import api, { getErrorMessage } from "@/services/api"
 import { Plus, Trash2, Save, ShieldCheck, KeyRound, Loader2 } from "lucide-react"
 
 export default function ProfilePage() {
-  const { user, setUser } = useAuthStore()
+  const { user } = useAuthStore()
   const [username, setUsername] = useState(user?.username || "")
   const [email, setEmail] = useState(user?.email || "")
 
@@ -185,6 +184,7 @@ function TwoFactorCard() {
                     className="rounded-xl border border-zinc-700"
                     width={180}
                     height={180}
+                    // eslint-disable-next-line @next/next/no-img-element
                   />
                 </div>
                 <p className="text-center text-xs text-zinc-500">

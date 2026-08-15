@@ -68,7 +68,9 @@ export default function LiveTrafficPage() {
                 className="flex items-center gap-4 p-3 border-b border-zinc-800/50 hover:bg-zinc-800/30 text-sm"
               >
                 <span className="text-xs text-zinc-600 font-mono w-16 shrink-0">
-                  {new Date(event.timestamp || Date.now()).toLocaleTimeString()}
+                  {event.timestamp
+                    ? new Date(event.timestamp).toLocaleTimeString()
+                    : "—"}
                 </span>
                 <span className="font-mono text-zinc-400 w-36 shrink-0">{event.ip_address || "-"}</span>
                 <Badge variant={event.action === "BLOCK" ? "danger" : "success"} className="w-16 justify-center shrink-0">

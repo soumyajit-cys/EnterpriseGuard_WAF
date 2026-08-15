@@ -108,10 +108,13 @@ function WebhookSettingsCard() {
 
   useEffect(() => {
     if (settings && typeof settings === "object") {
-      setUrl(String(settings.webhook_url ?? ""))
-      setType(String(settings.webhook_type ?? "generic"))
-      setMinSeverity(String(settings.webhook_events ?? "critical"))
-      setEnabled(String(settings.webhook_enabled ?? "false") === "true")
+      const s = settings as Record<string, unknown>
+      queueMicrotask(() => {
+        setUrl(String(s.webhook_url ?? ""))
+        setType(String(s.webhook_type ?? "generic"))
+        setMinSeverity(String(s.webhook_events ?? "critical"))
+        setEnabled(String(s.webhook_enabled ?? "false") === "true")
+      })
     }
   }, [settings])
 

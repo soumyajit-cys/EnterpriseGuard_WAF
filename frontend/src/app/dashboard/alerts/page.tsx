@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { alertsService } from "@/services/alerts"
-import { timeAgo, severityColor } from "@/lib/utils"
+import { timeAgo } from "@/lib/utils"
 import type { Alert } from "@/types"
 
 export default function AlertsPage() {

@@ -7,10 +7,8 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import {  from "@/components/ui/select"
 import { Download, FileText } from "lucide-react"
 import { reportsService } from "@/services/reports"
-import {  from "@/lib/utils"
 
 export default function ReportsPage() {
   const [range, setRange] = useState("7d")
