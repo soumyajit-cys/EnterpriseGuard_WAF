@@ -98,7 +98,7 @@ export default function AuditLogPage() {
                     </p>
                   </div>
                 ) : (
-                  data?.items.map((log: any) => (
+                  data?.items.map((log) => (
                     <motion.div
                       key={log.id}
                       initial={{ opacity: 0, y: 8 }}
