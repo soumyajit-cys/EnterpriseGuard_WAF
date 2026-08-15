@@ -70,7 +70,7 @@ export default function AttackMapPage() {
   const countries = geoData?.countries ?? []
   const maxTotal = Math.max(1, ...countries.map((c) => c.total ?? 0))
   const mapRef = useRef<SVGSVGElement | null>(null)
-  const [mapSize, setMapSize] = useState({ w: 900, h: 460 })
+  const [mapSize] = useState({ w: 900, h: 460 })
 
   const dots = countries
     .map((c: GeoCountry) => {
@@ -216,7 +216,9 @@ export default function AttackMapPage() {
                         {e.action ?? "BLOCK"}
                       </Badge>
                       <span className="ml-auto text-[10px] text-zinc-600 font-mono">
-                        {new Date().toLocaleTimeString()}
+                        {e.timestamp
+                          ? new Date(e.timestamp).toLocaleTimeString()
+                          : new Date().toLocaleTimeString()}
                       </span>
                     </div>
                     <p className="mt-1.5 font-mono text-xs text-zinc-400 truncate">

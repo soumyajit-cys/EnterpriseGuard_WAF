@@ -2,33 +2,14 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { useSidebarStore } from "@/store/sidebar-store"
 import { useAuthStore } from "@/store/auth-store"
 import {
   LayoutDashboard,
   Activity,
-  ShieldAlert,
-  Shield,
-  Bell,
-  ScrollText,
-  Ban,
-  CheckCircle,
-  BarChart3,
-  FileText,
-  Users,
-  Settings,
-  UserCircle,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-  ShieldCheck,
-  FlaskConical,
-  History,
-  Globe2,
-  Crosshair,
-} from "lucide-react"
+   from "lucide-react"
 
 interface NavItem {
   label: string
@@ -65,32 +46,34 @@ const adminNav: NavItem[] = [
   { label: "Profile", href: "/dashboard/profile", icon: UserCircle },
 ]
 
-export function Sidebar() {
-  const pathname = usePathname()
-  const { isCollapsed, toggle, isMobileOpen, closeMobile } = useSidebarStore()
-  const { user, logout } = useAuthStore()
-
-  const NavSection = ({
-    title,
-    items,
-  }: {
-    title?: string
-    items: NavItem[]
-  }) => (
+function NavSection({
+  title,
+  items,
+  isCollapsed: collapsed,
+  pathname: activePath,
+  closeMobile: close,
+}: {
+  title?: string
+  items: NavItem[]
+  isCollapsed: boolean
+  pathname: string
+  closeMobile: () => void
+}) {
+  return (
     <div className="mb-4">
-      {title && !isCollapsed && (
+      {title && !collapsed && (
         <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
           {title}
         </p>
       )}
       {items.map((item) => {
-        const isActive = pathname === item.href
+        const isActive = activePath === item.href
         const Icon = item.icon
         return (
           <Link
             key={item.href}
             href={item.href}
-            onClick={closeMobile}
+            onClick={close}
             className={cn(
               "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
               isActive
@@ -99,7 +82,7 @@ export function Sidebar() {
             )}
           >
             <Icon className="h-5 w-5 shrink-0" />
-            {!isCollapsed && (
+            {!collapsed && (
               <>
                 <span className="truncate">{item.label}</span>
                 {item.badge && (
@@ -120,6 +103,12 @@ export function Sidebar() {
       })}
     </div>
   )
+}
+
+export function Sidebar() {
+  const pathname = usePathname()
+  const { isCollapsed, toggle, isMobileOpen, closeMobile } = useSidebarStore()
+  const { user, logout } = useAuthStore()
 
   return (
     <>
@@ -158,21 +147,21 @@ export function Sidebar() {
         </div>
 
         <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700">
-          <NavSection items={mainNav} />
+          <NavSection items={mainNav} isCollapsed={isCollapsed} pathname={pathname} closeMobile={closeMobile} />
           {!isCollapsed && (
             <div className="my-2 border-t border-white/5" />
           )}
-          <NavSection items={securityNav} />
+          <NavSection items={securityNav} isCollapsed={isCollapsed} pathname={pathname} closeMobile={closeMobile} />
           {!isCollapsed && (
             <div className="my-2 border-t border-white/5" />
           )}
-          <NavSection items={analyticsNav} />
+          <NavSection items={analyticsNav} isCollapsed={isCollapsed} pathname={pathname} closeMobile={closeMobile} />
           {user?.role === "admin" && (
             <>
               {!isCollapsed && (
                 <div className="my-2 border-t border-white/5" />
               )}
-              <NavSection items={adminNav} />
+              <NavSection items={adminNav} isCollapsed={isCollapsed} pathname={pathname} closeMobile={closeMobile} />
             </>
           )}
         </nav>

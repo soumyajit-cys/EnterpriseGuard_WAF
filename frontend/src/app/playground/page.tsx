@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, useMemo, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
@@ -52,20 +52,11 @@ export default function PublicPlaygroundPage() {
 
 function Playground() {
   const searchParams = useSearchParams()
-  const [input, setInput] = useState("")
-  const [source, setSource] = useState("query")
+  const shared = useMemo(() => parseShareUrl(searchParams.toString()), [searchParams])
+  const [input, setInput] = useState(shared?.input ?? "")
+  const [source, setSource] = useState(shared?.source ?? "query")
   const [result, setResult] = useState<Awaited<ReturnType<typeof playgroundService.testPublic>> | null>(null)
   const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    const shared = parseShareUrl(searchParams.toString())
-    if (shared) {
-      setInput(shared.input)
-      setSource(shared.source)
-      run(shared)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const run = async (override?: { input: string; source: string }) => {
     const payload = {
@@ -95,6 +86,13 @@ function Playground() {
       toast.error("Clipboard unavailable")
     }
   }
+
+  useEffect(() => {
+    if (shared) {
+      void Promise.resolve().then(() => run(shared))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#09090B] text-zinc-200">

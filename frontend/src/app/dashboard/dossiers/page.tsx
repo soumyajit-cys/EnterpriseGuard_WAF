@@ -16,8 +16,7 @@ import {
   Activity,
   ShieldAlert,
   Loader2,
-  X,
-} from "lucide-react"
+   from "lucide-react"
 
 const countryFlag = (country?: string | null) => {
   if (!country) return "🌐"

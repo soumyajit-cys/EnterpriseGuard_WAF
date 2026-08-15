@@ -68,7 +68,7 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
       ws.onerror = (error) => {
         onError?.(error)
       }
-    } catch (error) {
+    } catch {
       if (mountedRef.current) {
         setTimeout(() => {
           retriesRef.current++
@@ -86,6 +86,4 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
       wsRef.current?.close()
     }
   }, [connect])
-
-  return { ws: wsRef.current }
 }
