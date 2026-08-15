@@ -1,20 +1,14 @@
 "use client"
 
-import { forwardRef } from "react"
 import { motion } from "framer-motion"
 import { Activity, ShieldBan, AlertTriangle, Layers } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AnimatedCounter, SectionHeading } from "@/components/landing/shared"
 import type { PublicStats } from "@/components/landing/shared"
 
-export const StatsBanner = forwardRef<HTMLElement, { stats: PublicStats | null }>(
-  function StatsBanner({ stats }, ref) {
-    return (
-      <section
-        id="stats"
-        ref={ref}
-        className="py-24 border-y border-zinc-800/50 bg-zinc-900/20 relative overflow-hidden"
-      >
+export function StatsBanner({ stats }: { stats: PublicStats | null }) {
+  return (
+    <section id="stats" className="py-24 border-y border-zinc-800/50 bg-zinc-900/20 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.08),transparent_65%)] pointer-events-none" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
