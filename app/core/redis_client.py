@@ -20,6 +20,10 @@ class SafeRedis:
         self._client = redis.from_url(settings.REDIS_URL, decode_responses=True)
         self._reported_down = False
 
+    @property
+    def degraded(self) -> bool:
+        return self._reported_down
+
     def _reconnect(self):
         try:
             self._client = _build_client()
@@ -30,6 +34,19 @@ class SafeRedis:
         if self._reported_down:
             self._reported_down = False
             logger.info("Redis connection restored")
+            try:
+                from app.services.alert_service import alert_service
+                import asyncio
+
+                asyncio.create_task(
+                    alert_service.create(
+                        severity="info",
+                        message="Redis connection restored - WAF protections back to full strength",
+                        source="WAF_DEGRADED",
+                    )
+                )
+            except Exception:
+                pass
         return result
 
     def _degraded(self, exc: Exception):
@@ -40,6 +57,19 @@ class SafeRedis:
                 from app.services.metrics import REDIS_DOWN
 
                 REDIS_DOWN.inc()
+            except Exception:
+                pass
+            try:
+                from app.services.alert_service import alert_service
+                import asyncio
+
+                asyncio.create_task(
+                    alert_service.create(
+                        severity="critical",
+                        message="Redis unavailable - WAF degraded: rate limiting, autoban, and token revocation are inactive",
+                        source="WAF_DEGRADED",
+                    )
+                )
             except Exception:
                 pass
         try:
