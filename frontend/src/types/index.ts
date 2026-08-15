@@ -157,3 +157,101 @@ export interface AuditLog {
   ip_address?: string
   created_at: string
 }
+
+export interface AnalyticsOverview {
+  total_requests: number
+  blocked: number
+  alerts: number
+  blocked_ips: number
+}
+
+export interface GeoCountry {
+  country: string
+  total: number
+  attacks: { type: string; count: number }[]
+}
+
+export interface GeoResponse {
+  countries: GeoCountry[]
+  window_hours: number
+}
+
+export interface AttackerDossier {
+  ip: string
+  blocks: number
+  total_requests: number
+  distinct_threats: number
+  threat_types: { type: string; count: number }[]
+  top_paths: { path: string; count: number }[]
+  max_score: number
+  first_seen: string
+  last_seen: string
+  kill_chain: boolean
+  banned: boolean
+  ban_reason?: string
+  user_agents: string[]
+  country?: string | null
+}
+
+export interface DossiersResponse {
+  dossiers: AttackerDossier[]
+  window_hours: number
+}
+
+export interface AttackerTimelineEvent {
+  time: string
+  action: string
+  attack_type?: string
+  path: string
+  score?: number
+  status_code?: number
+  user_agent?: string
+  country?: string | null
+}
+
+export interface AttackerDetail {
+  ip: string
+  timeline: AttackerTimelineEvent[]
+  country?: string | null
+}
+
+export interface TrafficTrendPoint {
+  date: string
+  requests: number
+  blocked: number
+  allowed: number
+}
+
+export interface TrafficResponse {
+  server_started: string
+  traffic_trend: TrafficTrendPoint[]
+  attack_distribution: { name: string; value: number }[]
+  top_ips: { ip: string; count: number }[]
+}
+
+export interface AttacksResponse {
+  total_requests: number
+  total_blocked: number
+  total_alerts: number
+  block_rate: number
+  alerts_by_severity: Record<string, number>
+}
+
+export interface WAFFinding {
+  type: string
+  score: number
+  source: string
+  evidence: string
+  rule?: string
+}
+
+export interface PayloadTestResult {
+  input: string
+  findings: WAFFinding[]
+  effective_score: number
+  severity: string
+  verdict: "BLOCK" | "ALLOW"
+  mode: string
+}
+
+export interface PaginatedAuditLogs extends PaginatedResponse<AuditLog> {}
