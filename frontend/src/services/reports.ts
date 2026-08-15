@@ -1,5 +1,5 @@
 import api from "./api"
-import type { ReportParams } from "@/types"
+import type { AttacksResponse, ReportParams, TrafficResponse } from "@/types"
 
 export const reportsService = {
   async generate(params: ReportParams): Promise<Blob> {
@@ -21,12 +21,12 @@ export const reportsService = {
     return res.data
   },
 
-  async getTrafficData(range: string): Promise<any> {
+  async getTrafficData(range: string): Promise<TrafficResponse> {
     const res = await api.get("/analytics/traffic", { params: { period: range } })
     return res.data
   },
 
-  async getAttackData(range: string): Promise<any> {
+  async getAttackData(range: string): Promise<AttacksResponse> {
     const res = await api.get("/analytics/attacks", { params: { period: range } })
     return res.data
   },
