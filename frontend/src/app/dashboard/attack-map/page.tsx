@@ -79,7 +79,7 @@ export default function AttackMapPage() {
       const { x, y } = project(coords[0], coords[1], mapSize.w, mapSize.h)
       return { ...c, x, y, intensity: c.total / maxTotal }
     })
-    .filter(Boolean)
+    .filter((c): c is NonNullable<typeof c> => c !== null)
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">

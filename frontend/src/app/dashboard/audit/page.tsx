@@ -9,13 +9,14 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { wafService } from "@/services/waf"
 import { History, ShieldCheck } from "lucide-react"
+import type { PaginatedAuditLogs } from "@/types"
 
 export default function AuditLogPage() {
   const [page, setPage] = useState(1)
   const [action, setAction] = useState<string>("")
   const pageSize = 20
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<PaginatedAuditLogs>({
     queryKey: ["audit-logs", page, action],
     queryFn: () => wafService.getAuditLogs(page, pageSize, action || undefined),
   })
@@ -130,7 +131,7 @@ export default function AuditLogPage() {
                 )}
               </div>
 
-              {data?.total_pages > 1 && (
+              {data && data.total_pages > 1 && (
                 <div className="mt-5 flex items-center justify-between">
                   <p className="text-xs text-zinc-600">
                     Page {data.page} of {data.total_pages} · {data.total} entries
