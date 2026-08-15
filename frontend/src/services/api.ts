@@ -1,10 +1,22 @@
 import axios from "axios"
 
 const getBaseURL = () => {
+  const configured = process.env.NEXT_PUBLIC_API_URL
+  if (configured) return configured
   if (typeof window !== "undefined") {
     return `http://${window.location.hostname}:8000`
   }
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+  return "http://localhost:8000"
+}
+
+export const getWsURL = (path: string) => {
+  const configured = process.env.NEXT_PUBLIC_WS_URL
+  if (configured) return `${configured.replace(/\/$/, "")}${path}`
+  if (typeof window !== "undefined") {
+    const proto = window.location.protocol === "https:" ? "wss" : "ws"
+    return `${proto}://${window.location.hostname}:8000${path}`
+  }
+  return `ws://localhost:8000${path}`
 }
 
 const api = axios.create({
