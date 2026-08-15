@@ -76,7 +76,7 @@ export default function PlaygroundPage() {
   const [input, setInput] = useState("")
   const [source, setSource] = useState("query")
   const [body, setBody] = useState("")
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<PayloadTestResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const run = async () => {
@@ -299,7 +299,7 @@ export default function PlaygroundPage() {
                       </p>
                     ) : (
                       <div className="space-y-2">
-                        {result.findings.map((f: any, i: number) => (
+                        {result.findings.map((f, i) => (
                           <motion.div
                             key={`${f.type}-${i}`}
                             initial={{ opacity: 0, x: -12 }}
