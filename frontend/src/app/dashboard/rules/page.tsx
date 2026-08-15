@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
 import { rulesService } from "@/services/rules"
+import { getErrorMessage } from "@/services/api"
 import type { Rule } from "@/types"
 
 const BUILT_IN_RULES = [

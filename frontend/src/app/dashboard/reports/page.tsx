@@ -40,7 +40,7 @@ export default function ReportsPage() {
       a.download = `waf-report-${range}-${Date.now()}.${type}`
       a.click()
       URL.revokeObjectURL(url)
-    } catch (err: any) {
+    } catch (err) {
       console.error(err)
     } finally {
       setLoading(null)

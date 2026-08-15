@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useAuthStore } from "@/store/auth-store"
-import api from "@/services/api"
+import api, { getErrorMessage } from "@/services/api"
 import { Plus, Trash2, Save, ShieldCheck, KeyRound, Loader2 } from "lucide-react"
 
 export default function ProfilePage() {
@@ -23,8 +23,8 @@ export default function ProfilePage() {
     try {
       await api.put("/auth/me", { username, email })
       toast.success("Profile updated")
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Update failed"))
     }
   }
 
@@ -80,8 +80,8 @@ function TwoFactorCard() {
       const res = await api.get("/auth/2fa/setup")
       setSetup(res.data)
       setOpen(true)
-    } catch (error: any) {
-      toast.error("Setup failed", { description: error.response?.data?.detail })
+    } catch (error) {
+      toast.error("Setup failed", { description: getErrorMessage(error, "Setup failed") })
     }
   }
 
@@ -97,8 +97,8 @@ function TwoFactorCard() {
       toast.success("2FA enabled — your account is now protected")
       setOpen(false)
       setCode("")
-    } catch (error: any) {
-      toast.error("Enable failed", { description: error.response?.data?.detail })
+    } catch (error) {
+      toast.error("Enable failed", { description: getErrorMessage(error, "Enable failed") })
     } finally {
       setIsBusy(false)
     }
@@ -116,8 +116,8 @@ function TwoFactorCard() {
       toast.success("2FA disabled")
       setOpen(false)
       setCode("")
-    } catch (error: any) {
-      toast.error("Disable failed", { description: error.response?.data?.detail })
+    } catch (error) {
+      toast.error("Disable failed", { description: getErrorMessage(error, "Disable failed") })
     } finally {
       setIsBusy(false)
     }

@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from "@/components/ui/switch"
 import { Plus, Trash2, Ban } from "lucide-react"
 import { blocklistService } from "@/services/blocklist"
+import { getErrorMessage } from "@/services/api"
 import { formatDate } from "@/lib/utils"
 import type { BlockedIP } from "@/types"
 

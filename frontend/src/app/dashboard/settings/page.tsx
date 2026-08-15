@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { settingsService } from "@/services/settings"
-import api from "@/services/api"
+import api, { getErrorMessage } from "@/services/api"
 import { Bell, Save, Send, Loader2 } from "lucide-react"
 
 export default function SettingsPage() {
@@ -127,8 +127,8 @@ function WebhookSettingsCard() {
       toast.success("Webhook settings saved")
       queryClient.invalidateQueries({ queryKey: ["settings"] })
       return res.data
-    } catch (error: any) {
-      toast.error("Save failed", { description: error.response?.data?.detail })
+    } catch (error) {
+      toast.error("Save failed", { description: getErrorMessage(error, "Could not save settings") })
     } finally {
       setIsSaving(false)
     }
@@ -146,8 +146,8 @@ function WebhookSettingsCard() {
         type,
       })
       toast.success("Webhook delivered!", { description: res.data?.message })
-    } catch (error: any) {
-      toast.error("Delivery failed", { description: error.response?.data?.detail })
+    } catch (error) {
+      toast.error("Delivery failed", { description: getErrorMessage(error, "Webhook delivery failed") })
     } finally {
       setIsTesting(false)
     }

@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Plus, Trash2, ShieldCheck } from "lucide-react"
 import { usersService } from "@/services/users"
+import { getErrorMessage } from "@/services/api"
 import { formatDate } from "@/lib/utils"
 import type { User } from "@/types"
 
