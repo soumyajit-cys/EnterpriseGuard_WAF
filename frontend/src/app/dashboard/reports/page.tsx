@@ -26,7 +26,8 @@ export default function ReportsPage() {
 
   const attackTypes = trafficData?.attack_distribution ?? []
 
-  const trafficSummary = attackData ?? {}
+  const trafficSummary =
+    attackData ?? { total_requests: 0, total_blocked: 0, total_alerts: 0, block_rate: 0, alerts_by_severity: {} }
 
   const downloadReport = async (type: "pdf" | "csv" | "json") => {
     setLoading(type)
