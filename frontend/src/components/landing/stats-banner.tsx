@@ -45,5 +45,5 @@ export function StatsBanner({ stats }: { stats: PublicStats | null }) {
         </div>
       </section>
     )
-  }
-)
+  )
+}
