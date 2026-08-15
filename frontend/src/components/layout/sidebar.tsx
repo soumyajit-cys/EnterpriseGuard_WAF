@@ -9,7 +9,25 @@ import { useAuthStore } from "@/store/auth-store"
 import {
   LayoutDashboard,
   Activity,
-   from "lucide-react"
+  Bell,
+  ScrollText,
+  Shield,
+  Ban,
+  CheckCircle,
+  BarChart3,
+  Globe2,
+  Crosshair,
+  FlaskConical,
+  FileText,
+  Users,
+  History,
+  Settings,
+  UserCircle,
+  ShieldCheck,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
 
 interface NavItem {
   label: string
