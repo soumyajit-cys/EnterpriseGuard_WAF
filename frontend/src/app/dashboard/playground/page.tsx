@@ -19,6 +19,7 @@ import {
   Copy,
 } from "lucide-react"
 import { buildShareUrl } from "@/services/playground"
+import { getErrorMessage } from "@/services/api"
 
 const sources = [
   { value: "query", label: "Query string" },
