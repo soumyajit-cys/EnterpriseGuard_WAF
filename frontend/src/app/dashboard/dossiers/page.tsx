@@ -169,7 +169,7 @@ export default function DossiersPage() {
                                 )}
                               </div>
                               <div className="max-h-72 space-y-1.5 overflow-y-auto pr-1">
-                              {(detail?.timeline ?? []).map((e: any, idx: number) => (
+                              {(detail?.timeline ?? []).map((e, idx: number) => (
                                 <div
                                   key={idx}
                                   className="flex items-center gap-3 rounded-md bg-zinc-900/50 px-3 py-2 text-xs"
