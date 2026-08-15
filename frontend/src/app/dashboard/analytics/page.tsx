@@ -29,20 +29,20 @@ export default function AnalyticsPage() {
     queryFn: () => analyticsService.getGeo(geoHours),
   })
 
-  const trafficChart = trafficData?.traffic_trend?.map((d: any) => ({
+  const trafficChart = trafficData?.traffic_trend?.map((d) => ({
     date: d.date?.slice(5, 10) || d.date,
     requests: d.requests || d.total_requests || d.count || 0,
     blocked: d.blocked || 0,
     allowed: d.allowed || 0,
   })) || []
 
-  const attackChart = trafficData?.attack_distribution?.map((d: any) => ({
+  const attackChart = trafficData?.attack_distribution?.map((d) => ({
     name: d.name || d.attack_type || "Unknown",
     count: d.value || d.count || 0,
   })) || []
 
   const countries = geoData?.countries ?? []
-  const maxTotal = Math.max(1, ...countries.map((c: any) => c.total ?? 0))
+  const maxTotal = Math.max(1, ...countries.map((c) => c.total ?? 0))
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
@@ -173,7 +173,7 @@ export default function AnalyticsPage() {
             </p>
           ) : (
             <div className="space-y-2.5">
-              {countries.map((c: any, i: number) => (
+              {countries.map((c: GeoCountry, i: number) => (
                 <div key={c.country} className="group">
                   <div className="flex items-center gap-3 text-sm mb-1">
                     <span className="w-6 text-xs text-zinc-600 font-mono">#{i + 1}</span>
@@ -192,7 +192,7 @@ export default function AnalyticsPage() {
                   </div>
                   {(c.attacks ?? []).length > 0 && (
                     <div className="ml-9 mt-1.5 flex flex-wrap gap-1.5">
-                      {c.attacks.map((a: any) => (
+                      {c.attacks.map((a) => (
                         <span
                           key={a.type}
                           className="rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] text-red-400"
