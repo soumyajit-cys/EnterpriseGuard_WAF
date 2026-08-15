@@ -75,6 +75,15 @@ class WAFMiddleware(BaseHTTPMiddleware):
         ip = get_client_ip(request)
 
         if request.url.path in ("/waf/test", "/public/playground/test"):
+            allowed = await rate_limit.check_playground(ip)
+            if not allowed:
+                return JSONResponse(
+                    status_code=429,
+                    content={
+                        "status": "blocked",
+                        "reason": "playground_rate_limit"
+                    }
+                )
             return await call_next(request)
 
         if AllowList.contains(ip):
