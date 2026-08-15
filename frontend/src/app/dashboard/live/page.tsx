@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useWebSocket } from "@/hooks/useWebSocket"
+import { getWsURL } from "@/services/api"
 
 export default function LiveTrafficPage() {
   const [events, setEvents] = useState<any[]>([])
@@ -13,9 +14,7 @@ export default function LiveTrafficPage() {
   const [authError, setAuthError] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  const wsUrl = typeof window !== "undefined"
-    ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:8000/ws/traffic`
-    : "ws://localhost:8000/ws/traffic"
+  const wsUrl = getWsURL("/ws/traffic")
 
   useWebSocket(wsUrl, {
     onOpen: () => {

@@ -54,10 +54,7 @@ export default function AttackMapPage() {
     eventsRef.current = liveEvents
   }, [liveEvents])
 
-  const wsUrl = useMemo(() => {
-    if (typeof window === "undefined") return ""
-    return `ws://${window.location.hostname}:8000/ws/traffic`
-  }, [])
+  const wsUrl = useMemo(() => getWsURL("/ws/traffic"), [])
 
   useWebSocket(wsUrl, {
     onMessage: (data) => {
