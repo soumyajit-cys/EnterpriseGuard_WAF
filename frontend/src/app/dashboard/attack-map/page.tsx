@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { analyticsService } from "@/services/analytics"
 import { useWebSocket } from "@/hooks/useWebSocket"
 import { getWsURL } from "@/services/api"
+import type { GeoCountry, TrafficEvent } from "@/types"
 import { Radio, Crosshair, ShieldAlert, ShieldCheck } from "lucide-react"
 
 const COUNTRY_COORDS: Record<string, [number, number]> = {

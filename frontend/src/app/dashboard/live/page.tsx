@@ -70,11 +70,11 @@ export default function LiveTrafficPage() {
                 <span className="text-xs text-zinc-600 font-mono w-16 shrink-0">
                   {new Date(event.timestamp || Date.now()).toLocaleTimeString()}
                 </span>
-                <span className="font-mono text-zinc-400 w-36 shrink-0">{event.ip_address || event.ip || "-"}</span>
+                <span className="font-mono text-zinc-400 w-36 shrink-0">{event.ip_address || "-"}</span>
                 <Badge variant={event.action === "BLOCK" ? "danger" : "success"} className="w-16 justify-center shrink-0">
                   {event.action || event.status || "ALLOW"}
                 </Badge>
-                <span className="text-zinc-300 truncate">{event.path || event.url || "-"}</span>
+                <span className="text-zinc-300 truncate">{event.path || "-"}</span>
                 {event.score != null && (
                   <span className={`font-mono shrink-0 ${
                     event.score >= 80 ? "text-red-400" :
