@@ -117,14 +117,18 @@ CREATE DATABASE wafdb OWNER wafuser;
 \q
 ```
 
-Create `.env` in the project root:
+Create `.env` in the project root (copy from `.env.example`):
 
 ```env
 DATABASE_URL=postgresql+asyncpg://wafuser:waf123@localhost/wafdb
 REDIS_URL=redis://localhost:6379
 SECRET_KEY=change_this_to_a_long_random_string
 WAF_MODE=detection        # "detection" logs only · "prevention" blocks
+TRUSTED_PROXIES=          # comma-separated proxy IPs allowed to set X-Forwarded-For (leave empty if none)
+COOKIE_SECURE=false       # set true when serving over HTTPS
 ```
+
+> **`TRUSTED_PROXIES` matters.** The WAF only trusts `X-Forwarded-For` when the request arrived directly from one of these IPs. If you leave it empty, clients cannot spoof their IP — but if you deploy behind a reverse proxy (nginx, Caddy, a cloud LB), you must list its IP(s) here or every client will appear to come from the proxy.
 
 Run the API:
 

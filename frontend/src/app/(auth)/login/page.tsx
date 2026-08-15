@@ -78,7 +78,7 @@ export default function LoginPage() {
         toast.info("Two-factor authentication required", {
           description: "Enter the code from your authenticator app",
         })
-      } else {
+      } else if (!("requires_2fa" in response)) {
         completeAuth(response)
       }
     } catch (error: any) {
