@@ -42,7 +42,7 @@ class WAFEngine:
         effective_score = min(max_score + (total_score - max_score) // 2, 100)
 
         block = should_block(effective_score)
-        ip = request.client.host
+        ip = get_client_ip(request)
         action = "BLOCK" if block else "ALLOW"
         attack_types = [f["type"] for f in findings]
 
