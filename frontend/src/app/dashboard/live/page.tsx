@@ -7,9 +7,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useWebSocket } from "@/hooks/useWebSocket"
 import { getWsURL } from "@/services/api"
+import type { TrafficEvent } from "@/types"
 
 export default function LiveTrafficPage() {
-  const [events, setEvents] = useState<any[]>([])
+  const [events, setEvents] = useState<TrafficEvent[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const [authError, setAuthError] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -27,8 +28,9 @@ export default function LiveTrafficPage() {
     },
     onMessage: (data) => {
       setEvents(prev => {
-        if (prev.some(e => e.id === data.id)) return prev
-        const next = [data, ...prev]
+        const event = data as TrafficEvent
+        if (prev.some(e => e.id === event.id)) return prev
+        const next = [event, ...prev]
         return next.slice(0, 100)
       })
     },
