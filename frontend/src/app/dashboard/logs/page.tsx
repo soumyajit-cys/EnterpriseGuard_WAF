@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Search, Download } from "lucide-react"
 import { logsService } from "@/services/logs"
-import { formatDate,  from "@/lib/utils"
+import { formatDate } from "@/lib/utils"
 import type { RequestLog } from "@/types"
 
 export default function LogsPage() {
