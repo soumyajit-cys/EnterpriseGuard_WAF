@@ -149,7 +149,7 @@ npm run dev
 
 The dashboard runs at http://localhost:3000.
 
-> **Note:** the WAF inspects all traffic, including the frontend's own API calls. Authenticated requests must send the `X-CSRF-Token` header (any value ≥ 32 chars) on state-changing methods, and should use a browser `User-Agent` to avoid being flagged as bot traffic.
+> **Note:** the WAF inspects all traffic, including the frontend's own API calls. Auth tokens are delivered as `httpOnly` cookies (`SameSite=Lax`, `Secure` when `COOKIE_SECURE=true`) — JavaScript never sees them. State-changing requests must send the server-issued `X-CSRF-Token` header (returned at login/registration, or from `GET /auth/csrf`), and should use a browser `User-Agent` to avoid being flagged as bot traffic.
 
 ## Dashboard
 
@@ -278,10 +278,13 @@ TOTP-based 2FA (Google Authenticator, Aegis, etc.) per user. When enabled, `/aut
 
 All responses receive `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Content-Security-Policy`, and `Permissions-Policy` headers.
 
-### CSRF & Rate Limiting
+### CSRF, Cookie Auth & Rate Limiting
 
-- State-changing requests require an `X-CSRF-Token` header (≥ 32 chars) or a same-origin `Origin`/`Referer`.
-- Per-IP sliding-window rate limits return `429` with a reason code, and feed the live traffic stream.
+- **httpOnly cookie auth** — access/refresh JWTs live in `httpOnly`, `SameSite=Lax` cookies, so XSS cannot exfiltrate them. The refresh flow, WebSocket stream, and `/auth/me` all read from cookies.
+- **Real CSRF tokens** — `X-CSRF-Token` is a server-issued, HMAC-signed token bound to the logged-in user (24h validity), validated on every state-changing request. Same-origin `Origin`/`Referer` checks run first; auth endpoints are exempt (session-less).
+- **Per-IP sliding-window rate limits** return `429` with a reason code, and feed the live traffic stream. The public playground gets its own budget (30 req/min/IP) since it is WAF-exempt.
+- **IP trust boundary** — client IPs are only read from `X-Forwarded-For` when the peer is a configured trusted proxy; otherwise the raw socket peer is used. Blocklist, rate limiting, autoban, alerts, and logs all key off the same resolved IP.
+- **Degraded-mode visibility** — if Redis goes down, protections fail open (the WAF never self-DoSes) but a critical `WAF_DEGRADED` alert is raised, `/health/` reports `degraded`, and a recovery alert fires when Redis returns.
 
 ## Testing
 
