@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { authService } from "@/services/auth"
 import { useAuthStore } from "@/store/auth-store"
+import { getErrorMessage } from "@/services/api"
 
 const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters").max(50),
@@ -62,9 +63,9 @@ export default function RegisterPage() {
         description: `Welcome, ${response.user.username}`,
       })
       router.push("/dashboard")
-    } catch (error: any) {
+    } catch (error) {
       const message =
-        error.response?.data?.detail || "Registration failed. Please try again."
+        getErrorMessage(error, "Registration failed. Please try again.")
       toast.error("Registration failed", { description: message })
     } finally {
       setIsLoading(false)
