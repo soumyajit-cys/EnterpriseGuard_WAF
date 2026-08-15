@@ -12,6 +12,7 @@ async def ws_traffic(
     websocket: WebSocket,
     token: str = Query(""),
 ):
+    token = token or websocket.cookies.get("access_token", "")
     payload = decode_token(token)
     if not payload.get("sub") or payload.get("type") != "access":
         await websocket.close(code=4401, reason="Unauthorized")
