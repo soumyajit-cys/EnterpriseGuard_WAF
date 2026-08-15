@@ -84,7 +84,7 @@ export default function DossiersPage() {
             </div>
           ) : (
             <div className="space-y-2.5">
-              {dossiers.map((d: any, i: number) => (
+              {dossiers.map((d, i) => (
                 <motion.button
                   key={d.ip}
                   initial={{ opacity: 0, y: 8 }}
@@ -120,7 +120,7 @@ export default function DossiersPage() {
                     </span>
                   </div>
                   <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                    {d.threat_types.slice(0, 6).map((t: any) => (
+                    {d.threat_types.slice(0, 6).map((t) => (
                       <span
                         key={t.type}
                         className="rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 font-mono text-[10px] text-red-300"
