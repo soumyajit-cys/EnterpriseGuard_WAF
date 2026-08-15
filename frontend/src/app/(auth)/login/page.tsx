@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { authService } from "@/services/auth"
 import { useAuthStore } from "@/store/auth-store"
+import { getErrorMessage } from "@/services/api"
 import type { AuthResponse } from "@/types"
 
 const loginSchema = z.object({
@@ -81,9 +82,9 @@ export default function LoginPage() {
       } else if (!("requires_2fa" in response)) {
         completeAuth(response)
       }
-    } catch (error: any) {
+    } catch (error) {
       const message =
-        error.response?.data?.detail || "Invalid credentials. Please try again."
+        getErrorMessage(error, "Invalid credentials. Please try again.")
       toast.error("Login failed", { description: message })
     } finally {
       setIsLoading(false)
@@ -99,9 +100,9 @@ export default function LoginPage() {
         code: data.code,
       })
       completeAuth(response)
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Verification failed", {
-        description: error.response?.data?.detail || "Invalid code",
+        description: getErrorMessage(error, "Invalid code"),
       })
     } finally {
       setIsLoading(false)

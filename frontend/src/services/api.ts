@@ -87,4 +87,14 @@ api.interceptors.response.use(
   }
 )
 
+export const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (error && typeof error === "object" && "response" in error) {
+    const detail = (error as { response?: { data?: { detail?: string } } })
+      .response?.data?.detail
+    if (detail) return detail
+  }
+  if (error instanceof Error && error.message) return error.message
+  return fallback
+}
+
 export default api
