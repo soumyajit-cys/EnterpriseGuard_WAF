@@ -182,6 +182,7 @@ class AuthService:
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
+            "csrf_token": issue_csrf_token(user.id),
             "token_type": "bearer",
             "user": {
                 "id": user.id,
@@ -300,6 +301,7 @@ class AuthService:
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
+            "csrf_token": issue_csrf_token(user.id),
             "token_type": "bearer",
         }
 
