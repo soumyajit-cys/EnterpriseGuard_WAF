@@ -8,6 +8,7 @@ from app.auth.jwt import (
     decode_token,
 )
 from app.auth.password import hash_password, verify_password
+from app.core.csrf import issue_csrf_token
 from app.core.redis_client import redis_client
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
@@ -60,6 +61,7 @@ class AuthService:
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
+            "csrf_token": issue_csrf_token(user.id),
             "token_type": "bearer",
             "user": {
                 "id": user.id,
@@ -140,6 +142,7 @@ class AuthService:
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
+            "csrf_token": issue_csrf_token(user.id),
             "token_type": "bearer",
             "user": user_payload,
         }
