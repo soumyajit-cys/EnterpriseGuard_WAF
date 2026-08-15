@@ -85,9 +85,9 @@ export default function PlaygroundPage() {
     try {
       const res = await wafService.testPayload({ input, source, body })
       setResult(res)
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Test failed", {
-        description: error.response?.data?.detail || "Could not run the test",
+        description: getErrorMessage(error, "Could not run the test"),
       })
     } finally {
       setIsLoading(false)
