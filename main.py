@@ -1,6 +1,5 @@
 
 import logging
-import traceback
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -121,7 +120,7 @@ async def security_headers_middleware(
     try:
         add_security_headers(response)
     except Exception as e:
-        print(f"[!] Security header error: {e}")
+        logger.error("Security header error: %s", e)
 
     return response
 
@@ -152,25 +151,23 @@ app.include_router(traffic_ws_router)
 @app.on_event("startup")
 async def startup_event():
 
-    print("=" * 60)
-    print("Starting EnterpriseGuard WAF")
-    print("=" * 60)
+    logger.info("Starting EnterpriseGuard WAF")
 
     try:
         await init_db()
-        print("[+] Database initialized")
+        logger.info("Database initialized")
     except Exception as e:
-        print(f"[!] Database initialization failed: {e}")
+        logger.error("Database initialization failed: %s", e)
 
     try:
         from app.services.runtime_sync import runtime_sync
         await runtime_sync.sync_once()
         await runtime_sync.start()
-        print("[+] WAF runtime sync started")
+        logger.info("WAF runtime sync started")
     except Exception as e:
-        print(f"[!] WAF runtime sync failed to start: {e}")
+        logger.error("WAF runtime sync failed to start: %s", e)
 
-    print("[+] Application startup completed")
+    logger.info("Application startup completed")
 
 
 # ==========================
@@ -184,17 +181,12 @@ async def shutdown_event():
         await runtime_sync.stop()
     except Exception:
         pass
-    print("[+] EnterpriseGuard WAF stopped")
+    logger.info("EnterpriseGuard WAF stopped")
 
 
 # ==========================
 # Global Exception Handler
 # ==========================
-
-import traceback
-import logging
-
-logger = logging.getLogger("waf.app")
 
 @app.exception_handler(Exception)
 async def global_exception_handler(
