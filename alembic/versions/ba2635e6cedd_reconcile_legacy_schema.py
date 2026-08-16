@@ -1,8 +1,8 @@
-"""drift-check
+"""reconcile legacy schema
 
-Revision ID: 0c5a22ac5559
+Revision ID: ba2635e6cedd
 Revises: e0c1ffa8b113
-Create Date: 2026-08-16 07:58:40.104768
+Create Date: 2026-08-16 07:58:51.747331
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '0c5a22ac5559'
+revision: str = 'ba2635e6cedd'
 down_revision: Union[str, None] = 'e0c1ffa8b113'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
