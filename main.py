@@ -76,14 +76,23 @@ async def metrics():
 # CORS
 # ==========================
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001"],
-    allow_origin_regex=r"http://(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}):\d+",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+if settings.ENVIRONMENT != "production":
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.CORS_ORIGINS,
+        allow_origin_regex=r"http://(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}):\d+",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # ==========================
 # Middleware
@@ -91,15 +100,15 @@ app.add_middleware(
 
 try:
     app.add_middleware(WAFMiddleware)
-    print("[+] WAF Middleware Loaded")
+    logger.info("WAF Middleware loaded")
 except Exception as e:
-    print(f"[!] Failed to load WAF Middleware: {e}")
+    logger.error("Failed to load WAF Middleware: %s", e)
 
 try:
     app.add_middleware(AuditMiddleware)
-    print("[+] Audit Middleware Loaded")
+    logger.info("Audit Middleware loaded")
 except Exception as e:
-    print(f"[!] Failed to load Audit Middleware: {e}")
+    logger.error("Failed to load Audit Middleware: %s", e)
 
 
 @app.middleware("http")
