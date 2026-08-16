@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Integer, String, Boolean, DateTime, func
+from sqlalchemy import Integer, String, Boolean, DateTime, Index, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -9,6 +9,10 @@ from app.models.base import Base
 class Alert(Base):
 
     __tablename__ = "alerts"
+    __table_args__ = (
+        Index("ix_alerts_created_at", "created_at"),
+        Index("ix_alerts_severity", "severity"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     severity: Mapped[str] = mapped_column(String(30), nullable=False)
