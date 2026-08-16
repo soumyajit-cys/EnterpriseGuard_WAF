@@ -76,7 +76,7 @@ export function HowItWorks() {
               </p>
               <p className="text-zinc-600 mt-2">HTTP/1.1 403 Forbidden</p>
               <p className="text-zinc-500">
-                {"{"} "status": "blocked", "reason": "SQL_INJECTION" {"}"}
+                {'{ "status": "blocked", "reason": "SQL_INJECTION" }'}
               </p>
               <p className="text-emerald-400 mt-3">
                 {"[ALERT] Critical alert created → dashboard"}
