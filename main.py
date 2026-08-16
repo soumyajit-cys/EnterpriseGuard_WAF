@@ -1,13 +1,19 @@
 
+import logging
+import traceback
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core.config import settings
 from app.core.database import init_db
 from app.core.security_headers import add_security_headers
 
 from app.middleware.waf_middleware import WAFMiddleware
 from app.middleware.audit_middleware import AuditMiddleware
+
+logger = logging.getLogger("waf.app")
 
 # Routers
 from app.api.routes.health import router as health_router
@@ -25,12 +31,15 @@ from app.api.routes.analytics import router as analytics_router
 from app.api.routes.reports import router as reports_router
 
 
+_show_docs = settings.ENVIRONMENT != "production"
+
 app = FastAPI(
     title="EnterpriseGuard WAF",
     description="Enterprise-grade Web Application Firewall built with FastAPI",
     version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/docs" if _show_docs else None,
+    redoc_url="/redoc" if _show_docs else None,
+    openapi_url="/openapi.json" if _show_docs else None,
 )
 
 
