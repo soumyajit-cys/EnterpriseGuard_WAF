@@ -1,8 +1,8 @@
 """baseline
 
-Revision ID: 9a37963e37d9
+Revision ID: e0c1ffa8b113
 Revises: 
-Create Date: 2026-08-16 07:57:39.600080
+Create Date: 2026-08-16 07:58:02.577593
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '9a37963e37d9'
+revision: str = 'e0c1ffa8b113'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -31,6 +31,8 @@ def upgrade() -> None:
     sa.Column('resolved_at', sa.DateTime(timezone=True), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index('ix_alerts_created_at', 'alerts', ['created_at'], unique=False)
+    op.create_index('ix_alerts_severity', 'alerts', ['severity'], unique=False)
     op.create_table('allowed_ips',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('ip_address', sa.String(length=100), nullable=False),
@@ -39,6 +41,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('ip_address')
     )
+    op.create_index('ix_allowed_ips_ip', 'allowed_ips', ['ip_address'], unique=False)
     op.create_table('audit_logs',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -50,6 +53,7 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index('ix_audit_logs_created_at', 'audit_logs', ['created_at'], unique=False)
     op.create_table('blocked_ips',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('ip_address', sa.String(length=100), nullable=False),
@@ -60,6 +64,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('ip_address')
     )
+    op.create_index('ix_blocked_ips_ip', 'blocked_ips', ['ip_address'], unique=False)
     op.create_table('request_logs',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('ip_address', sa.String(length=100), nullable=False),
@@ -135,8 +140,13 @@ def downgrade() -> None:
     op.drop_index('ix_request_logs_attack_type', table_name='request_logs')
     op.drop_index('ix_request_logs_action', table_name='request_logs')
     op.drop_table('request_logs')
+    op.drop_index('ix_blocked_ips_ip', table_name='blocked_ips')
     op.drop_table('blocked_ips')
+    op.drop_index('ix_audit_logs_created_at', table_name='audit_logs')
     op.drop_table('audit_logs')
+    op.drop_index('ix_allowed_ips_ip', table_name='allowed_ips')
     op.drop_table('allowed_ips')
+    op.drop_index('ix_alerts_severity', table_name='alerts')
+    op.drop_index('ix_alerts_created_at', table_name='alerts')
     op.drop_table('alerts')
     # ### end Alembic commands ###
