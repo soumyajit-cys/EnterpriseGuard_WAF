@@ -57,14 +57,16 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    connect_args = (
-        {"server_settings": {"search_path": _schema}} if _schema else None
-    )
+    engine_kwargs = {}
+    if _schema:
+        engine_kwargs["connect_args"] = {
+            "server_settings": {"search_path": _schema}
+        }
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
-        connect_args=connect_args,
+        **engine_kwargs,
     )
 
     async with connectable.connect() as connection:
