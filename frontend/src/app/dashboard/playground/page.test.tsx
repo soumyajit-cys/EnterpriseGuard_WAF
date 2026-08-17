@@ -9,6 +9,12 @@ vi.mock("@/services/waf", () => ({
   },
 }))
 
+const toastMock = vi.hoisted(() => ({
+  toast: { error: vi.fn(), success: vi.fn() },
+}))
+
+vi.mock("sonner", () => toastMock)
+
 import { wafService } from "@/services/waf"
 import PlaygroundPage from "./page"
 
@@ -72,6 +78,11 @@ describe("PlaygroundPage smoke test", () => {
     await user.type(textarea, "x")
     await user.click(screen.getByRole("button", { name: /Run Detection/i }))
 
-    expect(await screen.findByText("Test failed")).toBeInTheDocument()
+    await waitFor(() => {
+      expect(toastMock.toast.error).toHaveBeenCalledWith(
+        "Test failed",
+        expect.any(Object)
+      )
+    })
   })
 })
