@@ -114,36 +114,34 @@ class AnomalyDetector:
         Redis is unavailable."""
         if not value:
             return 0
-
-        key = self._baseline_key(route, field)
-        baseline = await self._load_baseline(key)
-
-        entropy = shannon_entropy(value)
-        if baseline is None:
-            baseline = {
-                "n": 0,
-                "size_avg": float(len(value)),
-                "entropy_avg": entropy,
-            }
-        else:
-            baseline["n"] += 1
-            baseline["size_avg"] = (
-                baseline["size_avg"]
-                + (len(value) - baseline["size_avg"]) * self.ALPHA
-            )
-            baseline["entropy_avg"] = (
-                baseline["entropy_avg"]
-                + (entropy - baseline["entropy_avg"]) * self.ALPHA
-            )
-
-        score = self._score_deviation(len(value), entropy, baseline)
-
         try:
-            await self._save_baseline(key, baseline)
-        except Exception:
-            pass
+            key = self._baseline_key(route, field)
+            baseline = await self._load_baseline(key)
 
-        return score
+            entropy = shannon_entropy(value)
+            if baseline is None:
+                baseline = {
+                    "n": 0,
+                    "size_avg": float(len(value)),
+                    "entropy_avg": entropy,
+                }
+            else:
+                baseline["n"] += 1
+                baseline["size_avg"] = (
+                    baseline["size_avg"]
+                    + (len(value) - baseline["size_avg"]) * self.ALPHA
+                )
+                baseline["entropy_avg"] = (
+                    baseline["entropy_avg"]
+                    + (entropy - baseline["entropy_avg"]) * self.ALPHA
+                )
+
+            score = self._score_deviation(len(value), entropy, baseline)
+
+            await self._save_baseline(key, baseline)
+            return score
+        except Exception:
+            return 0
 
 
 anomaly_detector = AnomalyDetector()
