@@ -29,6 +29,7 @@ describe("api interceptor logic", () => {
     requestHandler = null
     errorHandler = null
     localStorage.clear()
+    process.env.NEXT_PUBLIC_API_URL = "http://test"
     apiFn.interceptors.request.use.mockImplementation((fn: any) => {
       requestHandler = fn
     })
@@ -132,7 +133,7 @@ describe("api interceptor logic", () => {
         config: {},
         response: { status: 401 },
       }
-      await errorHandler!(error)
+      await expect(errorHandler!(error)).rejects.toBe(error)
       expect(localStorage.getItem("csrf_token")).toBeNull()
       expect(localStorage.getItem("user")).toBeNull()
       expect(window.location.href).toBe("/login")
