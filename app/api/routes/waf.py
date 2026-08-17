@@ -50,30 +50,24 @@ async def list_blocked(
 
 @router.post("/blocklist", status_code=201)
 async def add_blocked_ip(
-    payload: dict,
+    payload: BlockedIPCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin()),
 ):
-    ip = _validate_ip(payload["ip_address"])
+    ip = payload.ip_address
     existing = await blocked_repo.get_by_ip(db, ip)
     if existing:
         raise HTTPException(status_code=409, detail="IP already blocked")
 
     expires_at = None
-    if not payload.get("is_permanent") and payload.get("duration_hours"):
-        try:
-            hours = int(payload["duration_hours"])
-        except (TypeError, ValueError):
-            raise HTTPException(status_code=400, detail="duration_hours must be an integer")
-        if hours <= 0:
-            raise HTTPException(status_code=400, detail="duration_hours must be positive")
-        expires_at = datetime.now() + timedelta(hours=hours)
+    if not payload.is_permanent and payload.duration_hours:
+        expires_at = datetime.now() + timedelta(hours=payload.duration_hours)
 
     entry = await blocked_repo.create(
         db,
         ip_address=ip,
-        reason=payload.get("reason"),
-        is_permanent=payload.get("is_permanent", False),
+        reason=payload.reason,
+        is_permanent=payload.is_permanent,
         expires_at=expires_at,
     )
     await audit_service.log(
@@ -129,17 +123,17 @@ async def list_allowed(
 
 @router.post("/allowlist", status_code=201)
 async def add_allowed_ip(
-    payload: dict,
+    payload: AllowedIPCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin()),
 ):
-    ip = _validate_ip(payload["ip_address"])
+    ip = payload.ip_address
     existing = await allowed_repo.get_by_ip(db, ip)
     if existing:
         raise HTTPException(status_code=409, detail="IP already allowed")
 
     entry = await allowed_repo.create(
-        db, ip_address=ip, description=payload.get("description")
+        db, ip_address=ip, description=payload.description
     )
     await audit_service.log(
         action="IP_ALLOWED",
