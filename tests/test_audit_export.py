@@ -129,7 +129,7 @@ async def test_export_streams_ndjson(client, admin_user):
 
     lines = [line for line in resp.text.strip().splitlines() if line]
     assert lines
-    event = json.loads(lines[0])
+    event = json.loads(lines[-1])
     assert "@timestamp" in event
     assert event["event"]["action"] == "IP_BLOCKED"
     assert event["event"]["severity"] == "high"
