@@ -33,6 +33,33 @@ def get_severity(score: int) -> str:
 
 class WAFEngine:
 
+    async def _anomaly_score(self, request) -> int:
+        """Structural anomaly signal: field size/entropy vs. the per
+        route+field rolling baseline stored in Redis. Additive only —
+        raises the score, never decides the verdict on its own. Fails
+        open (0) when Redis is unavailable."""
+        import time as _time
+
+        try:
+            body = (await request.body()).decode("utf-8", errors="ignore")
+        except Exception:
+            body = ""
+        fields = {
+            "path": str(request.url.path),
+            "query": str(request.query_params),
+            "body": body,
+        }
+        best = 0
+        for field, value in fields.items():
+            if not value:
+                continue
+            score = await anomaly_detector.score_and_update(
+                request.url.path, field, value
+            )
+            if score > best:
+                best = score
+        return best
+
     async def inspect(self, request):
         import time as _time
 
@@ -40,7 +67,11 @@ class WAFEngine:
         findings = await detector.detect(request)
         max_score = max((f["score"] for f in findings), default=0)
         total_score = sum(f["score"] for f in findings)
-        effective_score = min(max_score + (total_score - max_score) // 2, 100)
+        anomaly_score = await self._anomaly_score(request)
+        effective_score = min(
+            max_score + (total_score - max_score) // 2 + anomaly_score // 2,
+            100,
+        )
 
         block = should_block(effective_score)
         ip = get_client_ip(request)
