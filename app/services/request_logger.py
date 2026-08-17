@@ -9,6 +9,7 @@ class RequestLogger:
         ip: str,
         path: str,
         action: str,
+        organization_id: int | None,
         score: int = 0,
         method: str | None = None,
         attack_type: str | None = None,
@@ -18,8 +19,12 @@ class RequestLogger:
         response_time: float | None = None,
         country: str | None = None,
     ):
+        if organization_id is None:
+            # Fail open: without a tenant we cannot write a valid row.
+            return
         async with AsyncSessionLocal() as db:
             log = RequestLog(
+                organization_id=organization_id,
                 ip_address=ip,
                 method=method,
                 path=path,

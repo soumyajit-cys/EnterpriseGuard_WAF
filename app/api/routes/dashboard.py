@@ -30,13 +30,21 @@ async def dashboard_stats(
     else:
         since = now - timedelta(days=30)
 
+    org = current_user.organization_id
     total = await db.scalar(
-        select(func.count(RequestLog.id)).where(RequestLog.created_at >= since)
+        select(func.count(RequestLog.id)).where(
+            RequestLog.organization_id == org,
+            RequestLog.created_at >= since,
+        )
     ) or 0
 
     blocked = await db.scalar(
         select(func.count(RequestLog.id)).where(
-            and_(RequestLog.action == "BLOCK", RequestLog.created_at >= since)
+            and_(
+                RequestLog.organization_id == org,
+                RequestLog.action == "BLOCK",
+                RequestLog.created_at >= since,
+            )
         )
     ) or 0
 
@@ -44,17 +52,24 @@ async def dashboard_stats(
     attack_rate = round((blocked / total * 100) if total > 0 else 0, 1)
 
     alerts_today = await db.scalar(
-        select(func.count(Alert.id)).where(Alert.created_at >= since)
+        select(func.count(Alert.id)).where(
+            Alert.organization_id == org,
+            Alert.created_at >= since,
+        )
     ) or 0
 
     active_rules = await db.scalar(
-        select(func.count(Rule.id)).where(Rule.enabled == True)
+        select(func.count(Rule.id)).where(
+            Rule.organization_id == org,
+            Rule.enabled == True,
+        )
     ) or 0
 
     mode_result = await db.execute(
         select(RequestLog.attack_type, func.count(RequestLog.id).label("cnt"))
         .where(
             and_(
+                RequestLog.organization_id == org,
                 RequestLog.attack_type.isnot(None),
                 RequestLog.attack_type != "",
                 RequestLog.created_at >= since,
@@ -72,6 +87,7 @@ async def dashboard_stats(
         select(RequestLog.ip_address, func.count(RequestLog.id).label("cnt"))
         .where(
             and_(
+                RequestLog.organization_id == org,
                 RequestLog.action == "BLOCK",
                 RequestLog.created_at >= since,
             )
@@ -88,6 +104,7 @@ async def dashboard_stats(
         select(RequestLog.attack_type, func.count(RequestLog.id).label("cnt"))
         .where(
             and_(
+                RequestLog.organization_id == org,
                 RequestLog.attack_type.isnot(None),
                 RequestLog.attack_type != "",
                 RequestLog.created_at >= since,
@@ -104,7 +121,10 @@ async def dashboard_stats(
     # traffic by hour - SQLite compatible
     rows = await db.execute(
         select(RequestLog.created_at, RequestLog.action)
-        .where(RequestLog.created_at >= since)
+        .where(
+            RequestLog.organization_id == org,
+            RequestLog.created_at >= since,
+        )
         .order_by(RequestLog.created_at)
     )
     hourly = {}

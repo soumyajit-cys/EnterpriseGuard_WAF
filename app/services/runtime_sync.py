@@ -8,6 +8,7 @@ from app.models.blocked_ip import BlockedIP
 from app.models.allowed_ip import AllowedIP
 from app.models.rule import Rule
 from app.models.waf_setting import WAFSetting
+from app.services.tenant_service import get_default_org_id
 from app.waf.rules.blocklist import BlockList
 from app.waf.rules.allowlist import AllowList
 from app.waf.runtime import waf_mode
@@ -67,11 +68,12 @@ class RuntimeSyncService:
     def __init__(self):
         self._task = None
 
-    async def _purge_expired(self):
+    async def _purge_expired(self, organization_id: int):
         from datetime import datetime, timezone
         async with AsyncSessionLocal() as db:
             result = await db.execute(
                 select(BlockedIP).where(
+                    BlockedIP.organization_id == organization_id,
                     BlockedIP.is_permanent == False,
                     BlockedIP.expires_at != None,
                     BlockedIP.expires_at <= datetime.now(timezone.utc),
@@ -87,31 +89,54 @@ class RuntimeSyncService:
     async def sync_once(self):
         from datetime import datetime, timezone
 
+        # The engine path (inbound traffic) has no auth context, so it
+        # enforces the deployment's default org: rules, block/allow lists
+        # and mode are loaded from that org only. Per-org rows for other
+        # orgs are stored but not enforced until host->org routing lands.
+        organization_id = await get_default_org_id()
+        if organization_id is None:
+            print("[WAF] Runtime sync skipped: default org not resolved")
+            return
+
         blocked = set()
         allowed = set()
 
         try:
             async with AsyncSessionLocal() as db:
-                blocked_rows = await db.execute(select(BlockedIP))
+                blocked_rows = await db.execute(
+                    select(BlockedIP).where(
+                        BlockedIP.organization_id == organization_id
+                    )
+                )
                 for entry in blocked_rows.scalars().all():
                     if entry.is_permanent:
                         blocked.add(entry.ip_address)
                     elif entry.expires_at and entry.expires_at > datetime.now(timezone.utc):
                         blocked.add(entry.ip_address)
 
-                allowed_rows = await db.execute(select(AllowedIP))
+                allowed_rows = await db.execute(
+                    select(AllowedIP).where(
+                        AllowedIP.organization_id == organization_id
+                    )
+                )
                 for entry in allowed_rows.scalars().all():
                     allowed.add(entry.ip_address)
 
                 mode_row = await db.execute(
-                    select(WAFSetting).where(WAFSetting.key == "waf_mode")
+                    select(WAFSetting).where(
+                        WAFSetting.organization_id == organization_id,
+                        WAFSetting.key == "waf_mode",
+                    )
                 )
                 mode = mode_row.scalar_one_or_none()
                 if mode and mode.value in ("detection", "prevention"):
                     waf_mode.set(mode.value)
 
                 rule_rows = await db.execute(
-                    select(Rule).where(Rule.enabled == True)
+                    select(Rule).where(
+                        Rule.organization_id == organization_id,
+                        Rule.enabled == True,
+                    )
                 )
                 custom_rules.load(rule_rows.scalars().all())
         except Exception as exc:
@@ -120,11 +145,12 @@ class RuntimeSyncService:
         BlockList.BLOCKED_IPS = blocked
         AllowList.ALLOWED_IPS = allowed | {"::1"}
         print(
-            f"[WAF] Runtime synced: {len(blocked)} blocked, {len(allowed)} allowed, "
-            f"mode={waf_mode.get()}, custom_rules={custom_rules.count()}"
+            f"[WAF] Runtime synced (org={organization_id}): {len(blocked)} blocked, "
+            f"{len(allowed)} allowed, mode={waf_mode.get()}, "
+            f"custom_rules={custom_rules.count()}"
         )
 
-        await self._purge_expired()
+        await self._purge_expired(organization_id)
 
     async def _run_loop(self):
         while True:

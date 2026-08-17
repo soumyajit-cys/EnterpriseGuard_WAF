@@ -74,7 +74,12 @@ async def export_audit(
 
     async def generate():
         async for row in repo.stream_filtered(
-            db, since, until, severity=severity, event_type=event_type
+            db,
+            current_user.organization_id,
+            since,
+            until,
+            severity=severity,
+            event_type=event_type,
         ):
             yield json.dumps(_to_ecs(row), default=str) + "\n"
 

@@ -23,7 +23,7 @@ async def get_settings(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin()),
 ):
-    return await repo.get_all(db)
+    return await repo.get_all(db, current_user.organization_id)
 
 
 @router.put("/")
@@ -33,7 +33,7 @@ async def update_settings(
     current_user: User = Depends(require_admin()),
 ):
     for key, value in payload.root.items():
-        await repo.set(db, key, str(value))
+        await repo.set(db, current_user.organization_id, key, str(value))
     await audit_service.log(
         action="SETTINGS_UPDATED",
         user_id=current_user.id,
@@ -41,14 +41,17 @@ async def update_settings(
         resource="settings",
         details=f"Updated settings: {', '.join(payload.root.keys())}",
     )
-    return await repo.get_all(db)
+    return await repo.get_all(db, current_user.organization_id)
 
 
 @router.get("/mode")
 async def get_mode(
     db: AsyncSession = Depends(get_db),
 ):
-    mode = await repo.get_mode(db)
+    from app.services.tenant_service import get_default_org_id
+
+    organization_id = await get_default_org_id()
+    mode = await repo.get_mode(db, organization_id)
     return {"mode": mode}
 
 
@@ -60,8 +63,13 @@ async def update_mode(
 ):
     if mode not in ["detection", "prevention"]:
         raise HTTPException(status_code=400, detail="Mode must be 'detection' or 'prevention'")
-    await repo.set_mode(db, mode)
-    waf_mode.set(mode)
+    await repo.set_mode(db, current_user.organization_id, mode)
+    # The engine enforces the default org's mode only; other orgs store
+    # their preference without affecting the shared deployment.
+    from app.services.tenant_service import get_default_org_id
+
+    if current_user.organization_id == await get_default_org_id():
+        waf_mode.set(mode)
     await audit_service.log(
         action="MODE_CHANGED",
         user_id=current_user.id,

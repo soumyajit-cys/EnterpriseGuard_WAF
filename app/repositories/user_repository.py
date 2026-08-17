@@ -99,9 +99,10 @@ class UserRepository:
         self,
         db: AsyncSession,
         user_id: int,
+        organization_id: int | None = None,
         **kwargs,
     ) -> Optional[User]:
-        user = await self.get_by_id(db, user_id)
+        user = await self.get_by_id(db, user_id, organization_id=organization_id)
         if not user:
             return None
         for key, value in kwargs.items():
@@ -111,8 +112,10 @@ class UserRepository:
         await db.refresh(user)
         return user
 
-    async def delete(self, db: AsyncSession, user_id: int) -> bool:
-        user = await self.get_by_id(db, user_id)
+    async def delete(
+        self, db: AsyncSession, user_id: int, organization_id: int | None = None
+    ) -> bool:
+        user = await self.get_by_id(db, user_id, organization_id=organization_id)
         if not user:
             return False
         await db.delete(user)

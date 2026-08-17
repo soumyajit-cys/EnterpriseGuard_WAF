@@ -23,17 +23,27 @@ async def analytics_overview(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
+    org = current_user.organization_id
     total_requests = await db.scalar(
-        select(func.count(RequestLog.id))
+        select(func.count(RequestLog.id)).where(RequestLog.organization_id == org)
     ) or 0
     blocked = await db.scalar(
-        select(func.count(RequestLog.id)).where(RequestLog.action == "BLOCK")
+        select(func.count(RequestLog.id)).where(
+            RequestLog.organization_id == org,
+            RequestLog.action == "BLOCK",
+        )
     ) or 0
     alerts = await db.scalar(
-        select(func.count(Alert.id)).where(Alert.resolved == False)
+        select(func.count(Alert.id)).where(
+            Alert.organization_id == org,
+            Alert.resolved == False,
+        )
     ) or 0
     blocked_ips = await db.scalar(
-        select(func.count(BlockedIP.id)).where(BlockedIP.is_permanent == True)
+        select(func.count(BlockedIP.id)).where(
+            BlockedIP.organization_id == org,
+            BlockedIP.is_permanent == True,
+        )
     ) or 0
 
     return {
@@ -61,6 +71,7 @@ async def geo_analytics(
         )
         .where(
             and_(
+                RequestLog.organization_id == current_user.organization_id,
                 RequestLog.action == "BLOCK",
                 RequestLog.created_at >= since,
                 RequestLog.country.isnot(None),
@@ -111,6 +122,7 @@ async def attacker_dossiers(
         )
         .where(
             and_(
+                RequestLog.organization_id == current_user.organization_id,
                 RequestLog.action == "BLOCK",
                 RequestLog.created_at >= since,
             )
@@ -124,16 +136,20 @@ async def attacker_dossiers(
             RequestLog.ip_address,
             func.count(RequestLog.id).label("cnt"),
         )
-        .where(RequestLog.created_at >= since)
+        .where(
+            RequestLog.organization_id == current_user.organization_id,
+            RequestLog.created_at >= since,
+        )
         .group_by(RequestLog.ip_address)
     )
 
     ban_rows = await db.execute(
         select(BlockedIP.ip_address, BlockedIP.reason).where(
+            BlockedIP.organization_id == current_user.organization_id,
             or_(
                 BlockedIP.is_permanent.is_(True),
                 BlockedIP.reason.like("killchain:%"),
-            )
+            ),
         )
     )
 
@@ -247,6 +263,7 @@ async def attacker_dossier_detail(
         )
         .where(
             and_(
+                RequestLog.organization_id == current_user.organization_id,
                 RequestLog.ip_address == ip_address,
                 RequestLog.created_at >= since,
             )
@@ -306,7 +323,10 @@ async def traffic_analytics(
             func.sum(cast(RequestLog.action == "BLOCK", Integer)).label("blocked"),
             func.sum(cast(RequestLog.action == "ALLOW", Integer)).label("allowed"),
         )
-        .where(RequestLog.created_at >= since)
+        .where(
+            RequestLog.organization_id == current_user.organization_id,
+            RequestLog.created_at >= since,
+        )
         .group_by(trunc_expr)
         .order_by(trunc_expr)
     )
@@ -315,6 +335,7 @@ async def traffic_analytics(
         select(RequestLog.attack_type, func.count(RequestLog.id).label("value"))
         .where(
             and_(
+                RequestLog.organization_id == current_user.organization_id,
                 RequestLog.attack_type != None,
                 RequestLog.attack_type != "",
                 RequestLog.created_at >= since,
@@ -329,6 +350,7 @@ async def traffic_analytics(
         select(RequestLog.ip_address, func.count(RequestLog.id).label("count"))
         .where(
             and_(
+                RequestLog.organization_id == current_user.organization_id,
                 RequestLog.action == "BLOCK",
                 RequestLog.created_at >= since,
             )
@@ -370,23 +392,37 @@ async def attack_analytics(
     else:
         since = now - timedelta(days=30)
 
+    org = current_user.organization_id
     total = await db.scalar(
-        select(func.count(RequestLog.id)).where(RequestLog.created_at >= since)
+        select(func.count(RequestLog.id)).where(
+            RequestLog.organization_id == org,
+            RequestLog.created_at >= since,
+        )
     ) or 0
 
     blocked = await db.scalar(
         select(func.count(RequestLog.id)).where(
-            and_(RequestLog.action == "BLOCK", RequestLog.created_at >= since)
+            and_(
+                RequestLog.organization_id == org,
+                RequestLog.action == "BLOCK",
+                RequestLog.created_at >= since,
+            )
         )
     ) or 0
 
     alerts_count = await db.scalar(
-        select(func.count(Alert.id)).where(Alert.created_at >= since)
+        select(func.count(Alert.id)).where(
+            Alert.organization_id == org,
+            Alert.created_at >= since,
+        )
     ) or 0
 
     by_type = await db.execute(
         select(Alert.severity, func.count(Alert.id).label("count"))
-        .where(Alert.created_at >= since)
+        .where(
+            Alert.organization_id == org,
+            Alert.created_at >= since,
+        )
         .group_by(Alert.severity)
         .order_by(func.count(Alert.id).desc())
     )

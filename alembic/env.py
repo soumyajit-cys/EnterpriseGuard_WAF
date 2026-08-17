@@ -18,6 +18,7 @@ import app.models.blocked_ip  # noqa: F401
 import app.models.allowed_ip  # noqa: F401
 import app.models.waf_setting  # noqa: F401
 import app.models.audit_log  # noqa: F401
+import app.models.organization  # noqa: F401
 
 config = context.config
 

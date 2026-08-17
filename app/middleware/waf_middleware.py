@@ -9,6 +9,7 @@ from app.waf.rules.csrf import CSRFValidator
 from app.core.client_ip import get_client_ip
 from app.services.request_logger import request_logger
 from app.services.traffic_stream import traffic_stream
+from app.services.tenant_service import get_default_org_id
 
 rate_limit = RateLimitService()
 csrf_validator = CSRFValidator()
@@ -31,10 +32,12 @@ async def _log_blocked_request(
                 country = await asyncio.wait_for(get_country(ip or "unknown"), timeout=1.5)
             except Exception:
                 country = None
+        organization_id = await get_default_org_id()
         await request_logger.log(
             ip=ip or "unknown",
             path=request.url.path,
             action=action,
+            organization_id=organization_id,
             score=100 if action == "BLOCK" else 0,
             method=request.method,
             attack_type=reason,
@@ -59,7 +62,7 @@ async def _log_blocked_request(
             from app.services.metrics import BLOCKS_TOTAL
 
             BLOCKS_TOTAL.labels(reason=reason).inc()
-            await autoban.record_block(ip or "unknown", reason)
+            await autoban.record_block(ip or "unknown", reason, organization_id)
     except Exception:
         pass
 
@@ -176,7 +179,11 @@ class WAFMiddleware(BaseHTTPMiddleware):
         if decision["block"]:
 
             try:
-                await autoban.record_block(ip or "unknown", decision["reason"] or "waf")
+                await autoban.record_block(
+                    ip or "unknown",
+                    decision["reason"] or "waf",
+                    await get_default_org_id(),
+                )
             except Exception:
                 pass
 

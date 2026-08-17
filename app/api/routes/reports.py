@@ -85,6 +85,7 @@ async def generate_report(
             select(RequestLog)
             .where(
                 and_(
+                    RequestLog.organization_id == current_user.organization_id,
                     RequestLog.created_at >= since,
                     RequestLog.created_at <= until,
                 )
@@ -114,6 +115,7 @@ async def generate_report(
             select(Alert)
             .where(
                 and_(
+                    Alert.organization_id == current_user.organization_id,
                     Alert.created_at >= since,
                     Alert.created_at <= until,
                 )

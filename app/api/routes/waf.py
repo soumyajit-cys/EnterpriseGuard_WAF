@@ -37,7 +37,12 @@ async def list_blocked(
 ):
     skip = (page - 1) * page_size
     items, total = await blocked_repo.get_all(
-        db, skip=skip, limit=page_size, search=search, permanent=permanent
+        db,
+        current_user.organization_id,
+        skip=skip,
+        limit=page_size,
+        search=search,
+        permanent=permanent,
     )
     return {
         "items": items,
@@ -55,7 +60,7 @@ async def add_blocked_ip(
     current_user: User = Depends(require_admin()),
 ):
     ip = payload.ip_address
-    existing = await blocked_repo.get_by_ip(db, ip)
+    existing = await blocked_repo.get_by_ip(db, current_user.organization_id, ip)
     if existing:
         raise HTTPException(status_code=409, detail="IP already blocked")
 
@@ -65,6 +70,7 @@ async def add_blocked_ip(
 
     entry = await blocked_repo.create(
         db,
+        current_user.organization_id,
         ip_address=ip,
         reason=payload.reason,
         is_permanent=payload.is_permanent,
@@ -87,7 +93,7 @@ async def remove_blocked_ip(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin()),
 ):
-    deleted = await blocked_repo.delete(db, ip_id)
+    deleted = await blocked_repo.delete(db, current_user.organization_id, ip_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Blocked IP not found")
     await audit_service.log(
@@ -110,7 +116,11 @@ async def list_allowed(
 ):
     skip = (page - 1) * page_size
     items, total = await allowed_repo.get_all(
-        db, skip=skip, limit=page_size, search=search
+        db,
+        current_user.organization_id,
+        skip=skip,
+        limit=page_size,
+        search=search,
     )
     return {
         "items": items,
@@ -128,12 +138,15 @@ async def add_allowed_ip(
     current_user: User = Depends(require_admin()),
 ):
     ip = payload.ip_address
-    existing = await allowed_repo.get_by_ip(db, ip)
+    existing = await allowed_repo.get_by_ip(db, current_user.organization_id, ip)
     if existing:
         raise HTTPException(status_code=409, detail="IP already allowed")
 
     entry = await allowed_repo.create(
-        db, ip_address=ip, description=payload.description
+        db,
+        current_user.organization_id,
+        ip_address=ip,
+        description=payload.description,
     )
     await audit_service.log(
         action="IP_ALLOWED",
@@ -152,7 +165,7 @@ async def remove_allowed_ip(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin()),
 ):
-    deleted = await allowed_repo.delete(db, ip_id)
+    deleted = await allowed_repo.delete(db, current_user.organization_id, ip_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Allowed IP not found")
     await audit_service.log(
@@ -177,7 +190,7 @@ async def get_audit_logs(
     audit_repo = AuditLogRepository()
     skip = (page - 1) * page_size
     logs, total = await audit_repo.get_all(
-        db, skip=skip, limit=page_size, action=action
+        db, current_user.organization_id, skip=skip, limit=page_size, action=action
     )
     return {
         "items": logs,

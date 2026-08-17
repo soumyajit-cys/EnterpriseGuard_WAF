@@ -33,6 +33,7 @@ async def get_rules(
     skip = (page - 1) * page_size
     rules, total = await repo.get_all(
         db,
+        current_user.organization_id,
         skip=skip,
         limit=page_size,
         search=search,
@@ -57,7 +58,7 @@ async def get_rule(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
-    rule = await repo.get_by_id(db, rule_id)
+    rule = await repo.get_by_id(db, current_user.organization_id, rule_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
     return rule
@@ -71,6 +72,7 @@ async def create_rule(
 ):
     rule = await repo.create(
         db,
+        current_user.organization_id,
         name=payload.name,
         description=payload.description or "",
         enabled=payload.enabled,
@@ -98,7 +100,12 @@ async def update_rule(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
-    rule = await repo.update(db, rule_id, **payload.model_dump(exclude_unset=True))
+    rule = await repo.update(
+        db,
+        current_user.organization_id,
+        rule_id,
+        **payload.model_dump(exclude_unset=True),
+    )
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
     await audit_service.log(
@@ -118,10 +125,10 @@ async def delete_rule(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
-    rule = await repo.get_by_id(db, rule_id)
+    rule = await repo.get_by_id(db, current_user.organization_id, rule_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
-    await repo.delete(db, rule_id)
+    await repo.delete(db, current_user.organization_id, rule_id)
     await audit_service.log(
         action="RULE_DELETED",
         user_id=current_user.id,
@@ -138,7 +145,7 @@ async def toggle_rule(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
-    rule = await repo.toggle(db, rule_id)
+    rule = await repo.toggle(db, current_user.organization_id, rule_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
     await audit_service.log(

@@ -30,7 +30,7 @@ async def list_users(
 ):
     skip = (page - 1) * page_size
     users, total = await repo.get_all(
-        db, skip=skip, limit=page_size, role=role,
+        db, current_user.organization_id, skip=skip, limit=page_size, role=role,
         search=search, sort_by=sort_by, sort_desc=sort_desc,
     )
     return {
@@ -48,7 +48,9 @@ async def get_user(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin()),
 ):
-    user = await repo.get_by_id(db, user_id)
+    user = await repo.get_by_id(
+        db, user_id, organization_id=current_user.organization_id
+    )
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
@@ -74,6 +76,7 @@ async def create_user(
         email=payload.email,
         password_hash=password_hash_value,
         role=payload.role,
+        organization_id=current_user.organization_id,
     )
     await audit_service.log(
         action="USER_CREATED",
@@ -96,7 +99,9 @@ async def update_user(
     if not update_data:
         raise HTTPException(status_code=400, detail="No valid fields to update")
 
-    user = await repo.update(db, user_id, **update_data)
+    user = await repo.update(
+        db, user_id, organization_id=current_user.organization_id, **update_data
+    )
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     await audit_service.log(
@@ -117,7 +122,9 @@ async def delete_user(
 ):
     if current_user.id == user_id:
         raise HTTPException(status_code=400, detail="Cannot delete yourself")
-    deleted = await repo.delete(db, user_id)
+    deleted = await repo.delete(
+        db, user_id, organization_id=current_user.organization_id
+    )
     if not deleted:
         raise HTTPException(status_code=404, detail="User not found")
     await audit_service.log(

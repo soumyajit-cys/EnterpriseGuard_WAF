@@ -26,6 +26,7 @@ async def get_alerts(
     skip = (page - 1) * page_size
     alerts, total = await repo.get_all(
         db,
+        current_user.organization_id,
         skip=skip,
         limit=page_size,
         severity=severity,
@@ -45,7 +46,7 @@ async def get_alert_stats(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
-    return await repo.get_stats(db)
+    return await repo.get_stats(db, current_user.organization_id)
 
 
 @router.patch("/{alert_id}/resolve")
@@ -54,7 +55,7 @@ async def resolve_alert(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
-    alert = await repo.resolve(db, alert_id)
+    alert = await repo.resolve(db, current_user.organization_id, alert_id)
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
     return alert
@@ -66,6 +67,6 @@ async def delete_alert(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
-    deleted = await repo.delete(db, alert_id)
+    deleted = await repo.delete(db, current_user.organization_id, alert_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Alert not found")

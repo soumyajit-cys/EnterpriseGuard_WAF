@@ -20,6 +20,7 @@ from app.schemas.auth import (
 )
 from app.services.bruteforce_service import bruteforce_service
 from app.services.audit_service import audit_service
+from app.services.tenant_service import get_default_org_id
 
 repo = UserRepository()
 
@@ -53,6 +54,7 @@ class AuthService:
             email=payload.email,
             password_hash=hashed,
             role="analyst",
+            organization_id=await get_default_org_id(),
         )
 
         access_token = create_access_token(user.id, user.role)
@@ -129,6 +131,7 @@ class AuthService:
                 resource="auth",
                 username=user.username,
                 ip_address=ip,
+                organization_id=user.organization_id,
             )
             return {
                 "requires_2fa": True,

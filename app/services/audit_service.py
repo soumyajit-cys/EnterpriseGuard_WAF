@@ -13,9 +13,11 @@ class AuditService:
         details: str | None = None,
         ip_address: str | None = None,
         severity: str = "info",
+        organization_id: int | None = None,
     ):
         async with AsyncSessionLocal() as db:
             log = AuditLog(
+                organization_id=organization_id,
                 user_id=user_id,
                 username=username,
                 action=action,
@@ -29,6 +31,7 @@ class AuditService:
 
     async def get_all(
         self,
+        organization_id: int | None = None,
         skip: int = 0,
         limit: int = 100,
         action: str | None = None,
@@ -38,6 +41,12 @@ class AuditService:
 
             query = select(AuditLog)
             count_query = select(func.count(AuditLog.id))
+
+            if organization_id is not None:
+                query = query.where(AuditLog.organization_id == organization_id)
+                count_query = count_query.where(
+                    AuditLog.organization_id == organization_id
+                )
 
             if action:
                 query = query.where(AuditLog.action == action)

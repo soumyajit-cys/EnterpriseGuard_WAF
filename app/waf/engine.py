@@ -6,6 +6,7 @@ from app.services.alert_service import alert_service
 from app.services.request_logger import request_logger
 from app.services.traffic_stream import traffic_stream
 from app.services.geo_service import get_country
+from app.services.tenant_service import get_default_org_id
 from app.services.metrics import (
     REQUESTS_TOTAL,
     BLOCKS_TOTAL,
@@ -99,10 +100,13 @@ class WAFEngine:
             except Exception:
                 country = None
 
+        organization_id = await get_default_org_id()
+
         await request_logger.log(
             ip=ip,
             path=request.url.path,
             action=action,
+            organization_id=organization_id,
             score=effective_score,
             method=request.method,
             attack_type=",".join(attack_types) if attack_types else None,
@@ -139,6 +143,7 @@ class WAFEngine:
                 message=f"{attack_types[0]} detected from {ip} on {request.url.path} (score: {effective_score})",
                 source=attack_types[0] if attack_types else None,
                 ip_address=ip,
+                organization_id=organization_id,
             )
 
         return {

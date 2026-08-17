@@ -134,6 +134,7 @@ async def setup_2fa(
         username=current_user.username,
         resource="auth",
         ip_address=None,
+        organization_id=current_user.organization_id,
     )
     return result
 
@@ -153,6 +154,7 @@ async def enable_2fa(
         user_id=current_user.id,
         username=current_user.username,
         resource="auth",
+        organization_id=current_user.organization_id,
     )
     return result
 
@@ -172,6 +174,7 @@ async def disable_2fa(
         user_id=current_user.id,
         username=current_user.username,
         resource="auth",
+        organization_id=current_user.organization_id,
     )
     return result
 

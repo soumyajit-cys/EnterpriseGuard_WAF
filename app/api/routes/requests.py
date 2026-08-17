@@ -29,8 +29,12 @@ async def list_requests(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
-    query = select(RequestLog)
-    count_query = select(func.count(RequestLog.id))
+    query = select(RequestLog).where(
+        RequestLog.organization_id == current_user.organization_id
+    )
+    count_query = select(func.count(RequestLog.id)).where(
+        RequestLog.organization_id == current_user.organization_id
+    )
 
     conditions = []
     if ip_address:
@@ -85,6 +89,6 @@ async def get_request(
     current_user: User = Depends(require_analyst()),
 ):
     log = await db.get(RequestLog, log_id)
-    if not log:
+    if not log or log.organization_id != current_user.organization_id:
         raise HTTPException(status_code=404, detail="Log not found")
     return log

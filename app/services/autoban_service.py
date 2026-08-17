@@ -23,6 +23,7 @@ class AutoBanService:
         self,
         ip: str,
         reason: str,
+        organization_id: int | None,
     ) -> bool:
         """Returns True if the IP crossed the auto-ban threshold."""
         if not ip or ip in ("127.0.0.1", "::1"):
@@ -44,17 +45,19 @@ class AutoBanService:
 
         if killchain:
             await redis_client.expire(key, 1)
-            await self._persist_ban(ip, f"killchain:{reason}")
-            await self._notify_killchain(ip, count, distinct)
+            await self._persist_ban(ip, f"killchain:{reason}", organization_id)
+            await self._notify_killchain(ip, count, distinct, organization_id)
             return True
 
         if count >= THRESHOLD:
             await redis_client.expire(key, 1)
-            await self._persist_ban(ip, reason)
+            await self._persist_ban(ip, reason, organization_id)
             return True
         return False
 
-    async def _notify_killchain(self, ip: str, blocks: int, distinct: int):
+    async def _notify_killchain(
+        self, ip: str, blocks: int, distinct: int, organization_id: int | None
+    ):
         try:
             from app.services.alert_service import alert_service
 
@@ -66,23 +69,29 @@ class AutoBanService:
                 ),
                 source="killchain",
                 ip_address=ip,
+                organization_id=organization_id,
             )
         except Exception as exc:
             print(f"[WAF] Kill-chain alert failed for {ip}: {exc}")
 
-    async def _persist_ban(self, ip: str, reason: str):
+    async def _persist_ban(
+        self, ip: str, reason: str, organization_id: int | None
+    ):
         try:
             from app.core.database import AsyncSessionLocal
             from app.repositories.ip_repository import BlockedIPRepository
             from app.services.runtime_sync import runtime_sync
 
+            if organization_id is None:
+                return
             async with AsyncSessionLocal() as db:
                 repo = BlockedIPRepository()
-                existing = await repo.get_by_ip(db, ip)
+                existing = await repo.get_by_ip(db, organization_id, ip)
                 if existing:
                     return
                 await repo.create(
                     db,
+                    organization_id=organization_id,
                     ip_address=ip,
                     reason=f"AUTO-BAN: {reason}",
                     is_permanent=False,

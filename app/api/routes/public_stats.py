@@ -75,22 +75,59 @@ async def public_playground_test(payload: PlaygroundTestRequest):
 
 @router.get("/stats")
 async def public_stats(db: AsyncSession = Depends(get_db)):
+    from app.services.tenant_service import get_default_org_id
+
+    organization_id = await get_default_org_id()
+    if organization_id is None:
+        return {
+            "total_requests": 0,
+            "total_blocked": 0,
+            "total_alerts": 0,
+            "active_rules": 0,
+            "requests_24h": 0,
+            "blocked_24h": 0,
+            "attack_rate_24h": 0.0,
+            "top_threats": [],
+        }
+
     now = datetime.now()
     since_24h = now - timedelta(hours=24)
 
-    total = await db.scalar(select(func.count(RequestLog.id))) or 0
-    blocked = await db.scalar(
-        select(func.count(RequestLog.id)).where(RequestLog.action == "BLOCK")
+    total = await db.scalar(
+        select(func.count(RequestLog.id)).where(
+            RequestLog.organization_id == organization_id
+        )
     ) or 0
-    alerts = await db.scalar(select(func.count(Alert.id))) or 0
-    rules = await db.scalar(select(func.count(Rule.id))) or 0
+    blocked = await db.scalar(
+        select(func.count(RequestLog.id)).where(
+            RequestLog.organization_id == organization_id,
+            RequestLog.action == "BLOCK",
+        )
+    ) or 0
+    alerts = await db.scalar(
+        select(func.count(Alert.id)).where(
+            Alert.organization_id == organization_id
+        )
+    ) or 0
+    rules = await db.scalar(
+        select(func.count(Rule.id)).where(
+            Rule.organization_id == organization_id
+        )
+    ) or 0
 
     today = await db.scalar(
-        select(func.count(RequestLog.id)).where(RequestLog.created_at >= since_24h)
+        select(func.count(RequestLog.id)).where(
+            RequestLog.organization_id == organization_id,
+            RequestLog.created_at >= since_24h,
+        )
     ) or 0
     blocked_today = await db.scalar(
         select(func.count(RequestLog.id)).where(
-            and_(RequestLog.action == "BLOCK", RequestLog.created_at >= since_24h)
+            and_(
+                RequestLog.organization_id == organization_id,
+                RequestLog.action == "BLOCK",
+                RequestLog.created_at >= since_24h,
+            )
         )
     ) or 0
 
@@ -98,6 +135,7 @@ async def public_stats(db: AsyncSession = Depends(get_db)):
         select(RequestLog.attack_type, func.count(RequestLog.id).label("count"))
         .where(
             and_(
+                RequestLog.organization_id == organization_id,
                 RequestLog.attack_type != None,
                 RequestLog.attack_type != "",
             )
