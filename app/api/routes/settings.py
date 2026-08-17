@@ -5,6 +5,7 @@ from app.core.database import get_db
 from app.repositories.settings_repository import SettingsRepository
 from app.auth.dependencies import require_admin
 from app.models.user import User
+from app.schemas.settings import SettingsUpdate, WebhookTestRequest
 from app.services.audit_service import audit_service
 from app.services.runtime_sync import runtime_sync
 from app.waf.runtime import waf_mode
@@ -27,18 +28,18 @@ async def get_settings(
 
 @router.put("/")
 async def update_settings(
-    payload: dict,
+    payload: SettingsUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin()),
 ):
-    for key, value in payload.items():
+    for key, value in payload.root.items():
         await repo.set(db, key, str(value))
     await audit_service.log(
         action="SETTINGS_UPDATED",
         user_id=current_user.id,
         username=current_user.username,
         resource="settings",
-        details=f"Updated settings: {', '.join(payload.keys())}",
+        details=f"Updated settings: {', '.join(payload.root.keys())}",
     )
     return await repo.get_all(db)
 
