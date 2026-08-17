@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-import re
 
 from app.core.database import get_db
 from app.repositories.rule_repository import RuleRepository
 from app.auth.dependencies import require_analyst
 from app.models.user import User
+from app.schemas.rule import RuleCreate, RuleUpdate
 from app.services.audit_service import audit_service
 from app.services.runtime_sync import runtime_sync
 
@@ -15,17 +15,6 @@ router = APIRouter(
 )
 
 repo = RuleRepository()
-
-
-def _validate_pattern(pattern: str | None):
-    if pattern:
-        try:
-            re.compile(pattern)
-        except re.error as exc:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Invalid regex pattern: {exc}",
-            )
 
 
 @router.get("/")
