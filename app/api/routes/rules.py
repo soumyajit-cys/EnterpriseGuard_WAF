@@ -65,21 +65,20 @@ async def get_rule(
 
 @router.post("/", status_code=201)
 async def create_rule(
-    payload: dict,
+    payload: RuleCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
-    _validate_pattern(payload.get("pattern"))
     rule = await repo.create(
         db,
-        name=payload["name"],
-        description=payload.get("description", ""),
-        enabled=payload.get("enabled", True),
-        priority=payload.get("priority", 50),
-        severity=payload.get("severity", "medium"),
-        pattern=payload.get("pattern"),
-        category=payload.get("category"),
-        rule_type=payload.get("rule_type"),
+        name=payload.name,
+        description=payload.description or "",
+        enabled=payload.enabled,
+        priority=payload.priority,
+        severity=payload.severity,
+        pattern=payload.pattern,
+        category=payload.category,
+        rule_type=payload.rule_type,
     )
     await audit_service.log(
         action="RULE_CREATED",
@@ -95,12 +94,11 @@ async def create_rule(
 @router.put("/{rule_id}")
 async def update_rule(
     rule_id: int,
-    payload: dict,
+    payload: RuleUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_analyst()),
 ):
-    _validate_pattern(payload.get("pattern"))
-    rule = await repo.update(db, rule_id, **payload)
+    rule = await repo.update(db, rule_id, **payload.model_dump(exclude_unset=True))
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
     await audit_service.log(
