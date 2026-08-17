@@ -74,13 +74,13 @@ async def update_mode(
 
 @router.post("/webhooks/test")
 async def test_webhook(
-    payload: dict,
+    payload: WebhookTestRequest,
     current_user: User = Depends(require_admin()),
 ):
     from app.services.webhook_service import test_webhook as send_test
 
-    url = (payload.get("url") or "").strip()
-    webhook_type = payload.get("type", "generic")
+    url = payload.url.strip()
+    webhook_type = payload.type
     if not url:
         raise HTTPException(status_code=400, detail="Webhook URL is required")
 
