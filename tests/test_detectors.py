@@ -167,6 +167,29 @@ class TestDetectorIntegration:
         assert "SQL_INJECTION_ENCODED" in types
 
     @pytest.mark.asyncio
+    async def test_double_encoded_sqli_detected(self, request_factory):
+        token = base64.b64encode(b"<svg onload=alert(1)>").decode()
+        payload = urllib.parse.quote(token, safe="")
+        req = request_factory(query=f"token={payload}")
+        findings = await Detector().detect(req)
+        types = {f["type"] for f in findings}
+        assert "XSS_ENCODED" in types
+
+    @pytest.mark.asyncio
+    async def test_fullwidth_xss_only_caught_via_normalization(self, request_factory):
+        req = request_factory(query="x=＜script＞alert(1)＜/script＞")
+        findings = await Detector().detect(req)
+        types = {f["type"] for f in findings}
+        assert "XSS_ENCODED" in types
+
+    @pytest.mark.asyncio
+    async def test_fullwidth_sqli_only_caught_via_normalization(self, request_factory):
+        req = request_factory(query="id=1 ｕｎｉｏｎ ｓｅｌｅｃｔ")
+        findings = await Detector().detect(req)
+        types = {f["type"] for f in findings}
+        assert "SQL_INJECTION_ENCODED" in types
+
+    @pytest.mark.asyncio
     async def test_smuggling_detected(self, request_factory):
         req = request_factory(
             headers={"content-length": "5", "transfer-encoding": "chunked"}
