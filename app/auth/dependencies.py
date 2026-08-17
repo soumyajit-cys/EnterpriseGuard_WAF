@@ -3,7 +3,14 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.jwt import decode_token
-from app.auth.roles import ADMIN, ANALYST, OPERATOR, VIEWER, role_ge
+from app.auth.roles import (
+    ADMIN,
+    ANALYST,
+    OPERATOR,
+    VIEWER,
+    SUPERADMIN,
+    role_ge,
+)
 from app.core.database import get_db
 from app.core.redis_client import redis_client
 from app.models.user import User

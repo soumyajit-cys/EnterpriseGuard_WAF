@@ -3,6 +3,13 @@ ANALYST = "analyst"
 OPERATOR = "operator"
 VIEWER = "viewer"
 
+SUPERADMIN = "superadmin"
+
+# Superadmin is deliberately absent from the hierarchy: it is a platform
+# role outside the org tree, so role_ge("superadmin", ...) is False for
+# every org-scoped requirement and role_ge(..., "superadmin") is False
+# for every org role. Only require_superadmin() admits it.
+
 ROLE_HIERARCHY = {
     ADMIN: 100,
     ANALYST: 70,

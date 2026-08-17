@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Integer, String, DateTime, Text, Index, func
+from sqlalchemy import Integer, String, DateTime, Text, ForeignKey, Index, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -14,9 +14,13 @@ class RequestLog(Base):
         Index("ix_request_logs_action", "action"),
         Index("ix_request_logs_attack_type", "attack_type"),
         Index("ix_request_logs_created_at", "created_at"),
+        Index("ix_request_logs_organization_created", "organization_id", "created_at"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("organizations.id"), nullable=False
+    )
     ip_address: Mapped[str] = mapped_column(String(100), nullable=False)
     method: Mapped[str | None] = mapped_column(String(10), nullable=True)
     path: Mapped[str] = mapped_column(Text, nullable=False)
