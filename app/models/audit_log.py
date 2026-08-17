@@ -17,6 +17,9 @@ class AuditLog(Base):
     user_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     username: Mapped[str | None] = mapped_column(String(100), nullable=True)
     action: Mapped[str] = mapped_column(String(100), nullable=False)
+    severity: Mapped[str | None] = mapped_column(
+        String(30), nullable=True, server_default="info"
+    )
     resource: Mapped[str | None] = mapped_column(String(100), nullable=True)
     details: Mapped[str | None] = mapped_column(Text, nullable=True)
     ip_address: Mapped[str | None] = mapped_column(String(100), nullable=True)
