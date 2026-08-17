@@ -4,6 +4,8 @@ from sqlalchemy import String
 from sqlalchemy import Integer
 from sqlalchemy import Boolean
 from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
+from sqlalchemy import Index
 from sqlalchemy import func
 
 from sqlalchemy.orm import Mapped
@@ -15,10 +17,19 @@ from app.models.base import Base
 class User(Base):
 
     __tablename__ = "users"
+    __table_args__ = (
+        Index("ix_users_organization_id", "organization_id"),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True
+    )
+
+    organization_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("organizations.id"),
+        nullable=True,
     )
 
     username: Mapped[str] = mapped_column(
