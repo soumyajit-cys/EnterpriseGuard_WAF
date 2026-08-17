@@ -110,6 +110,45 @@ class TestDecodeCandidates:
     def test_plain_text_not_decoded(self):
         assert decode_candidates("nothing suspicious here") == []
 
+    def test_url_encoded_base64_requires_two_passes(self):
+        token = base64.b64encode(b"<svg onload=alert(1)>").decode()
+        assert "+" in token
+        payload = urllib.parse.quote(token, safe="")
+        candidates = decode_candidates(payload)
+        kinds = {c["kind"]: c["value"] for c in candidates}
+        assert "url_decode" in kinds
+        assert kinds["url_decode"] == token
+        assert "base64" in kinds
+        assert "<svg onload=alert(1)>" in kinds["base64"]
+
+    def test_base64_of_url_encoded_text_requires_two_passes(self):
+        encoded_text = urllib.parse.quote("1' OR '1'='1 --", safe="")
+        token = base64.b64encode(encoded_text.encode()).decode()
+        candidates = decode_candidates(token)
+        kinds = {c["kind"]: c["value"] for c in candidates}
+        assert "base64" in kinds
+        assert "url_decode" in kinds
+        assert "1' OR '1'='1 --" in kinds["url_decode"]
+
+    def test_iteration_is_capped(self):
+        payload = "%252525252525252525252525252525252527"
+        candidates = decode_candidates(payload, max_candidates=12, max_passes=3)
+        assert len(candidates) <= 12
+
+    def test_nfkc_normalizes_fullwidth_chars(self):
+        payload = "＜script＞alert(1)＜/script＞"
+        candidates = decode_candidates(payload)
+        kinds = {c["kind"]: c["value"] for c in candidates}
+        assert "nfkc" in kinds
+        assert "<script>alert(1)</script>" in kinds["nfkc"]
+
+    def test_nfkc_normalizes_fullwidth_sqli(self):
+        payload = "id=1 ｕｎｉｏｎ ｓｅｌｅｃｔ"
+        candidates = decode_candidates(payload)
+        kinds = {c["kind"]: c["value"] for c in candidates}
+        assert "nfkc" in kinds
+        assert "id=1 union select" in kinds["nfkc"]
+
 
 class TestDetectorIntegration:
     @pytest.mark.asyncio
