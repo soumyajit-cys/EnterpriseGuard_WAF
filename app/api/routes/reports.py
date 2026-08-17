@@ -12,6 +12,7 @@ from app.core.database import get_db
 from app.models.request_log import RequestLog
 from app.models.alert import Alert
 from app.auth.dependencies import require_admin
+from app.api.routes.date_utils import parse_date
 from app.models.user import User
 
 router = APIRouter(
@@ -20,14 +21,7 @@ router = APIRouter(
 )
 
 
-def _parse_date(value: str, field: str) -> datetime:
-    try:
-        return datetime.fromisoformat(value)
-    except ValueError:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid {field}. Use ISO format, e.g. 2026-08-01 or 2026-08-01T12:00:00",
-        )
+_parse_date = parse_date
 
 
 def _to_pdf(data: list[dict], title: str) -> bytes:
