@@ -33,12 +33,14 @@ class FakeRequest:
         query: str = "",
         body: str = "",
         path: str = "/",
+        method: str = "GET",
         headers: dict | None = None,
         cookies: dict | None = None,
     ):
         self.headers = headers or {"user-agent": BROWSER_UA}
         self.query_params = query
         self.url = FakeUrl(path)
+        self.method = method
         self.cookies = cookies or {}
         self._body = body
 
