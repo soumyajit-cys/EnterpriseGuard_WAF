@@ -1,24 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const mockAxios = {
-  create: vi.fn(),
-  get: vi.fn(),
-  post: vi.fn(),
-}
-const apiFn = vi.fn()
-apiFn.get = vi.fn()
-apiFn.post = vi.fn()
-apiFn.defaults = { baseURL: "http://test" }
-apiFn.interceptors = {
-  request: { use: vi.fn() },
-  response: { use: vi.fn() },
-}
-
-mockAxios.create.mockReturnValue(apiFn)
+const { mockAxios, apiFn } = vi.hoisted(() => {
+  const mockAxios = {
+    create: vi.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+  }
+  const apiFn = vi.fn()
+  apiFn.get = vi.fn()
+  apiFn.post = vi.fn()
+  apiFn.defaults = { baseURL: "http://test" }
+  apiFn.interceptors = {
+    request: { use: vi.fn() },
+    response: { use: vi.fn() },
+  }
+  mockAxios.create.mockReturnValue(apiFn)
+  return { mockAxios, apiFn }
+})
 
 vi.mock("axios", () => ({ default: mockAxios }))
-
-import { beforeEach as _b } from "vitest"
 
 let requestHandler: ((config: any) => Promise<any>) | null = null
 let errorHandler: ((error: any) => Promise<any>) | null = null
