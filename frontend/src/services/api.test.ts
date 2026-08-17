@@ -109,7 +109,7 @@ describe("api interceptor logic", () => {
       const error = {
         config: {},
         response: { status: 401 },
-      }
+      } as AxiosError
       await errorHandler!(error)
       expect(mockAxios.post).toHaveBeenCalledWith(
         "http://test/auth/refresh",
@@ -125,7 +125,7 @@ describe("api interceptor logic", () => {
       const error = {
         config: { _retry: true },
         response: { status: 401 },
-      }
+      } as AxiosError
       await expect(errorHandler!(error)).rejects.toBe(error)
       expect(mockAxios.post).not.toHaveBeenCalled()
     })
@@ -142,7 +142,7 @@ describe("api interceptor logic", () => {
       const error = {
         config: {},
         response: { status: 401 },
-      }
+      } as AxiosError
       await expect(errorHandler!(error)).rejects.toBe(error)
       expect(localStorage.getItem("csrf_token")).toBeNull()
       expect(localStorage.getItem("user")).toBeNull()
@@ -159,7 +159,7 @@ describe("api interceptor logic", () => {
         config: {},
         request: {},
         message: "Network Error",
-      }
+      } as AxiosError
       await expect(errorHandler!(error)).rejects.toBe(error)
       expect(mockAxios.post).not.toHaveBeenCalled()
       expect(window.location.href).toBe("http://test/dashboard")
@@ -170,7 +170,7 @@ describe("api interceptor logic", () => {
       const error = {
         config: {},
         response: { status: 500 },
-      }
+      } as AxiosError
       await expect(errorHandler!(error)).rejects.toBe(error)
       expect(mockAxios.post).not.toHaveBeenCalled()
     })
