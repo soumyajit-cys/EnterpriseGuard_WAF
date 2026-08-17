@@ -11,13 +11,16 @@ class AlertRepository:
     async def get_all(
         self,
         db: AsyncSession,
+        organization_id: int,
         skip: int = 0,
         limit: int = 100,
         severity: str | None = None,
         resolved: bool | None = None,
     ) -> tuple[list[Alert], int]:
-        query = select(Alert)
-        count_query = select(func.count(Alert.id))
+        query = select(Alert).where(Alert.organization_id == organization_id)
+        count_query = select(func.count(Alert.id)).where(
+            Alert.organization_id == organization_id
+        )
 
         conditions = []
         if severity:
@@ -36,18 +39,28 @@ class AlertRepository:
         total = await db.scalar(count_query)
         return alerts, total or 0
 
-    async def get_by_id(self, db: AsyncSession, alert_id: int) -> Optional[Alert]:
-        return await db.get(Alert, alert_id)
+    async def get_by_id(
+        self, db: AsyncSession, organization_id: int, alert_id: int
+    ) -> Optional[Alert]:
+        result = await db.execute(
+            select(Alert).where(
+                Alert.organization_id == organization_id,
+                Alert.id == alert_id,
+            )
+        )
+        return result.scalar_one_or_none()
 
     async def create(
         self,
         db: AsyncSession,
+        organization_id: int,
         severity: str,
         message: str,
         source: str | None = None,
         ip_address: str | None = None,
     ) -> Alert:
         alert = Alert(
+            organization_id=organization_id,
             severity=severity,
             message=message,
             source=source,
@@ -58,9 +71,11 @@ class AlertRepository:
         await db.refresh(alert)
         return alert
 
-    async def resolve(self, db: AsyncSession, alert_id: int) -> Optional[Alert]:
+    async def resolve(
+        self, db: AsyncSession, organization_id: int, alert_id: int
+    ) -> Optional[Alert]:
         from datetime import datetime
-        alert = await self.get_by_id(db, alert_id)
+        alert = await self.get_by_id(db, organization_id, alert_id)
         if not alert:
             return None
         alert.resolved = True
@@ -69,29 +84,33 @@ class AlertRepository:
         await db.refresh(alert)
         return alert
 
-    async def delete(self, db: AsyncSession, alert_id: int) -> bool:
-        alert = await self.get_by_id(db, alert_id)
+    async def delete(
+        self, db: AsyncSession, organization_id: int, alert_id: int
+    ) -> bool:
+        alert = await self.get_by_id(db, organization_id, alert_id)
         if not alert:
             return False
         await db.delete(alert)
         await db.commit()
         return True
 
-    async def get_stats(self, db: AsyncSession) -> dict:
+    async def get_stats(self, db: AsyncSession, organization_id: int) -> dict:
         from datetime import datetime
 
         today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
-        total = await db.scalar(select(func.count(Alert.id)))
+        base = Alert.organization_id == organization_id
+        total = await db.scalar(select(func.count(Alert.id)).where(base))
         unresolved = await db.scalar(
-            select(func.count(Alert.id)).where(Alert.resolved == False)
+            select(func.count(Alert.id)).where(base, Alert.resolved == False)
         )
         today = await db.scalar(
-            select(func.count(Alert.id)).where(Alert.created_at >= today_start)
+            select(func.count(Alert.id)).where(base, Alert.created_at >= today_start)
         )
 
         severity_result = await db.execute(
             select(Alert.severity, func.count(Alert.id).label("cnt"))
+            .where(base)
             .group_by(Alert.severity)
             .order_by(func.count(Alert.id).desc())
         )

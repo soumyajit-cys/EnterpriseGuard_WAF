@@ -11,6 +11,7 @@ class RuleRepository:
     async def get_all(
         self,
         db: AsyncSession,
+        organization_id: int,
         skip: int = 0,
         limit: int = 100,
         search: str | None = None,
@@ -20,8 +21,10 @@ class RuleRepository:
         sort_by: str = "priority",
         sort_desc: bool = False,
     ) -> tuple[list[Rule], int]:
-        query = select(Rule)
-        count_query = select(func.count(Rule.id))
+        query = select(Rule).where(Rule.organization_id == organization_id)
+        count_query = select(func.count(Rule.id)).where(
+            Rule.organization_id == organization_id
+        )
 
         if enabled is not None:
             query = query.where(Rule.enabled == enabled)
@@ -62,12 +65,21 @@ class RuleRepository:
         total = await db.scalar(count_query)
         return rules, total or 0
 
-    async def get_by_id(self, db: AsyncSession, rule_id: int) -> Optional[Rule]:
-        return await db.get(Rule, rule_id)
+    async def get_by_id(
+        self, db: AsyncSession, organization_id: int, rule_id: int
+    ) -> Optional[Rule]:
+        result = await db.execute(
+            select(Rule).where(
+                Rule.organization_id == organization_id,
+                Rule.id == rule_id,
+            )
+        )
+        return result.scalar_one_or_none()
 
     async def create(
         self,
         db: AsyncSession,
+        organization_id: int,
         name: str,
         description: str = "",
         enabled: bool = True,
@@ -78,6 +90,7 @@ class RuleRepository:
         rule_type: str | None = None,
     ) -> Rule:
         rule = Rule(
+            organization_id=organization_id,
             name=name,
             description=description,
             enabled=enabled,
@@ -95,10 +108,11 @@ class RuleRepository:
     async def update(
         self,
         db: AsyncSession,
+        organization_id: int,
         rule_id: int,
         **kwargs,
     ) -> Optional[Rule]:
-        rule = await self.get_by_id(db, rule_id)
+        rule = await self.get_by_id(db, organization_id, rule_id)
         if not rule:
             return None
         for key, value in kwargs.items():
@@ -108,16 +122,20 @@ class RuleRepository:
         await db.refresh(rule)
         return rule
 
-    async def delete(self, db: AsyncSession, rule_id: int) -> bool:
-        rule = await self.get_by_id(db, rule_id)
+    async def delete(
+        self, db: AsyncSession, organization_id: int, rule_id: int
+    ) -> bool:
+        rule = await self.get_by_id(db, organization_id, rule_id)
         if not rule:
             return False
         await db.delete(rule)
         await db.commit()
         return True
 
-    async def toggle(self, db: AsyncSession, rule_id: int) -> Optional[Rule]:
-        rule = await self.get_by_id(db, rule_id)
+    async def toggle(
+        self, db: AsyncSession, organization_id: int, rule_id: int
+    ) -> Optional[Rule]:
+        rule = await self.get_by_id(db, organization_id, rule_id)
         if not rule:
             return None
         rule.enabled = not rule.enabled

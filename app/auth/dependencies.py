@@ -79,3 +79,18 @@ require_admin = lambda: require_role(ADMIN)
 require_analyst = lambda: require_role(ANALYST)
 require_operator = lambda: require_role(OPERATOR)
 require_viewer = lambda: require_role(VIEWER)
+
+
+def require_superadmin():
+    """Platform role outside the org hierarchy: manages organizations,
+    has no org-scoped data access."""
+
+    async def superadmin_checker(current_user: User = Depends(get_current_user)):
+        if current_user.role != SUPERADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Requires role: superadmin",
+            )
+        return current_user
+
+    return superadmin_checker
