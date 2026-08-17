@@ -9,12 +9,19 @@ class AuditLogRepository:
     async def get_all(
         self,
         db: AsyncSession,
+        organization_id: int | None,
         skip: int = 0,
         limit: int = 100,
         action: str | None = None,
     ) -> tuple[list[AuditLog], int]:
         query = select(AuditLog)
         count_query = select(func.count(AuditLog.id))
+
+        if organization_id is not None:
+            query = query.where(AuditLog.organization_id == organization_id)
+            count_query = count_query.where(
+                AuditLog.organization_id == organization_id
+            )
 
         if action:
             query = query.where(AuditLog.action == action)
@@ -29,6 +36,7 @@ class AuditLogRepository:
     async def stream_filtered(
         self,
         db: AsyncSession,
+        organization_id: int | None,
         start: object,
         end: object,
         severity: str | None = None,
@@ -46,6 +54,8 @@ class AuditLogRepository:
             .order_by(AuditLog.created_at.asc())
             .execution_options(yield_per=500)
         )
+        if organization_id is not None:
+            query = query.where(AuditLog.organization_id == organization_id)
         if severity:
             query = query.where(AuditLog.severity == severity)
         if event_type:
@@ -58,6 +68,7 @@ class AuditLogRepository:
     async def create(
         self,
         db: AsyncSession,
+        organization_id: int | None,
         action: str,
         user_id: int | None = None,
         username: str | None = None,
@@ -66,6 +77,7 @@ class AuditLogRepository:
         ip_address: str | None = None,
     ) -> AuditLog:
         log = AuditLog(
+            organization_id=organization_id,
             user_id=user_id,
             username=username,
             action=action,

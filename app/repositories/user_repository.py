@@ -8,8 +8,16 @@ from app.models.user import User
 
 class UserRepository:
 
-    async def get_by_id(self, db: AsyncSession, user_id: int) -> Optional[User]:
-        result = await db.execute(select(User).where(User.id == user_id))
+    async def get_by_id(
+        self,
+        db: AsyncSession,
+        user_id: int,
+        organization_id: int | None = None,
+    ) -> Optional[User]:
+        query = select(User).where(User.id == user_id)
+        if organization_id is not None:
+            query = query.where(User.organization_id == organization_id)
+        result = await db.execute(query)
         return result.scalar_one_or_none()
 
     async def get_by_username(self, db: AsyncSession, username: str) -> Optional[User]:
@@ -23,6 +31,7 @@ class UserRepository:
     async def get_all(
         self,
         db: AsyncSession,
+        organization_id: int,
         skip: int = 0,
         limit: int = 100,
         role: Optional[str] = None,
@@ -30,8 +39,10 @@ class UserRepository:
         sort_by: str = "id",
         sort_desc: bool = False,
     ) -> tuple[list[User], int]:
-        query = select(User)
-        count_query = select(func.count(User.id))
+        query = select(User).where(User.organization_id == organization_id)
+        count_query = select(func.count(User.id)).where(
+            User.organization_id == organization_id
+        )
 
         if role:
             query = query.where(User.role == role)
@@ -68,8 +79,10 @@ class UserRepository:
         email: str,
         password_hash: str,
         role: str = "analyst",
+        organization_id: int | None = None,
     ) -> User:
         user = User(
+            organization_id=organization_id,
             username=username,
             email=email,
             password_hash=password_hash,

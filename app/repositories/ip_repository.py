@@ -13,13 +13,18 @@ class BlockedIPRepository:
     async def get_all(
         self,
         db: AsyncSession,
+        organization_id: int,
         skip: int = 0,
         limit: int = 100,
         search: str | None = None,
         permanent: bool | None = None,
     ) -> tuple[list[BlockedIP], int]:
-        query = select(BlockedIP)
-        count_query = select(func.count(BlockedIP.id))
+        query = select(BlockedIP).where(
+            BlockedIP.organization_id == organization_id
+        )
+        count_query = select(func.count(BlockedIP.id)).where(
+            BlockedIP.organization_id == organization_id
+        )
 
         if permanent is not None:
             query = query.where(BlockedIP.is_permanent == permanent)
@@ -45,21 +50,28 @@ class BlockedIPRepository:
         total = await db.scalar(count_query)
         return items, total or 0
 
-    async def get_by_ip(self, db: AsyncSession, ip: str) -> Optional[BlockedIP]:
+    async def get_by_ip(
+        self, db: AsyncSession, organization_id: int, ip: str
+    ) -> Optional[BlockedIP]:
         result = await db.execute(
-            select(BlockedIP).where(BlockedIP.ip_address == ip)
+            select(BlockedIP).where(
+                BlockedIP.organization_id == organization_id,
+                BlockedIP.ip_address == ip,
+            )
         )
         return result.scalar_one_or_none()
 
     async def create(
         self,
         db: AsyncSession,
+        organization_id: int,
         ip_address: str,
         reason: str | None = None,
         is_permanent: bool = False,
         expires_at=None,
     ) -> BlockedIP:
         entry = BlockedIP(
+            organization_id=organization_id,
             ip_address=ip_address,
             reason=reason,
             is_permanent=is_permanent,
@@ -70,19 +82,24 @@ class BlockedIPRepository:
         await db.refresh(entry)
         return entry
 
-    async def delete(self, db: AsyncSession, ip_id: int) -> bool:
+    async def delete(
+        self, db: AsyncSession, organization_id: int, ip_id: int
+    ) -> bool:
         entry = await db.get(BlockedIP, ip_id)
-        if not entry:
+        if not entry or entry.organization_id != organization_id:
             return False
         await db.delete(entry)
         await db.commit()
         return True
 
-    async def is_blocked(self, db: AsyncSession, ip: str) -> bool:
+    async def is_blocked(
+        self, db: AsyncSession, organization_id: int, ip: str
+    ) -> bool:
         from datetime import datetime, timezone
         result = await db.execute(
             select(BlockedIP).where(
                 and_(
+                    BlockedIP.organization_id == organization_id,
                     BlockedIP.ip_address == ip,
                     or_(
                         BlockedIP.is_permanent == True,
@@ -105,6 +122,7 @@ class AllowedIPRepository:
     async def get_all(
         self,
         db: AsyncSession,
+        organization_id: int,
         skip: int = 0,
         limit: int = 100,
         search: str | None = None,
@@ -133,34 +151,51 @@ class AllowedIPRepository:
         total = await db.scalar(count_query)
         return items, total or 0
 
-    async def get_by_ip(self, db: AsyncSession, ip: str) -> Optional[AllowedIP]:
+    async def get_by_ip(
+        self, db: AsyncSession, organization_id: int, ip: str
+    ) -> Optional[AllowedIP]:
         result = await db.execute(
-            select(AllowedIP).where(AllowedIP.ip_address == ip)
+            select(AllowedIP).where(
+                AllowedIP.organization_id == organization_id,
+                AllowedIP.ip_address == ip,
+            )
         )
         return result.scalar_one_or_none()
 
     async def create(
         self,
         db: AsyncSession,
+        organization_id: int,
         ip_address: str,
         description: str | None = None,
     ) -> AllowedIP:
-        entry = AllowedIP(ip_address=ip_address, description=description)
+        entry = AllowedIP(
+            organization_id=organization_id,
+            ip_address=ip_address,
+            description=description,
+        )
         db.add(entry)
         await db.commit()
         await db.refresh(entry)
         return entry
 
-    async def delete(self, db: AsyncSession, ip_id: int) -> bool:
+    async def delete(
+        self, db: AsyncSession, organization_id: int, ip_id: int
+    ) -> bool:
         entry = await db.get(AllowedIP, ip_id)
-        if not entry:
+        if not entry or entry.organization_id != organization_id:
             return False
         await db.delete(entry)
         await db.commit()
         return True
 
-    async def is_allowed(self, db: AsyncSession, ip: str) -> bool:
+    async def is_allowed(
+        self, db: AsyncSession, organization_id: int, ip: str
+    ) -> bool:
         result = await db.execute(
-            select(AllowedIP).where(AllowedIP.ip_address == ip)
+            select(AllowedIP).where(
+                AllowedIP.organization_id == organization_id,
+                AllowedIP.ip_address == ip,
+            )
         )
         return result.scalar_one_or_none() is not None
