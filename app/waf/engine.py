@@ -1,5 +1,6 @@
 from app.waf.detector import Detector
 from app.waf.actions import should_block
+from app.waf.rules.anomaly import anomaly_detector
 from app.core.client_ip import get_client_ip
 from app.services.alert_service import alert_service
 from app.services.request_logger import request_logger
