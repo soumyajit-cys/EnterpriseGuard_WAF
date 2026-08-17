@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import type { AxiosError, InternalAxiosRequestConfig } from "axios"
 
 const { mockAxios, apiFn } = vi.hoisted(() => {
   const mockAxios = {
@@ -20,8 +21,12 @@ const { mockAxios, apiFn } = vi.hoisted(() => {
 
 vi.mock("axios", () => ({ default: mockAxios }))
 
-let requestHandler: ((config: any) => Promise<any>) | null = null
-let errorHandler: ((error: any) => Promise<any>) | null = null
+let requestHandler:
+  | ((
+      config: InternalAxiosRequestConfig
+    ) => Promise<InternalAxiosRequestConfig>)
+  | null = null
+let errorHandler: ((error: AxiosError) => Promise<unknown>) | null = null
 
 describe("api interceptor logic", () => {
   beforeEach(() => {
@@ -30,11 +35,16 @@ describe("api interceptor logic", () => {
     errorHandler = null
     localStorage.clear()
     process.env.NEXT_PUBLIC_API_URL = "http://test"
-    apiFn.interceptors.request.use.mockImplementation((fn: any) => {
-      requestHandler = fn
-    })
+    apiFn.interceptors.request.use.mockImplementation(
+      (fn: (c: InternalAxiosRequestConfig) => Promise<InternalAxiosRequestConfig>) => {
+        requestHandler = fn
+      }
+    )
     apiFn.interceptors.response.use.mockImplementation(
-      (_ok: any, err: any) => {
+      (
+        _ok: (r: unknown) => unknown,
+        err: (e: AxiosError) => Promise<unknown>
+      ) => {
         errorHandler = err
       }
     )
