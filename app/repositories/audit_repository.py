@@ -26,6 +26,35 @@ class AuditLogRepository:
         total = await db.scalar(count_query)
         return logs, total or 0
 
+    async def stream_filtered(
+        self,
+        db: AsyncSession,
+        start: object,
+        end: object,
+        severity: str | None = None,
+        event_type: str | None = None,
+    ):
+        """Async row stream for SIEM export. Rows are yielded in batches
+        (yield_per) so large exports never load the whole table into
+        memory."""
+        query = (
+            select(AuditLog)
+            .where(
+                AuditLog.created_at >= start,
+                AuditLog.created_at <= end,
+            )
+            .order_by(AuditLog.created_at.asc())
+            .execution_options(yield_per=500)
+        )
+        if severity:
+            query = query.where(AuditLog.severity == severity)
+        if event_type:
+            query = query.where(AuditLog.action == event_type)
+
+        result = await db.stream(query)
+        async for row in result.scalars():
+            yield row
+
     async def create(
         self,
         db: AsyncSession,
