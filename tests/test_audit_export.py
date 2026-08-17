@@ -121,6 +121,7 @@ async def test_export_streams_ndjson(client, admin_user):
     async with client as c:
         resp = await c.get(
             "/audit/export",
+            params={"event_type": "IP_BLOCKED"},
             headers={"Authorization": f"Bearer {token}"},
         )
     assert resp.status_code == 200
