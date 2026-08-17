@@ -7,6 +7,7 @@ from app.core.database import get_db
 from app.models.request_log import RequestLog
 from app.models.alert import Alert
 from app.models.rule import Rule
+from app.schemas.waf import PlaygroundTestRequest
 
 router = APIRouter(
     prefix="/public",
@@ -15,19 +16,21 @@ router = APIRouter(
 
 
 @router.post("/playground/test")
-async def public_playground_test(payload: dict):
+async def public_playground_test(payload: PlaygroundTestRequest):
     """Public rule-testing playground (no auth) — powers shareable links.
 
     Mirrors the authenticated /waf/test endpoint so anyone can evaluate a
-    payload against the detection engine without an account.
+    payload against the detection engine without an account. The request
+    body is capped at 4096 chars per field since this endpoint is
+    unauthenticated.
     """
     from app.waf.detector import Detector
     from app.waf.actions import should_block
     from app.waf.engine import get_severity
     from app.waf.runtime import waf_mode
 
-    input_value = str(payload.get("input") or "")
-    source = payload.get("source") or "query"
+    input_value = payload.input
+    source = payload.source
 
     class _PlaygroundRequest:
         pass
@@ -37,18 +40,18 @@ async def public_playground_test(payload: dict):
         "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36"
     }
     for header in ("content-length", "transfer-encoding"):
-        if header in payload.get("headers", {}):
-            request.headers[header] = str(payload["headers"][header])
+        if header in payload.headers:
+            request.headers[header] = payload.headers[header]
 
     if source == "headers":
         request.headers["x-test-input"] = input_value
 
     request.query_params = {source: input_value} if source == "query" else {}
-    request.url = type("_Url", (), {"path": str(payload.get("path") or (input_value if source == "path" else "/"))})()
+    request.url = type("_Url", (), {"path": payload.path or (input_value if source == "path" else "/")})()
     request.cookies = {}
 
     async def _body():
-        body = payload.get("body") or (input_value if source == "body" else "")
+        body = payload.body or (input_value if source == "body" else "")
         return str(body).encode()
 
     request.body = _body

@@ -190,7 +190,7 @@ async def get_audit_logs(
 
 @router.post("/test")
 async def test_payload(
-    payload: dict,
+    payload: PlaygroundTestRequest,
     current_user: User = Depends(require_analyst()),
 ):
     """Rule-testing playground: score an arbitrary payload offline and get
@@ -199,8 +199,8 @@ async def test_payload(
     from app.waf.actions import should_block
     from app.waf.engine import get_severity
 
-    input_value = str(payload.get("input") or "")
-    source = payload.get("source") or "query"
+    input_value = payload.input
+    source = payload.source
 
     class _PlaygroundRequest:
         pass
@@ -210,18 +210,18 @@ async def test_payload(
         "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36"
     }
     for header in ("content-length", "transfer-encoding"):
-        if header in payload.get("headers", {}):
-            request.headers[header] = str(payload["headers"][header])
+        if header in payload.headers:
+            request.headers[header] = payload.headers[header]
 
     if source == "headers":
         request.headers["x-test-input"] = input_value
 
     request.query_params = {source: input_value} if source == "query" else {}
-    request.url = type("_Url", (), {"path": str(payload.get("path") or (input_value if source == "path" else "/"))})()
+    request.url = type("_Url", (), {"path": payload.path or (input_value if source == "path" else "/")})()
     request.cookies = {}
 
     async def _body():
-        body = payload.get("body") or (input_value if source == "body" else "")
+        body = payload.body or (input_value if source == "body" else "")
         return str(body).encode()
 
     request.body = _body
