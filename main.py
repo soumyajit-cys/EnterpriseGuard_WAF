@@ -28,6 +28,7 @@ from app.api.routes.requests import router as request_router
 from app.api.routes.settings import router as settings_router
 from app.api.routes.analytics import router as analytics_router
 from app.api.routes.reports import router as reports_router
+from app.api.routes.audit_export import router as audit_export_router
 
 
 _show_docs = settings.ENVIRONMENT != "production"
@@ -141,6 +142,7 @@ app.include_router(dashboard_router)
 app.include_router(waf_router)
 app.include_router(analytics_router)
 app.include_router(reports_router)
+app.include_router(audit_export_router)
 app.include_router(traffic_ws_router)
 
 
