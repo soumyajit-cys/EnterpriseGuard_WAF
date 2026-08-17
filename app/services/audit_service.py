@@ -12,6 +12,7 @@ class AuditService:
         resource: str | None = None,
         details: str | None = None,
         ip_address: str | None = None,
+        severity: str = "info",
     ):
         async with AsyncSessionLocal() as db:
             log = AuditLog(
@@ -21,6 +22,7 @@ class AuditService:
                 resource=resource,
                 details=details,
                 ip_address=ip_address,
+                severity=severity,
             )
             db.add(log)
             await db.commit()
