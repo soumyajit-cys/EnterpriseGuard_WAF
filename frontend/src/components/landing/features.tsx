@@ -35,7 +35,7 @@ export function Features() {
                 <div className={cn("flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3", feature.iconBg, feature.iconShadow)}>
                   <feature.icon className="h-5 w-5" />
                 </div>
-                <span className="rounded-full border border-zinc-800 bg-zinc-950/60 px-2 py-0.5 text-[9px] font-semibold tracking-widest text-zinc-500">
+                <span className="rounded-full border border-zinc-800 bg-zinc-950/60 px-2 py-0.5 font-mono text-[9px] font-medium tracking-[0.15em] text-zinc-500">
                   {feature.tag}
                 </span>
               </div>
