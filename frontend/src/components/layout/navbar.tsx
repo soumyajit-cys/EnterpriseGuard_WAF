@@ -31,7 +31,7 @@ export function Navbar() {
   ]
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center border-b border-white/5 bg-zinc-950/80 backdrop-blur-xl px-4 lg:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-xl px-4 lg:px-6">
       <div className="flex items-center gap-4 flex-1">
         <button
           onClick={() => setMobileOpen(true)}

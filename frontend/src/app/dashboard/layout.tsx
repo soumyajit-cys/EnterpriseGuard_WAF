@@ -29,10 +29,15 @@ export default function DashboardLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-zinc-500">Loading...</p>
+          <div className="relative h-10 w-10">
+            <div className="h-10 w-10 rounded-full border-2 border-zinc-800" />
+            <div className="absolute inset-0 h-10 w-10 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+          </div>
+          <p className="font-mono text-xs text-zinc-500">
+            Contacting WAF core<span className="animate-pulse">…</span>
+          </p>
         </div>
       </div>
     )
