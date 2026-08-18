@@ -5,11 +5,11 @@ import { Terminal } from "lucide-react"
 import { SectionHeading, threatTypes } from "@/components/landing/shared"
 
 const blockLogRows = [
-  { time: "10:42:17", ip: "203.0.113.45", type: "SQL_INJECTION", score: 100, action: "BLOCKED" },
-  { time: "10:41:58", ip: "198.51.100.8", type: "SSRF", score: 85, action: "BLOCKED" },
-  { time: "10:41:03", ip: "203.0.113.99", type: "BOT_TRAFFIC", score: 60, action: "BLOCKED" },
-  { time: "10:40:44", ip: "192.0.2.77", type: "XSS", score: 95, action: "BLOCKED" },
-  { time: "10:39:31", ip: "198.51.100.21", type: "CMD_INJECTION", score: 90, action: "BLOCKED" },
+  { time: "10:42:17", ip: "203.0.113.45", type: "SQL_INJECTION", score: 100 },
+  { time: "10:41:58", ip: "198.51.100.8", type: "SSRF", score: 85 },
+  { time: "10:41:03", ip: "203.0.113.99", type: "BOT_TRAFFIC", score: 60 },
+  { time: "10:40:44", ip: "192.0.2.77", type: "XSS", score: 95 },
+  { time: "10:39:31", ip: "198.51.100.21", type: "COMMAND_INJECTION", score: 90 },
 ]
 
 export function Threats() {
