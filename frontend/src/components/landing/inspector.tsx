@@ -62,8 +62,7 @@ function ScoreCounter({
   target: number
   active: boolean
   reduceMotion?: boolean
-}) {
-  const [value, setValue] = useState(reduceMotion ? target : 0)
+}) {  const [value, setValue] = useState(reduceMotion ? target : 0)
 
   useEffect(() => {
     if (!active || reduceMotion) return
@@ -218,7 +217,7 @@ export function Inspector() {
                   <ScoreCounter
                     target={EFFECTIVE_SCORE}
                     active={phase === "score" || phase === "verdict"}
-                    reduceMotion={reduceMotion}
+                    reduceMotion={reduceMotion ?? false}
                   />
                 ) : (
                   "0"
