@@ -1,10 +1,38 @@
-# Multi-Tenancy Design Note (for review)
+# Multi-Tenancy Design Note
 
-Status: **DRAFT — no code written yet.** This note must be reviewed and
-approved before any model or migration work starts.
+Status: **IMPLEMENTED (2026-08-17)** — models, migration `9f2e7c1a4b8d`,
+repositories, services, routes, superadmin org management, and tests are
+in. See implementation deltas below; open questions resolved per approval.
 
-Scope: add organization-level isolation to the WAF so multiple
-organizations can share one deployment without seeing each other's data.
+> This note was originally written as a DRAFT requiring review before any
+> code. The approved decisions: promote the first admin to superadmin on
+> migration; waf_settings uses global (default-org) fallback; Redis keys
+> stay global.
+
+## Implementation deltas vs. this note
+
+* `audit_logs.organization_id` is NULLABLE (not NOT NULL): pre-auth
+  events (LOGIN_BLOCKED) and superadmin events have no tenant.
+* `users.organization_id` is NULLABLE: superadmins are org-less.
+* All other tenant tables (`alerts`, `allowed_ips`, `blocked_ips`,
+  `request_logs`, `rules`, `waf_settings`) are NOT NULL and backfilled
+  into the "Default Organization".
+* `rules.name`, `blocked_ips.ip_address`, `allowed_ips.ip_address` and
+  `waf_settings.key` dropped their global unique constraints in favor of
+  composite `(organization_id, …)` uniques (the legacy dev DB never had
+  the waf_settings one; drops are conditional).
+* `/public/stats` is scoped to the default org (the note claimed public
+  endpoints read no tenant data — the stats endpoint does, so it is
+  scoped rather than leaked globally).
+* `waf_mode` remains engine-global and is enforced from the default
+  org's settings row only (runtime_sync). Other orgs can store their own
+  mode preference; only a default-org admin flips the engine.
+* `support` platform role deferred (requires grant management); only
+  `superadmin` was added, outside the role hierarchy.
+* Engine path (middleware, engine, autoban, runtime_sync) resolves the
+  default org via `app/services/tenant_service.py` (cached, fail-open).
+* Registration and admin-created users join the default org / the
+  admin's org respectively.
 
 ---
 
@@ -126,10 +154,12 @@ then can create additional orgs.
 
 ## Open questions for approval
 
-1. `superadmin` promotion of the first admin vs. seeding a dedicated
-   account?
-2. Should `waf_settings` per-org rows fall back to global defaults when
-   unset (two-tier lookup) or be fully copied per org?
-3. Redis keys (rate limits, baselines, token blacklists) — prefix with
-   org id, or leave global? (Leaning: leave global; keys already carry
-   per-IP identity and no SQL row crosses orgs.)
+All three resolved by approval (2026-08-17):
+
+1. **Superadmin seeding** — *Promote first admin*: the earliest-created
+   admin is promoted to `superadmin` during the migration. No dedicated
+   account is seeded.
+2. **waf_settings model** — *Global fallback*: per-org rows override the
+   default org's rows; unset keys fall back.
+3. **Redis scoping** — *Leave global*: keys already carry per-IP/per-token
+   identity; no SQL row crosses orgs.
