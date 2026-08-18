@@ -248,8 +248,8 @@ function Playground() {
                               className="rounded-lg border border-zinc-800 bg-zinc-950/50 px-4 py-3"
                             >
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="font-mono text-xs font-bold text-red-300">{f.type}</span>
-                                <Badge variant="outline">{f.score} pts</Badge>
+                                <span className={cn("font-mono text-xs font-bold", severityText[severityFromScore(f.score)])}>{f.type}</span>
+                                <span className="rounded border border-zinc-700 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">{f.score} pts</span>
                                 <span className="text-[10px] text-zinc-600 font-mono">source: {f.source}</span>
                               </div>
                               {f.evidence && (
@@ -262,7 +262,7 @@ function Playground() {
                           ))}
                         </div>
                       ) : (
-                        <p className="mt-3 text-sm text-emerald-400/80">
+                        <p className="mt-3 text-sm text-blue-400/80">
                           No detections — this payload passes clean through the engine.
                         </p>
                       )}
