@@ -3,21 +3,12 @@
 import { useQuery } from "@tanstack/react-query"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ScrollText, ShieldAlert, AlertTriangle, Info, ChevronRight } from "lucide-react"
+import { ScrollText, ChevronRight } from "lucide-react"
 import { cn, timeAgo } from "@/lib/utils"
 import { alertsService } from "@/services/alerts"
-
-const severityConfig: Record<
-  string,
-  { icon: typeof ShieldAlert; color: string; bg: string }
-> = {
-  critical: { icon: ShieldAlert, color: "text-red-500", bg: "bg-red-500/10" },
-  high: { icon: AlertTriangle, color: "text-orange-500", bg: "bg-orange-500/10" },
-  medium: { icon: Info, color: "text-yellow-500", bg: "bg-yellow-500/10" },
-  low: { icon: Info, color: "text-blue-500", bg: "bg-blue-500/10" },
-}
+import { SeverityChip } from "@/components/ui/severity-chip"
+import { severityRail, severityOf } from "@/lib/severity"
 
 export function RecentAlerts() {
   const { data, isLoading } = useQuery({
@@ -55,49 +46,30 @@ export function RecentAlerts() {
               No alerts yet — all quiet
             </div>
           ) : (
-            alerts.map((alert) => {
-              const config =
-                severityConfig[alert.severity] ?? severityConfig.medium
-              const Icon = config.icon
-              return (
-                <div
-                  key={alert.id}
-                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-zinc-800/30 transition-colors"
-                >
-                  <div
-                    className={cn(
-                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                      config.bg
-                    )}
-                  >
-                    <Icon className={cn("h-4 w-4", config.color)} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-zinc-300 leading-relaxed line-clamp-2">
-                      {alert.message}
-                    </p>
-                    <p className="text-xs text-zinc-600 mt-1">
-                      {alert.created_at ? timeAgo(new Date(alert.created_at)) : ""}
-                      {alert.ip_address ? ` · ${alert.ip_address}` : ""}
-                    </p>
-                  </div>
-                  <Badge
-                    variant={
-                      alert.severity === "critical"
-                        ? "danger"
-                        : alert.severity === "high"
-                        ? "warning"
-                        : alert.severity === "medium"
-                        ? "info"
-                        : "outline"
-                    }
-                    className="shrink-0"
-                  >
-                    {alert.severity}
-                  </Badge>
+            alerts.map((alert) => (
+              <div
+                key={alert.id}
+                className="relative flex items-start gap-3 overflow-hidden rounded-lg p-3 pl-4 hover:bg-zinc-800/30 transition-colors"
+              >
+                <span
+                  className={cn(
+                    "absolute left-0 top-0 h-full w-1 rounded-r-full",
+                    severityRail[severityOf(alert.severity)]
+                  )}
+                  aria-hidden
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-zinc-300 leading-relaxed line-clamp-2">
+                    {alert.message}
+                  </p>
+                  <p className="font-mono text-xs text-zinc-600 mt-1">
+                    {alert.created_at ? timeAgo(new Date(alert.created_at)) : ""}
+                    {alert.ip_address ? ` · ${alert.ip_address}` : ""}
+                  </p>
                 </div>
-              )
-            })
+                <SeverityChip value={alert.severity} className="shrink-0" />
+              </div>
+            ))
           )}
         </div>
       </CardContent>
