@@ -130,6 +130,18 @@ export function Sidebar() {
   const { isCollapsed, toggle, isMobileOpen, closeMobile } = useSidebarStore()
   const { user, logout } = useAuthStore()
 
+  const { data: alertCountData } = useQuery({
+    queryKey: ["nav-alerts-count"],
+    queryFn: () => alertsService.getAll({ page: 1, page_size: 1, resolved: false }),
+    refetchInterval: 30000,
+  })
+
+  const mainNavWithBadge: NavItem[] = mainNav.map((item) =>
+    item.href === "/dashboard/alerts"
+      ? { ...item, badge: alertCountData?.total ?? 0 }
+      : item
+  )
+
   return (
     <>
       {isMobileOpen && (
@@ -157,7 +169,7 @@ export function Sidebar() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                <p className="text-sm font-bold text-zinc-100">
+                <p className="font-display text-sm font-bold text-zinc-100">
                   Enterprise<span className="text-gradient">Guard</span>
                 </p>
                 <p className="text-[10px] font-medium text-zinc-500">WAF Dashboard</p>
@@ -167,7 +179,7 @@ export function Sidebar() {
         </div>
 
         <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700">
-          <NavSection items={mainNav} isCollapsed={isCollapsed} pathname={pathname} closeMobile={closeMobile} />
+          <NavSection items={mainNavWithBadge} isCollapsed={isCollapsed} pathname={pathname} closeMobile={closeMobile} />
           {!isCollapsed && (
             <div className="my-2 border-t border-white/5" />
           )}
