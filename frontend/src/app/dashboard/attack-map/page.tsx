@@ -152,13 +152,13 @@ export default function AttackMapPage() {
                         cx={d.x}
                         cy={d.y}
                         r={3 + d.intensity * 7}
-                        fill="#ef4444"
+                        fill="#E5484D"
                         animate={{ r: [3 + d.intensity * 7, 5 + d.intensity * 9, 3 + d.intensity * 7] }}
                         transition={{ duration: 2.2, repeat: Infinity, delay: i * 0.2 }}
                       />
                       {d.total >= 3 && (
                         <g>
-                          <line x1={mapSize.w / 2} y1={mapSize.h / 2} x2={d.x} y2={d.y} stroke="#3b82f6" strokeOpacity={0.15} strokeWidth={0.8} strokeDasharray="3 3">
+                          <line x1={mapSize.w / 2} y1={mapSize.h / 2} x2={d.x} y2={d.y} stroke="#38B6EA" strokeOpacity={0.15} strokeWidth={0.8} strokeDasharray="3 3">
                             <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.2s" repeatCount="indefinite" />
                           </line>
                           <text x={d.x + 8} y={d.y - 6} fill="#a1a1aa" fontSize="9" fontFamily="monospace">
@@ -178,7 +178,7 @@ export default function AttackMapPage() {
 
                 <div className="absolute bottom-3 left-3 rounded-lg border border-zinc-800 bg-zinc-950/80 backdrop-blur px-3 py-2">
                   <div className="flex items-center gap-2 text-[10px] text-zinc-500">
-                    <span className="h-2 w-2 rounded-full bg-red-500" /> blocked request
+                    <span className="h-2 w-2 rounded-full bg-sev-critical" /> blocked request
                     <span className="h-2 w-2 rounded-full bg-blue-500 ml-2" /> origin
                     <span className="ml-2">{countries.length} sources · {maxTotal} attacks</span>
                   </div>
