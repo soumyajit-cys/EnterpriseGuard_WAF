@@ -3,6 +3,8 @@
 import { motion } from "framer-motion"
 import { Terminal } from "lucide-react"
 import { SectionHeading, threatTypes } from "@/components/landing/shared"
+import { VerdictChip } from "@/components/ui/verdict-chip"
+import { severityFromScore, severityText } from "@/lib/severity"
 
 const blockLogRows = [
   { time: "10:42:17", ip: "203.0.113.45", type: "SQL_INJECTION", score: 100 },
