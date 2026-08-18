@@ -206,30 +206,34 @@ function Playground() {
                     className="mt-6"
                   >
                     <div
-                      className={`rounded-xl border p-5 ${
+                      className={cn(
+                        "rounded-xl border p-5",
                         result.verdict === "BLOCK"
-                          ? "border-red-500/30 bg-red-500/[0.07]"
-                          : "border-emerald-500/30 bg-emerald-500/[0.07]"
-                      }`}
+                          ? "border-sev-critical/30 bg-sev-critical/[0.06]"
+                          : "border-blue-500/30 bg-blue-500/[0.06]"
+                      )}
                     >
                       <div className="flex flex-wrap items-center gap-3">
                         {result.verdict === "BLOCK" ? (
-                          <ShieldAlert className="h-6 w-6 text-red-400" />
+                          <ShieldAlert className="h-6 w-6 text-sev-critical" />
                         ) : (
-                          <ShieldCheck className="h-6 w-6 text-emerald-400" />
+                          <ShieldCheck className="h-6 w-6 text-blue-400" />
                         )}
                         <span
-                          className={`text-xl font-black tracking-tight ${
-                            result.verdict === "BLOCK" ? "text-red-400" : "text-emerald-400"
-                          }`}
+                          className={cn(
+                            "text-xl font-black tracking-tight",
+                            result.verdict === "BLOCK" ? "text-sev-critical" : "text-blue-400"
+                          )}
                         >
                           {result.verdict}
                         </span>
-                        <Badge variant={severityVariant[result.severity]} className="capitalize">
-                          {result.severity}
-                        </Badge>
+                        <SeverityChip value={result.severity} />
                         <span className="ml-auto font-mono text-sm text-zinc-400">
-                          score {result.effective_score}/100 · mode {result.mode}
+                          score{" "}
+                          <span className={severityText[severityFromScore(result.effective_score)]}>
+                            {result.effective_score}
+                          </span>
+                          /100 · mode {result.mode}
                         </span>
                       </div>
 
