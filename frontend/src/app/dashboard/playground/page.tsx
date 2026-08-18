@@ -6,7 +6,6 @@ import { toast } from "sonner"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { VerdictChip } from "@/components/ui/verdict-chip"
 import { SeverityChip } from "@/components/ui/severity-chip"
 import { ScoreBar } from "@/components/ui/score-bar"
 import { wafService } from "@/services/waf"
@@ -207,7 +206,7 @@ export default function PlaygroundPage() {
             </div>
 
             <div>
-              <p className="text-xs text-zinc-600 mb-2 font-semibold uppercase tracking-widest">
+              <p className="font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-600 mb-2">
                 Presets
               </p>
               <div className="flex flex-wrap gap-2">
@@ -322,13 +321,10 @@ export default function PlaygroundPage() {
                           >
                             <div className="flex items-center gap-3">
                               <span
-                                className={`h-2 w-2 rounded-full ${
-                                  f.score >= 80
-                                    ? "bg-red-500"
-                                    : f.score >= 50
-                                    ? "bg-yellow-500"
-                                    : "bg-blue-500"
-                                }`}
+                                className={cn(
+                                  "h-2 w-2 rounded-full",
+                                  severityDot[severityFromScore(f.score)]
+                                )}
                               />
                               <span className="font-mono text-sm text-zinc-200">
                                 {f.type}
@@ -337,7 +333,7 @@ export default function PlaygroundPage() {
                                 via {f.source}
                               </span>
                             </div>
-                            <span className="font-mono text-sm font-semibold text-zinc-300 tabular-nums">
+                            <span className={cn("font-mono text-sm font-semibold tabular-nums", severityText[severityFromScore(f.score)])}>
                               {f.score}
                             </span>
                           </motion.div>

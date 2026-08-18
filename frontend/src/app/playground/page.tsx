@@ -7,9 +7,11 @@ import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { SeverityChip } from "@/components/ui/severity-chip"
 import { playgroundService, parseShareUrl } from "@/services/playground"
+import { cn } from "@/lib/utils"
+import { severityText, severityFromScore } from "@/lib/severity"
 import {
   FlaskConical,
   Loader2,
@@ -28,13 +30,6 @@ const presetSamples = [
   { label: "Path traversal", input: "file=../../../../etc/passwd" },
   { label: "Benign", input: "hello world" },
 ]
-
-const severityVariant: Record<string, "default" | "success" | "danger" | "warning"> = {
-  low: "default",
-  medium: "warning",
-  high: "warning",
-  critical: "danger",
-}
 
 export default function PublicPlaygroundPage() {
   return (
@@ -95,7 +90,7 @@ function Playground() {
   }, [])
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#09090B] text-zinc-200">
+    <main className="relative min-h-screen overflow-hidden bg-background text-zinc-200">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 left-1/4 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
         <div className="absolute -bottom-40 right-1/4 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
