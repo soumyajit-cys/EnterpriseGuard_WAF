@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import {
   AreaChart,
   Area,
@@ -34,10 +34,11 @@ function formatDay(value: string) {
 export function TrafficChart() {
   const [period, setPeriod] = useState<Period>("live")
 
-  const { data, isLoading, isFetching } = useQuery({
+  const { data, isLoading, isFetching, isPlaceholderData } = useQuery({
     queryKey: ["traffic-chart", period],
     queryFn: () => analyticsService.getTraffic(period),
     refetchInterval: 30000,
+    placeholderData: keepPreviousData,
   })
 
   const trend = data?.traffic_trend ?? []
@@ -79,8 +80,13 @@ export function TrafficChart() {
               {isFetching ? "Updating…" : "No traffic recorded in this period yet"}
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
+            <div
+              className={`h-full transition-opacity duration-300 ${
+                isPlaceholderData ? "opacity-60" : "opacity-100"
+              }`}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="requests" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#1E9FD8" stopOpacity={0.3} />
