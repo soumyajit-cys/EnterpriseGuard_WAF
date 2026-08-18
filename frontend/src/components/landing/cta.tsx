@@ -21,13 +21,13 @@ export function Cta({ isAuthenticated }: { isAuthenticated: boolean }) {
             <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/30">
               <ShieldCheck className="h-7 w-7 text-white" />
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-balance">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-balance">
               Ready to see what&apos;s attacking{" "}
               <span className="text-gradient">your app?</span>
             </h2>
             <p className="mt-4 text-zinc-400 leading-relaxed">
-              Spin up the dashboard and watch live traffic get scored and blocked
-              in real time. Set up takes less than a minute.
+              Open the console and watch live traffic get scored, flagged, and
+              blocked — with the exact findings behind every decision.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
