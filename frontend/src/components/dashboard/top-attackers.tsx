@@ -70,7 +70,7 @@ export function TopAttackers() {
                     <div className="flex items-center gap-2 mt-1">
                       <div className="h-1 flex-1 rounded-full bg-zinc-800 overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-red-500/70"
+                          className={`h-full rounded-full ${severityBar[level]}`}
                           style={{
                             width: `${Math.min(
                               (attacker.count / (attackers[0]?.count || 1)) * 100,
@@ -84,7 +84,9 @@ export function TopAttackers() {
                       </p>
                     </div>
                   </div>
-                  <Badge variant={level.variant}>{level.label}</Badge>
+                  <Badge variant="outline" className="capitalize">
+                    {level}
+                  </Badge>
                 </div>
               )
             })
