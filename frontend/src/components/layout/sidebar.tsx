@@ -3,9 +3,11 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
+import { useQuery } from "@tanstack/react-query"
 import { cn } from "@/lib/utils"
 import { useSidebarStore } from "@/store/sidebar-store"
 import { useAuthStore } from "@/store/auth-store"
+import { alertsService } from "@/services/alerts"
 import {
   LayoutDashboard,
   Activity,
@@ -80,7 +82,7 @@ function NavSection({
   return (
     <div className="mb-4">
       {title && !collapsed && (
-        <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+        <p className="px-4 mb-2 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-500">
           {title}
         </p>
       )}
@@ -103,8 +105,8 @@ function NavSection({
             {!collapsed && (
               <>
                 <span className="truncate">{item.label}</span>
-                {item.badge && (
-                  <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500/10 px-1.5 text-xs font-medium text-red-400">
+                {item.badge && item.badge > 0 && (
+                  <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-sev-critical/15 px-1.5 font-mono text-xs font-medium text-sev-critical ring-1 ring-sev-critical/30">
                     {item.badge}
                   </span>
                 )}
