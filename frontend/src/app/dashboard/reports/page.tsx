@@ -91,13 +91,13 @@ export default function ReportsPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500">Allowed</span>
-                  <span className="font-mono text-green-400">
+                  <span className="font-mono text-blue-400">
                     {(trafficSummary.total_requests || 0) - (trafficSummary.total_blocked || 0)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500">Blocked</span>
-                  <span className="font-mono text-red-400">{trafficSummary.total_blocked || 0}</span>
+                  <span className="font-mono text-sev-critical">{trafficSummary.total_blocked || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500">Block Rate</span>

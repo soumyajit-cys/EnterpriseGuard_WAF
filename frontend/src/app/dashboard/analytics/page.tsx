@@ -60,7 +60,7 @@ export default function AnalyticsPage() {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-600/10"><Shield className="h-6 w-6 text-green-400" /></div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10"><Shield className="h-6 w-6 text-blue-400" /></div>
             <div>
               <p className="text-2xl font-bold text-zinc-100">{overview?.blocked || 0}</p>
               <p className="text-xs text-zinc-500">Blocked</p>
@@ -69,7 +69,7 @@ export default function AnalyticsPage() {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-600/10"><AlertTriangle className="h-6 w-6 text-red-400" /></div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-sev-critical/10"><AlertTriangle className="h-6 w-6 text-sev-critical" /></div>
             <div>
               <p className="text-2xl font-bold text-zinc-100">{overview?.alerts || 0}</p>
               <p className="text-xs text-zinc-500">Alerts</p>
@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
                       {c.attacks.map((a) => (
                         <span
                           key={a.type}
-                          className="rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] text-red-400"
+                          className="rounded-full border border-sev-critical/25 bg-sev-critical/10 px-2 py-0.5 text-[10px] text-sev-critical"
                         >
                           {a.type} × {a.count}
                         </span>
