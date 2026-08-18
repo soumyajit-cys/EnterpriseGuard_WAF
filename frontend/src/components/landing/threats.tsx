@@ -22,7 +22,7 @@ export function Threats() {
           <SectionHeading
             align="left"
             eyebrow="Threat Coverage"
-            eyebrowColor="text-red-400"
+            eyebrowColor="text-sev-critical"
             title="The OWASP Top 10,"
             highlight="handled."
             subtitle="Each detection rule is a dedicated scoring engine with curated payload patterns — layered so a single attack often trips multiple detectors, producing a combined threat score that's hard to evade."
@@ -82,11 +82,11 @@ export function Threats() {
                 >
                   <span className="text-zinc-600">{row.time}</span>
                   <span className="text-zinc-400">{row.ip}</span>
-                  <span className="text-yellow-400">{row.type}</span>
-                  <span className="text-zinc-500">score {row.score}</span>
-                  <span className="px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 text-[10px] border border-red-500/20">
-                    {row.action}
+                  <span className={severityText[severityFromScore(row.score)]}>
+                    {row.type}
                   </span>
+                  <span className="text-zinc-500">score {row.score}</span>
+                  <VerdictChip verdict="BLOCK" />
                 </motion.div>
               ))}
             </div>
