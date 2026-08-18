@@ -21,7 +21,7 @@ export default function LiveTrafficPage() {
   const [isConnected, setIsConnected] = useState(false)
   const [authError, setAuthError] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const wsUrl = getWsURL("/ws/traffic")
 
@@ -46,7 +46,11 @@ export default function LiveTrafficPage() {
   })
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+    const el = containerRef.current
+    if (!el) return
+    if (el.scrollTop < 48) {
+      el.scrollTo({ top: 0, behavior: "smooth" })
+    }
   }, [events])
 
   return (
@@ -67,7 +71,7 @@ export default function LiveTrafficPage() {
       </div>
 
       <Card>
-        <CardContent className="p-0 h-[600px] overflow-y-auto">
+        <CardContent ref={containerRef} className="p-0 h-[600px] overflow-y-auto">
           <AnimatePresence initial={false}>
             {events.map((event, i) => {
               const isExpanded = expandedId === event.id
