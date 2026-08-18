@@ -121,9 +121,9 @@ function Playground() {
           animate={{ opacity: 1, y: 0 }}
           className="mt-14 text-center"
         >
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs text-blue-300">
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 font-mono text-xs text-blue-300">
             <FlaskConical className="h-3.5 w-3.5" />
-            15+ detectors · encoded payloads · no sign-up needed
+            16 engines · encoded payloads · no sign-up needed
           </div>
           <h1 className="mt-5 text-4xl sm:text-5xl font-black tracking-tight text-white">
             Test any attack payload against{" "}
