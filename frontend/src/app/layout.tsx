@@ -37,7 +37,9 @@ export default function RootLayout({
       <head>
         <meta name="darkreader-lock" />
       </head>
-      <body className={inter.className}>
+      <body
+        className={`${plex.variable} ${grotesk.variable} ${jetbrains.variable} antialiased`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>
