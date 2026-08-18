@@ -7,11 +7,14 @@ function Skeleton({
   return (
     <div
       className={cn(
-        "animate-pulse rounded-md bg-zinc-800",
+        "relative overflow-hidden rounded-md bg-zinc-800/70",
         className
       )}
+      aria-hidden
       {...props}
-    />
+    >
+      <div className="animate-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-zinc-700/40 to-transparent" />
+    </div>
   )
 }
 
