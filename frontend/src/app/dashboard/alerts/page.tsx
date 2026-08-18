@@ -79,29 +79,24 @@ export default function AlertsPage() {
       <Card>
         <CardContent className="p-0">
           {data?.items.map((alert: Alert) => (
-            <div key={alert.id} className="flex items-start gap-4 p-4 border-b border-zinc-800 last:border-0 hover:bg-zinc-800/30 transition-colors">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                alert.severity === "critical" ? "bg-red-500/10" :
-                alert.severity === "high" ? "bg-orange-500/10" :
-                "bg-yellow-500/10"
-              }`}>
-                <Bell className={`h-5 w-5 ${
-                  alert.severity === "critical" ? "text-red-400" :
-                  alert.severity === "high" ? "text-orange-400" :
-                  "text-yellow-400"
-                }`} />
+            <div key={alert.id} className="relative flex items-start gap-4 overflow-hidden p-4 border-b border-zinc-800 last:border-0 hover:bg-zinc-800/30 transition-colors">
+              <span
+                className={cn(
+                  "absolute left-0 top-0 h-full w-1 rounded-r-full",
+                  severityRail[severityOf(alert.severity)]
+                )}
+                aria-hidden
+              />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800/50 border border-zinc-700">
+                <Bell className="h-5 w-5 text-zinc-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <Badge variant={
-                    alert.severity === "critical" ? "danger" :
-                    alert.severity === "high" ? "warning" :
-                    "info"
-                  }>{alert.severity}</Badge>
+                  <SeverityChip value={alert.severity} />
                   {alert.resolved && <Badge variant="success">Resolved</Badge>}
                 </div>
                 <p className="text-sm text-zinc-300">{alert.message}</p>
-                <div className="flex items-center gap-3 mt-1 text-xs text-zinc-600">
+                <div className="flex items-center gap-3 mt-1 font-mono text-xs text-zinc-600">
                   {alert.ip_address && <span>IP: {alert.ip_address}</span>}
                   {alert.source && <span>Source: {alert.source}</span>}
                   {alert.created_at && <span>{timeAgo(alert.created_at)}</span>}
