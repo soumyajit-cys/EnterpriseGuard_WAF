@@ -152,7 +152,6 @@ export default function LiveTrafficPage() {
               description="Live events appear here as the engine inspects them. Send traffic to your API, or open the playground to generate a few."
             />
           )}
-          <div ref={bottomRef} />
         </CardContent>
       </Card>
     </motion.div>
