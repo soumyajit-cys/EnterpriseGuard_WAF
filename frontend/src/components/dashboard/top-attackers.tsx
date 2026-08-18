@@ -7,11 +7,12 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ShieldOff, ChevronRight } from "lucide-react"
 import { analyticsService } from "@/services/analytics"
+import { severityBar, type SeverityLevel } from "@/lib/severity"
 
-function threatLevel(count: number) {
-  if (count >= 20) return { label: "critical", variant: "danger" as const }
-  if (count >= 10) return { label: "high", variant: "warning" as const }
-  return { label: "medium", variant: "info" as const }
+function threatLevel(count: number): SeverityLevel {
+  if (count >= 20) return "critical"
+  if (count >= 10) return "high"
+  return "medium"
 }
 
 export function TopAttackers() {
