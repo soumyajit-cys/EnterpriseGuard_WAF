@@ -7,7 +7,11 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { EmptyState } from "@/components/ui/empty-state"
+import { VerdictChip } from "@/components/ui/verdict-chip"
 import { analyticsService } from "@/services/analytics"
+import { cn } from "@/lib/utils"
+import { severityText, severityFromScore } from "@/lib/severity"
 import {
   UserX,
   Flame,
@@ -74,13 +78,11 @@ export default function DossiersPage() {
               ))}
             </div>
           ) : dossiers.length === 0 ? (
-            <div className="flex flex-col items-center py-16 text-center">
-              <UserX className="h-10 w-10 text-zinc-600 mb-4" />
-              <p className="text-zinc-400 font-medium">No attackers in this window</p>
-              <p className="text-sm text-zinc-600 mt-1">
-                Blocked IPs with repeat behavior show up here with full profiles.
-              </p>
-            </div>
+            <EmptyState
+              icon={UserX}
+              title="No attackers in this window"
+              description="Blocked IPs with repeat behavior show up here with full profiles."
+            />
           ) : (
             <div className="space-y-2.5">
               {dossiers.map((d, i) => (
