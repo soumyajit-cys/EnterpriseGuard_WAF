@@ -113,18 +113,22 @@ export default function DossiersPage() {
                     )}
                     <span className="ml-auto flex items-center gap-4 text-xs text-zinc-500 tabular-nums">
                       <span className="flex items-center gap-1">
-                        <ShieldAlert className="h-3.5 w-3.5 text-red-400" />
+                        <ShieldAlert className={cn("h-3.5 w-3.5", severityText[severityFromScore(d.max_score ?? 0)])} />
                         {d.blocks} blocks
                       </span>
                       <span>{d.distinct_threats} threat types</span>
-                      <span>max {d.max_score} pts</span>
+                      <span className={severityText[severityFromScore(d.max_score ?? 0)]}>max {d.max_score} pts</span>
                     </span>
                   </div>
                   <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                     {d.threat_types.slice(0, 6).map((t) => (
                       <span
                         key={t.type}
-                        className="rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 font-mono text-[10px] text-red-300"
+                        className={cn(
+                          "rounded-full border px-2 py-0.5 font-mono text-[10px]",
+                          severityText[severityFromScore(d.max_score ?? 0)],
+                          "border-current/25"
+                        )}
                       >
                         {t.type} ×{t.count}
                       </span>
