@@ -7,11 +7,10 @@ import {
   Globe,
   Radar,
   Gauge,
-  Fingerprint,
   Lock,
-  BrainCircuit,
   Network,
   ShieldBan,
+  FlaskConical,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -36,83 +35,83 @@ export interface Feature {
 export const features: Feature[] = [
   {
     icon: ScanLine,
-    title: "SQL Injection Shield",
+    title: "Injection engines",
     description:
-      "Real-time detection of SQLi payloads across query params, bodies, and headers using a multi-pattern scoring engine.",
+      "SQL injection, encoded SQLi, LDAP, and command injection payloads caught in params, bodies, and headers.",
     iconBg: "from-red-500 to-rose-600",
     iconShadow: "shadow-red-500/25",
     hoverBorder: "hover:border-red-500/40",
-    tag: "SQLi",
+    tag: "INJECTION",
   },
   {
     icon: Bug,
-    title: "XSS & Command Injection",
+    title: "Script & markup abuse",
     description:
-      "Neutralizes cross-site scripting, command injection, and LDAP injection before they ever reach your application.",
+      "XSS payloads and server-side template injection expressions, including obfuscated and encoded variants.",
     iconBg: "from-orange-500 to-amber-600",
     iconShadow: "shadow-orange-500/25",
     hoverBorder: "hover:border-orange-500/40",
-    tag: "XSS",
+    tag: "XSS/SSTI",
   },
   {
     icon: Globe,
-    title: "SSRF Protection",
+    title: "Server-side attacks",
     description:
-      "Blocks server-side request forgery attempts that try to pivot into your internal network from the edge.",
+      "SSRF attempts at internal and cloud-metadata targets, plus RFI, LFI, and XXE wrapper payloads.",
     iconBg: "from-cyan-500 to-sky-600",
     iconShadow: "shadow-cyan-500/25",
     hoverBorder: "hover:border-cyan-500/40",
     tag: "SSRF",
   },
   {
-    icon: Radar,
-    title: "Bot Traffic Detection",
+    icon: Network,
+    title: "Protocol smuggling",
     description:
-      "Identifies automated scraping, credential stuffing, and brute-force traffic patterns instantly.",
+      "CL+TE / TE+CL HTTP smuggling, CRLF header injection, and path traversal sequences normalized before scoring.",
     iconBg: "from-purple-500 to-violet-600",
     iconShadow: "shadow-purple-500/25",
     hoverBorder: "hover:border-purple-500/40",
-    tag: "BOT",
+    tag: "SMUGGLING",
+  },
+  {
+    icon: Radar,
+    title: "Application abuse",
+    description:
+      "GraphQL introspection and batching abuse, plus dangerous filename and content detection on uploads.",
+    iconBg: "from-emerald-500 to-teal-600",
+    iconShadow: "shadow-emerald-500/25",
+    hoverBorder: "hover:border-emerald-500/40",
+    tag: "GRAPHQL",
   },
   {
     icon: Gauge,
-    title: "Rate Limiting",
+    title: "Anomaly scoring",
     description:
-      "Per-IP sliding window rate limits stop DDoS and abuse without affecting legitimate users.",
+      "Requests are layered across all 16 engines with adaptive baselines; scores above threshold auto-block in prevention mode.",
     iconBg: "from-blue-500 to-indigo-600",
     iconShadow: "shadow-blue-500/25",
     hoverBorder: "hover:border-blue-500/40",
-    tag: "DDoS",
+    tag: "CORE",
   },
   {
-    icon: Fingerprint,
-    title: "CSRF Protection",
+    icon: ShieldBan,
+    title: "Block & allow lists",
     description:
-      "Token-based CSRF validation on all state-changing requests out of the box.",
-    iconBg: "from-emerald-500 to-green-600",
-    iconShadow: "shadow-emerald-500/25",
-    hoverBorder: "hover:border-emerald-500/40",
-    tag: "CSRF",
-  },
-  {
-    icon: Lock,
-    title: "Block & Allow Lists",
-    description:
-      "Manage persistent blocklists and allowlists per IP with expiry, straight from the dashboard.",
+      "Persistent per-IP lists with expiry, auto-block on repeated violations, and rate limiting per address.",
     iconBg: "from-indigo-500 to-blue-600",
     iconShadow: "shadow-indigo-500/25",
     hoverBorder: "hover:border-indigo-500/40",
     tag: "IP",
   },
   {
-    icon: BrainCircuit,
-    title: "Scoring Engine",
+    icon: FlaskConical,
+    title: "Payload playground",
     description:
-      "Every request is layered across 16 detection engines — SQLi, XSS, SSRF, smuggling, GraphQL abuse, malicious uploads and more. High scores auto-block in prevention mode.",
+      "Throw any payload at the live engine, read the exact findings and score, and tune rules before deployment.",
     iconBg: "from-pink-500 to-fuchsia-600",
     iconShadow: "shadow-pink-500/25",
     hoverBorder: "hover:border-pink-500/40",
-    tag: "16 ENGINES",
+    tag: "TEST",
   },
 ]
 
