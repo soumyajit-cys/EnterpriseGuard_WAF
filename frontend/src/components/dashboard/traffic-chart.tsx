@@ -141,6 +141,8 @@ export function TrafficChart() {
                   strokeWidth={2}
                   fill="url(#requests)"
                   name="Total Requests"
+                  isAnimationActive
+                  animationDuration={500}
                 />
                 <Area
                   type="monotone"
@@ -149,9 +151,12 @@ export function TrafficChart() {
                   strokeWidth={2}
                   fill="url(#blocked)"
                   name="Blocked"
+                  isAnimationActive
+                  animationDuration={500}
                 />
               </AreaChart>
-            </ResponsiveContainer>
+              </ResponsiveContainer>
+            </div>
           )}
         </div>
       </CardContent>
