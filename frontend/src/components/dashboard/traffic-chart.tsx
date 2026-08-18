@@ -83,8 +83,8 @@ export function TrafficChart() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="requests" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#1E9FD8" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#1E9FD8" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="blocked" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3} />
@@ -93,37 +93,37 @@ export function TrafficChart() {
                 </defs>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="#27272A"
+                  stroke="#2E3E55"
                   vertical={false}
                 />
                 <XAxis
                   dataKey="time"
-                  stroke="#71717A"
-                  tick={{ fill: "#71717A", fontSize: 12 }}
+                  stroke="#6C7F99"
+                  tick={{ fill: "#6C7F99", fontSize: 12 }}
                   tickLine={false}
                   axisLine={false}
                   minTickGap={30}
                 />
                 <YAxis
-                  stroke="#71717A"
-                  tick={{ fill: "#71717A", fontSize: 12 }}
+                  stroke="#6C7F99"
+                  tick={{ fill: "#6C7F99", fontSize: 12 }}
                   tickLine={false}
                   axisLine={false}
                   allowDecimals={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: "#18181B",
-                    border: "1px solid #27272A",
+                    background: "#0F1622",
+                    border: "1px solid #223044",
                     borderRadius: "8px",
                     boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
                   }}
-                  labelStyle={{ color: "#E4E4E7" }}
+                  labelStyle={{ color: "#DEE7F0" }}
                 />
                 <Legend
                   wrapperStyle={{ paddingTop: "12px" }}
                   formatter={(value) => (
-                    <span style={{ color: "#A1A1AA", fontSize: "12px" }}>
+                    <span style={{ color: "#96A8BF", fontSize: "12px" }}>
                       {value}
                     </span>
                   )}
@@ -131,7 +131,7 @@ export function TrafficChart() {
                 <Area
                   type="monotone"
                   dataKey="requests"
-                  stroke="#2563EB"
+                  stroke="#1E9FD8"
                   strokeWidth={2}
                   fill="url(#requests)"
                   name="Total Requests"

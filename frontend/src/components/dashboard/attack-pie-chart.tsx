@@ -81,11 +81,11 @@ export function AttackPieChart() {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    background: "#18181B",
-                    border: "1px solid #27272A",
+                    background: "#0F1622",
+                    border: "1px solid #223044",
                     borderRadius: "8px",
                   }}
-                  labelStyle={{ color: "#E4E4E7" }}
+                  labelStyle={{ color: "#DEE7F0" }}
                   formatter={(value, name, item) => {
                     const payload = (item as { payload?: { fullName?: string } } | undefined)?.payload
                     const fullName = payload?.fullName ?? String(name)

@@ -35,7 +35,7 @@ export default function PublicPlaygroundPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#09090B]">
+        <div className="flex min-h-screen items-center justify-center bg-background">
           <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
         </div>
       }
