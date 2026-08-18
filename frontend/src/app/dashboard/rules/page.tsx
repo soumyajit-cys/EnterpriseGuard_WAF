@@ -4,12 +4,14 @@ import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import { toast } from "sonner"
-import { Plus, Search, Shield, Pencil, Trash2, Cpu } from "lucide-react"
+import { Plus, Search, Shield, Pencil, Trash2, Cpu, ShieldX } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { SeverityChip } from "@/components/ui/severity-chip"
+import { EmptyState } from "@/components/ui/empty-state"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
 import { rulesService } from "@/services/rules"
@@ -107,9 +109,7 @@ export default function RulesPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-zinc-200">{rule.name}</span>
-                    <Badge variant={rule.severity === "critical" ? "danger" : rule.severity === "high" ? "warning" : "info"}>
-                      {rule.severity}
-                    </Badge>
+                    <SeverityChip value={rule.severity} />
                     <Badge variant="outline">P{rule.priority}</Badge>
                   </div>
                   {rule.description && (
@@ -130,7 +130,11 @@ export default function RulesPage() {
               </div>
             ))}
             {!isLoading && data?.items.length === 0 && (
-              <div className="text-center py-12 text-zinc-500">No rules found</div>
+              <EmptyState
+                icon={ShieldX}
+                title="No custom rules"
+                description="Create a rule with a regex pattern to extend the engine, or keep the built-in detectors."
+              />
             )}
           </div>
 
@@ -177,9 +181,7 @@ export default function RulesPage() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono text-xs font-medium text-zinc-200">{r.name}</span>
-                    <Badge variant={r.severity === "critical" ? "danger" : r.severity === "high" ? "warning" : "info"}>
-                      {r.severity}
-                    </Badge>
+                    <SeverityChip value={r.severity} />
                     <Badge variant="outline">{r.score} pts</Badge>
                   </div>
                   <p className="text-xs text-zinc-500 mt-1">{r.description}</p>
