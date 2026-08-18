@@ -75,46 +75,49 @@ export default function LogsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-zinc-800">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase">Time</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase">IP</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase">Method</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase">Path</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase">Action</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase">Score</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase">Attack</th>
+                  <th className="text-left px-4 py-3 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-500">Time</th>
+                  <th className="text-left px-4 py-3 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-500">IP</th>
+                  <th className="text-left px-4 py-3 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-500">Method</th>
+                  <th className="text-left px-4 py-3 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-500">Path</th>
+                  <th className="text-left px-4 py-3 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-500">Action</th>
+                  <th className="text-left px-4 py-3 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-500">Score</th>
+                  <th className="text-left px-4 py-3 font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-500">Attack</th>
                 </tr>
               </thead>
               <tbody>
                 {data?.items.map((log: RequestLog) => (
                   <tr key={log.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                    <td className="px-4 py-3 text-sm text-zinc-400">{formatDate(log.created_at)}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-zinc-400">{formatDate(log.created_at)}</td>
                     <td className="px-4 py-3 text-sm font-mono text-zinc-300">{log.ip_address}</td>
                     <td className="px-4 py-3 text-sm text-zinc-400">{log.method || "-"}</td>
                     <td className="px-4 py-3 text-sm text-zinc-300 max-w-[300px] truncate">{log.path}</td>
                     <td className="px-4 py-3">
-                      <Badge variant={log.action === "BLOCK" ? "danger" : "success"}>
-                        {log.action}
-                      </Badge>
+                      <VerdictChip verdict={log.action ?? "ALLOW"} />
                     </td>
-                    <td className="px-4 py-3 text-sm">
+                    <td className="px-4 py-3">
                       {log.score != null && (
-                        <span className={`font-mono ${
-                          log.score >= 80 ? "text-red-400" :
-                          log.score >= 50 ? "text-yellow-400" :
-                          "text-green-400"
-                        }`}>
-                          {log.score}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <ScoreBar score={log.score} />
+                          <span className={cn("font-mono text-xs tabular-nums", severityText[severityFromScore(log.score)])}>
+                            {log.score}
+                          </span>
+                        </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-zinc-400">{log.attack_type || "-"}</td>
+                    <td className={cn("px-4 py-3 font-mono text-xs", severityText[severityFromScore(log.score ?? 0)])}>
+                      {log.attack_type || "-"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
           {!isLoading && data?.items.length === 0 && (
-            <div className="text-center py-12 text-zinc-500">No logs found</div>
+            <EmptyState
+              icon={ScrollText}
+              title="No logs match"
+              description="Requests the engine has inspected will appear here. Adjust the filters or clear the search."
+            />
           )}
         </CardContent>
       </Card>
