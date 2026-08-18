@@ -84,27 +84,25 @@ export function Playground() {
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {["SQLi", "XSS", "SSRF", "Cmd", "LFI", "SSTI", "Smuggling", "GraphQL"].map((chip) => (
-                  <span key={chip} className="rounded-full border border-zinc-800 bg-zinc-900/60 px-2.5 py-1 text-[10px] font-medium text-zinc-500">
+                  <span key={chip} className="rounded-full border border-zinc-800 bg-zinc-900/60 px-2.5 py-1 font-mono text-[10px] font-medium text-zinc-500">
                     {chip}
                   </span>
                 ))}
               </div>
-              <div className="rounded-lg border border-red-500/25 bg-red-500/[0.07] p-3.5">
+              <div className="rounded-lg border border-sev-critical/25 bg-sev-critical/[0.07] p-3.5">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-red-400 font-mono">SQL_INJECTION</span>
-                  <span className="rounded-full bg-red-500/15 border border-red-500/30 px-2 py-0.5 text-[10px] font-semibold text-red-400">
-                    BLOCKED · 403
-                  </span>
+                  <span className="font-mono text-xs font-semibold text-sev-critical">SQL_INJECTION</span>
+                  <VerdictChip verdict="BLOCK" className="mr-1" />
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-zinc-500 font-mono">
                   <span>score 100 · evidence</span>
-                  <span className="text-red-400/70">{"' OR '1'='1' --"}</span>
+                  <span className="text-sev-critical/70">{"' OR '1'='1' --"}</span>
                 </div>
               </div>
-              <div className="rounded-lg border border-yellow-500/25 bg-yellow-500/[0.06] p-3.5">
+              <div className="rounded-lg border border-sev-high/25 bg-sev-high/[0.06] p-3.5">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-yellow-400 font-mono">BOT_TRAFFIC</span>
-                  <span className="text-[11px] text-zinc-500">score 60</span>
+                  <span className="font-mono text-xs font-semibold text-sev-high">BOT_TRAFFIC</span>
+                  <span className="font-mono text-[11px] text-zinc-500">score 60</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
                   <motion.div
@@ -112,7 +110,7 @@ export function Playground() {
                     whileInView={{ width: "60%" }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.9, ease: "easeOut" }}
-                    className="h-full rounded-full bg-yellow-500"
+                    className="h-full rounded-full bg-sev-high"
                   />
                 </div>
               </div>
