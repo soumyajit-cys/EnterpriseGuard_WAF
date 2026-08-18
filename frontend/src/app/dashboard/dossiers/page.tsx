@@ -127,7 +127,7 @@ export default function DossiersPage() {
                         className={cn(
                           "rounded-full border px-2 py-0.5 font-mono text-[10px]",
                           severityText[severityFromScore(d.max_score ?? 0)],
-                          "border-current/25"
+                          severityBorder[severityFromScore(d.max_score ?? 0)]
                         )}
                       >
                         {t.type} ×{t.count}

@@ -30,6 +30,14 @@ export const severityChip: Record<SeverityLevel, string> = {
   critical: "bg-sev-critical/10 text-sev-critical border-sev-critical/25",
 }
 
+export const severityBorder: Record<SeverityLevel, string> = {
+  info: "border-sev-info/25",
+  low: "border-sev-low/25",
+  medium: "border-sev-medium/25",
+  high: "border-sev-high/25",
+  critical: "border-sev-critical/25",
+}
+
 export const severityText: Record<SeverityLevel, string> = {
   info: "text-sev-info",
   low: "text-sev-low",
