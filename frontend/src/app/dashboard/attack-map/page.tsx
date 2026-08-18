@@ -40,12 +40,6 @@ const project = (lat: number, lng: number, w: number, h: number) => ({
   y: ((90 - lat) / 180) * h,
 })
 
-const severityBadge: Record<string, "default" | "danger" | "warning"> = {
-  BLOCK: "danger",
-  ALLOW: "default",
-  RATE_LIMIT: "warning",
-}
-
 export default function AttackMapPage() {
   const [hours, setHours] = useState(24)
   const [liveEvents, setLiveEvents] = useState<TrafficEvent[]>([])
@@ -128,10 +122,10 @@ export default function AttackMapPage() {
             {isLoading ? (
               <Skeleton className="h-[380px] rounded-xl" />
             ) : (
-              <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-[#07080C]">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(37,99,235,0.06),transparent_70%)]" />
+              <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-[#070B12]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(30,159,216,0.06),transparent_70%)]" />
                 <div className="absolute inset-0 opacity-[0.35]" style={{
-                  backgroundImage: "linear-gradient(rgba(39,39,42,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(39,39,42,0.5) 1px, transparent 1px)",
+                  backgroundImage: "linear-gradient(rgba(34,48,68,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(34,48,68,0.5) 1px, transparent 1px)",
                   backgroundSize: "40px 40px",
                 }} />
                 <svg
