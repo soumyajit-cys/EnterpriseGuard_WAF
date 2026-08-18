@@ -115,7 +115,11 @@ export default function AlertsPage() {
             </div>
           ))}
           {!isLoading && data?.items.length === 0 && (
-            <div className="text-center py-12 text-zinc-500">No alerts found</div>
+            <EmptyState
+              icon={BellOff}
+              title="No alerts match"
+              description="Alerting fires on high-severity findings. Adjust the filters to widen the window."
+            />
           )}
         </CardContent>
       </Card>
