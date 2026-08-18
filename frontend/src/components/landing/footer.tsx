@@ -6,29 +6,34 @@ import { ShieldCheck, Sparkles } from "lucide-react"
 const footerColumns = [
   {
     title: "Product",
-    links: ["Features", "How it works", "Threat coverage", "Live stats"],
+    links: [
+      { label: "Features", href: "#features" },
+      { label: "How it works", href: "#how-it-works" },
+      { label: "Threat coverage", href: "#threats" },
+      { label: "Live stats", href: "#stats" },
+    ],
   },
   {
     title: "Resources",
-    links: ["Documentation", "Status", "Changelog", "Security"],
-  },
-  {
-    title: "Company",
-    links: ["About", "Contact", "Privacy", "Terms"],
+    links: [
+      { label: "Security", href: "/security" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
+    ],
   },
 ]
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-white/5 bg-zinc-950">
+    <footer className="border-t border-zinc-800 bg-zinc-950">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-2 md:col-span-2">
             <Link href="/" className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/25">
                 <ShieldCheck className="h-4 w-4 text-white" />
               </div>
-              <p className="font-bold text-sm leading-none">
+              <p className="font-display font-bold text-sm leading-none">
                 Enterprise<span className="text-gradient">Guard</span>
               </p>
             </Link>
@@ -48,15 +53,18 @@ export function LandingFooter() {
 
           {footerColumns.map((col) => (
             <div key={col.title}>
-              <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500 mb-4">
+              <p className="font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-500 mb-4">
                 {col.title}
               </p>
               <ul className="space-y-3">
                 {col.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors">
-                      {link}
-                    </a>
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+                    >
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -64,7 +72,7 @@ export function LandingFooter() {
           ))}
         </div>
 
-        <div className="mt-14 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-14 pt-8 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-zinc-600">
             © {new Date().getFullYear()} EnterpriseGuard WAF · Built with FastAPI, Redis & Next.js
           </p>
