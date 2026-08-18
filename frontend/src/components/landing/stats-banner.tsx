@@ -19,9 +19,9 @@ export function StatsBanner({ stats }: { stats: PublicStats | null }) {
           />
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: "Requests Analyzed", value: stats?.total_requests ?? 0, icon: Activity, chip: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
-              { label: "Attacks Blocked", value: stats?.total_blocked ?? 0, icon: ShieldBan, chip: "bg-red-500/10 text-red-400 border-red-500/20" },
-              { label: "Alerts Raised", value: stats?.total_alerts ?? 0, icon: AlertTriangle, chip: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" },
+              { label: "Requests Inspected", value: stats?.total_requests ?? 0, icon: Activity, chip: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
+              { label: "Threats Blocked", value: stats?.total_blocked ?? 0, icon: ShieldBan, chip: "bg-sev-critical/10 text-sev-critical border-sev-critical/20" },
+              { label: "Security Alerts", value: stats?.total_alerts ?? 0, icon: AlertTriangle, chip: "bg-sev-medium/10 text-sev-medium border-sev-medium/20" },
               { label: "Active Rules", value: stats?.active_rules ?? 16, icon: Layers, chip: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" },
             ].map((stat, i) => (
               <motion.div
