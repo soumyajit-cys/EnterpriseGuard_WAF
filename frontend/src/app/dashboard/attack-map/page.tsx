@@ -135,8 +135,8 @@ export default function AttackMapPage() {
                 >
                   <defs>
                     <radialGradient id="dotGlow">
-                      <stop offset="0%" stopColor="#f87171" stopOpacity="0.9" />
-                      <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+                      <stop offset="0%" stopColor="#E5484D" stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="#E5484D" stopOpacity="0" />
                     </radialGradient>
                   </defs>
 
