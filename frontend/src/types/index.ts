@@ -93,6 +93,9 @@ export interface DashboardStats {
   total_alerts: number
   active_rules: number
   mode: string
+  cpu_percent: number
+  memory_used_mb: number
+  memory_total_mb: number
   threats_by_type: { name: string; value: number }[]
   top_attacker_ips: { ip: string; count: number }[]
   top_rules: { name: string; count: number }[]
