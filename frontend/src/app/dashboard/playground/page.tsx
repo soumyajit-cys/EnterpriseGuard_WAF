@@ -5,10 +5,14 @@ import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { VerdictChip } from "@/components/ui/verdict-chip"
+import { SeverityChip } from "@/components/ui/severity-chip"
+import { ScoreBar } from "@/components/ui/score-bar"
 import { wafService } from "@/services/waf"
 import type { PayloadTestResult } from "@/types"
+import { cn } from "@/lib/utils"
+import { severityDot, severityText, severityFromScore } from "@/lib/severity"
 import {
   FlaskConical,
   Play,
