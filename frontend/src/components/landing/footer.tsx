@@ -33,8 +33,9 @@ export function LandingFooter() {
               </p>
             </Link>
             <p className="mt-4 text-sm text-zinc-500 leading-relaxed max-w-xs">
-              The edge against modern web threats. A lightweight, self-hosted WAF
-              that scores every request and blocks what matters.
+              A self-hosted WAF that inspects every request, shows the findings
+              behind each decision, and blocks what matters — deployed as inline
+              middleware in your stack.
             </p>
             <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1">
               <span className="relative flex h-1.5 w-1.5">
@@ -69,7 +70,7 @@ export function LandingFooter() {
           </p>
           <div className="flex items-center gap-2 text-xs text-zinc-600">
             <Sparkles className="h-3.5 w-3.5 text-blue-500/60" />
-            Protection that never sleeps
+            Every request, inspected
           </div>
         </div>
       </div>

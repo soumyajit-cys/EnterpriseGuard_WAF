@@ -36,7 +36,7 @@ export function Cta({ isAuthenticated }: { isAuthenticated: boolean }) {
                 className="w-full sm:w-auto h-12 px-8 text-[15px] bg-gradient-to-r from-blue-600 to-cyan-600 shadow-xl shadow-blue-600/30 hover:scale-[1.02]"
               >
                 <Link href={isAuthenticated ? "/dashboard" : "/register"}>
-                  {isAuthenticated ? "Open Dashboard" : "Get Started Free"}
+                  {isAuthenticated ? "Open Dashboard" : "Start Securing Now"}
                   <ArrowUpRight className="h-4 w-4 ml-2" />
                 </Link>
               </Button>

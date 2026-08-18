@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { Terminal, Radar, Globe, ArrowUpRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SectionHeading } from "@/components/landing/shared"
+import { VerdictChip } from "@/components/ui/verdict-chip"
 
 const playgroundPoints = [
   { icon: Terminal, text: "Live scoring against all 16 engines with per-rule evidence" },

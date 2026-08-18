@@ -7,7 +7,7 @@ import { navLinks } from "@/components/landing/shared"
 
 export function LandingNav({ isAuthenticated }: { isAuthenticated: boolean }) {
   return (
-    <header className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-zinc-950/70 backdrop-blur-xl">
+    <header className="fixed top-0 inset-x-0 z-50 border-b border-zinc-800 bg-zinc-950/70 backdrop-blur-xl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="relative">
@@ -20,11 +20,11 @@ export function LandingNav({ isAuthenticated }: { isAuthenticated: boolean }) {
             </span>
           </div>
           <div>
-            <p className="font-bold text-[15px] leading-none tracking-tight">
+            <p className="font-display font-bold text-[15px] leading-none tracking-tight">
               Enterprise<span className="text-gradient">Guard</span>
             </p>
-            <p className="text-[10px] text-zinc-500 leading-none mt-1 tracking-widest uppercase">
-              WAF Platform
+            <p className="font-mono text-[10px] text-zinc-500 leading-none mt-1 tracking-[0.2em] uppercase">
+              WAF Console
             </p>
           </div>
         </Link>
@@ -51,7 +51,7 @@ export function LandingNav({ isAuthenticated }: { isAuthenticated: boolean }) {
             className="h-9 bg-gradient-to-r from-blue-600 to-cyan-600 shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40"
           >
             <Link href={isAuthenticated ? "/dashboard" : "/register"}>
-              {isAuthenticated ? "Open Dashboard" : "Get Started"}
+              {isAuthenticated ? "Open Dashboard" : "Start Securing"}
               <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
             </Link>
           </Button>
