@@ -241,26 +241,28 @@ export default function PlaygroundPage() {
                 className="space-y-4"
               >
                 <div
-                  className={`rounded-2xl border p-6 ${
+                  className={cn(
+                    "rounded-2xl border p-6",
                     result.verdict === "BLOCK"
-                      ? "border-red-500/30 bg-red-950/20"
-                      : "border-emerald-500/30 bg-emerald-950/20"
-                  }`}
+                      ? "border-sev-critical/30 bg-sev-critical/[0.06]"
+                      : "border-blue-500/30 bg-blue-500/[0.06]"
+                  )}
                 >
                   <div className="flex items-center justify-between flex-wrap gap-3">
                     <div className="flex items-center gap-3">
                       {result.verdict === "BLOCK" ? (
-                        <ShieldAlert className="h-8 w-8 text-red-400" />
+                        <ShieldAlert className="h-8 w-8 text-sev-critical" />
                       ) : (
-                        <ShieldCheck className="h-8 w-8 text-emerald-400" />
+                        <ShieldCheck className="h-8 w-8 text-blue-400" />
                       )}
                       <div>
                         <p
-                          className={`text-2xl font-bold ${
+                          className={cn(
+                            "text-2xl font-bold",
                             result.verdict === "BLOCK"
-                              ? "text-red-400"
-                              : "text-emerald-400"
-                          }`}
+                              ? "text-sev-critical"
+                              : "text-blue-400"
+                          )}
                         >
                           {result.verdict}
                         </p>
@@ -271,11 +273,14 @@ export default function PlaygroundPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={result.severity === "critical" || result.severity === "high" ? "danger" : "warning"}>
-                        {result.severity}
-                      </Badge>
-                      <span className="text-3xl font-bold text-zinc-100 tabular-nums">
+                    <div className="flex items-center gap-3">
+                      <SeverityChip value={result.severity} />
+                      <span
+                        className={cn(
+                          "text-3xl font-bold tabular-nums",
+                          severityText[severityFromScore(result.effective_score)]
+                        )}
+                      >
                         {result.effective_score}
                         <span className="text-sm text-zinc-500">/100</span>
                       </span>
@@ -287,6 +292,9 @@ export default function PlaygroundPage() {
                     <code className="text-xs text-zinc-300 font-mono truncate">
                       {result.input || result.body || "(empty)"}
                     </code>
+                  </div>
+                  <div className="mt-3">
+                    <ScoreBar score={result.effective_score} widthClass="w-full" />
                   </div>
                 </div>
 
