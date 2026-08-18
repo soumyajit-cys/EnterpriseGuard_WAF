@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { analyticsService } from "@/services/analytics"
 
-const COLORS = ["#EF4444", "#F59E0B", "#06B6D4", "#8B5CF6", "#22C55E", "#EC4899", "#6366F1"]
+const COLORS = ["#E5484D", "#E87B2B", "#E3B341", "#4FA3E8", "#1FC6D8", "#7B95B0"]
 
 const periods = ["live", "24h", "7d", "30d"] as const
 type Period = (typeof periods)[number]
