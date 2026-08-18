@@ -29,7 +29,7 @@ export function TopAttackers() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <ShieldOff className="h-5 w-5 text-red-400" />
+            <ShieldOff className="h-5 w-5 text-sev-critical" />
             Top Attacker IPs
           </span>
           <Link
