@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { EmptyState } from "@/components/ui/empty-state"
 import { wafService } from "@/services/waf"
 import { History, ShieldCheck } from "lucide-react"
 import type { PaginatedAuditLogs } from "@/types"
@@ -91,13 +92,11 @@ export default function AuditLogPage() {
             <>
               <div className="space-y-2">
                 {(data?.items ?? []).length === 0 ? (
-                  <div className="flex flex-col items-center py-16 text-center">
-                    <History className="h-10 w-10 text-zinc-600 mb-4" />
-                    <p className="text-zinc-400 font-medium">No audit entries yet</p>
-                    <p className="text-sm text-zinc-600 mt-1">
-                      Admin actions like IP blocks and settings changes appear here.
-                    </p>
-                  </div>
+                  <EmptyState
+                    icon={History}
+                    title="No audit entries yet"
+                    description="Admin actions like IP blocks and settings changes appear here."
+                  />
                 ) : (
                   data?.items.map((log) => (
                     <motion.div
