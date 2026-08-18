@@ -23,7 +23,7 @@ export function Playground() {
           <SectionHeading
             align="left"
             eyebrow="Public Playground"
-            eyebrowColor="text-fuchsia-400"
+            eyebrowColor="text-cyan-400"
             title="Attack the WAF."
             highlight="It bites back."
             subtitle="No signup, no setup. Throw payloads at the live detection engine and watch it score, explain, and block them in real time — complete with the exact evidence snippet that tripped each rule."
@@ -31,7 +31,7 @@ export function Playground() {
           <div className="space-y-4 -mt-4">
             {playgroundPoints.map((item) => (
               <div key={item.text} className="flex items-center gap-3 text-sm text-zinc-400">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-400">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-cyan-500/20 bg-cyan-500/10 text-cyan-400">
                   <item.icon className="h-4 w-4" />
                 </span>
                 {item.text}
@@ -42,7 +42,7 @@ export function Playground() {
             <Button
               asChild
               size="lg"
-              className="h-12 px-7 text-[15px] bg-gradient-to-r from-fuchsia-600 to-purple-600 shadow-xl shadow-fuchsia-600/25 hover:scale-[1.02]"
+              className="h-12 px-7 text-[15px] bg-gradient-to-r from-blue-600 to-cyan-600 shadow-xl shadow-blue-600/25 hover:scale-[1.02]"
             >
               <Link href="/playground">
                 Open the Playground
