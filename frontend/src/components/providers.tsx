@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
 import { Toaster } from "sonner"
+import { MotionConfig } from "framer-motion"
 import { useAuthStore } from "@/store/auth-store"
 
 function AuthInitializer({ children }: { children: React.ReactNode }) {
