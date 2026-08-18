@@ -105,7 +105,7 @@ export default function LiveTrafficPage() {
                         ? new Date(event.timestamp).toLocaleTimeString()
                         : "—"}
                     </span>
-                    <span className="font-mono text-xs text-zinc-500 w-14 shrink-0">
+                    <span className="font-mono text-xs text-zinc-500 w-14 shrink-0 hidden sm:inline">
                       {event.method}
                     </span>
                     <span className="font-mono text-xs text-zinc-400 w-36 shrink-0">
