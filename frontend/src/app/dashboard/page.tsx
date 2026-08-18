@@ -87,28 +87,28 @@ export default function DashboardPage() {
       >
         <StatCard
           title="Requests Today"
-          value={stats?.requests_today ?? 1250}
+          value={stats?.requests_today ?? 0}
           icon={Activity}
           variant="default"
           trend={{ value: 12, positive: true }}
         />
         <StatCard
           title="Blocked Requests"
-          value={stats?.blocked_today ?? 87}
+          value={stats?.blocked_today ?? 0}
           icon={ShieldBan}
           variant="danger"
           trend={{ value: 8, positive: false }}
         />
         <StatCard
           title="Allowed Requests"
-          value={stats?.allowed_today ?? 1163}
+          value={stats?.allowed_today ?? 0}
           icon={ShieldCheck}
           variant="success"
           trend={{ value: 15, positive: true }}
         />
         <StatCard
           title="Attack Rate"
-          value={stats?.attack_rate ?? "6.9%"}
+          value={stats?.attack_rate ?? "0%"}
           icon={AlertTriangle}
           variant="warning"
           trend={{ value: 2, positive: false }}
@@ -121,25 +121,29 @@ export default function DashboardPage() {
       >
         <StatCard
           title="System CPU"
-          value="23%"
+          value={stats ? `${stats.cpu_percent}%` : "—"}
           icon={Cpu}
           variant="success"
         />
         <StatCard
           title="Memory"
-          value="1.2 GB"
+          value={
+            stats
+              ? `${((stats.memory_used_mb ?? 0) / 1024).toFixed(1)} GB`
+              : "—"
+          }
           icon={HardDrive}
           variant="default"
         />
         <StatCard
           title="WAF Mode"
-          value={stats?.mode ?? "detection"}
+          value={stats?.mode ?? "unknown"}
           icon={Gauge}
           variant="warning"
         />
         <StatCard
           title="Active Rules"
-          value={stats?.active_rules ?? 5}
+          value={stats?.active_rules ?? 0}
           icon={ShieldCheck}
           variant="success"
         />
