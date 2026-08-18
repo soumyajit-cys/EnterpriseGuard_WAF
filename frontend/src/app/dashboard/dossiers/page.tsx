@@ -11,7 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { VerdictChip } from "@/components/ui/verdict-chip"
 import { analyticsService } from "@/services/analytics"
 import { cn } from "@/lib/utils"
-import { severityText, severityFromScore } from "@/lib/severity"
+import { severityText, severityBorder, severityFromScore } from "@/lib/severity"
 import {
   UserX,
   Flame,
