@@ -67,7 +67,7 @@ export function Playground() {
           transition={{ duration: 0.6 }}
           className="relative"
         >
-          <div className="absolute -inset-4 bg-gradient-to-br from-fuchsia-600/10 to-cyan-600/10 blur-2xl rounded-3xl pointer-events-none" />
+          <div className="absolute -inset-4 bg-gradient-to-br from-blue-600/10 to-cyan-600/10 blur-2xl rounded-3xl pointer-events-none" />
           <div className="relative rounded-2xl border border-zinc-800 bg-zinc-950/90 shadow-2xl shadow-black/50 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900/60">
               <div className="flex items-center gap-2.5">
