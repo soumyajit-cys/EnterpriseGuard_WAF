@@ -1,14 +1,18 @@
+import psutil
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select, func, and_, cast, Integer
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
 from app.auth.dependencies import require_analyst
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.request_log import RequestLog
 from app.models.alert import Alert
 from app.models.rule import Rule
 from app.models.user import User
+
+psutil.cpu_percent()  # warm up so the first real call returns a delta, not 0.0
 
 router = APIRouter(
     prefix="/dashboard",
