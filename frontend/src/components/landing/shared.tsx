@@ -10,6 +10,7 @@ import {
   Network,
   ShieldBan,
   FlaskConical,
+  BrainCircuit,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
