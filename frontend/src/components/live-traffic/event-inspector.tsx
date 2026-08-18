@@ -5,7 +5,6 @@ import { Globe, User } from "lucide-react"
 import type { TrafficEvent } from "@/types"
 import { VerdictChip } from "@/components/ui/verdict-chip"
 import { ScoreBar } from "@/components/ui/score-bar"
-import { SeverityChip } from "@/components/ui/severity-chip"
 
 export function EventInspector({ event }: { event: TrafficEvent }) {
   const attackTypes = (event.attack_type ?? "")
