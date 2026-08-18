@@ -219,7 +219,11 @@ export function Inspector() {
                 )}
               >
                 {showFindings ? (
-                  <ScoreCounter target={EFFECTIVE_SCORE} active={phase === "score" || phase === "verdict"} />
+                  <ScoreCounter
+                    target={EFFECTIVE_SCORE}
+                    active={phase === "score" || phase === "verdict"}
+                    reduceMotion={reduceMotion}
+                  />
                 ) : (
                   "0"
                 )}
