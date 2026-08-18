@@ -182,19 +182,16 @@ export default function DossiersPage() {
                                   <span className="font-mono text-zinc-600 shrink-0">
                                     {new Date(e.time).toLocaleString()}
                                   </span>
-                                  <Badge
-                                    variant={e.action === "BLOCK" ? "danger" : e.action === "RATE_LIMIT" ? "warning" : "default"}
-                                    className="font-mono shrink-0"
-                                  >
-                                    {e.action}
-                                  </Badge>
+                                  <VerdictChip verdict={e.action} className="shrink-0" />
                                   {e.attack_type && (
-                                    <span className="font-mono text-red-300/90 shrink-0">{e.attack_type}</span>
+                                    <span className={cn("font-mono shrink-0", severityText[severityFromScore(e.score ?? 0)])}>
+                                      {e.attack_type}
+                                    </span>
                                   )}
                                   <span className="truncate text-zinc-500 font-mono">
                                     {e.method} {e.path}
                                   </span>
-                                  <span className="ml-auto font-mono text-zinc-600 tabular-nums">
+                                  <span className={cn("ml-auto font-mono tabular-nums", severityText[severityFromScore(e.score ?? 0)])}>
                                     {e.score} pts
                                   </span>
                                 </div>
