@@ -32,19 +32,21 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthInitializer>
-        {children}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: "#18181B",
-              border: "1px solid #27272A",
-              color: "#E4E4E7",
-            },
-          }}
-        />
-      </AuthInitializer>
+      <MotionConfig reducedMotion="user">
+        <AuthInitializer>
+          {children}
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: "#0F1622",
+                border: "1px solid #223044",
+                color: "#DEE7F0",
+              },
+            }}
+          />
+        </AuthInitializer>
+      </MotionConfig>
     </QueryClientProvider>
   )
 }
