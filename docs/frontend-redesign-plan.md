@@ -140,3 +140,30 @@ shadcn component API stays intact.
 **Kept as-is (per brief):** data-fetching, auth, routing, component
 architecture. Nav badge count is the only new fetch (alerts total, one
 query, fails silently).
+
+## 7. Pass 2 — built
+
+Implemented as planned, in order: tokens → shell → landing → live/attack-map
+→ remaining pages → empty/loading → motion.
+
+- Palette applied by remapping the default `zinc/blue/cyan` scales in
+  `@theme` plus new `sev-*` tokens — verified in compiled CSS
+  (`--color-zinc-950:#0a0f16` propagates to every `bg-zinc-950/*` utility
+  site-wide; `sev-*` utilities generated).
+- Fonts: Space Grotesk / IBM Plex Sans / JetBrains Mono via next/font
+  (`--font-grotesk/plex/jetbrains` → `--font-sans/display/mono` tokens);
+  `font-display` used on titles/headings, mono on all data readouts.
+- The Inspector: animated scan-beam panel in the landing hero (phase
+  state machine, `useReducedMotion` → static inspected state); live rows
+  open a data-driven inspection expansion; playground verdict panel
+  shares the frame.
+- Severity system: `SeverityChip` / `VerdictChip` / `ScoreBar` /
+  `EmptyState` components + `lib/severity.ts` thresholds (80/50/20),
+  applied on live, attack-map, logs, alerts, dossiers, rules, playground
+  (public + dashboard), overview widgets, charts, and the landing threat
+  rows.
+- Motion: `MotionConfig reducedMotion="user"` in providers, CSS
+  `prefers-reduced-motion` kill-switch, live-row scan-line entry.
+- Focus: global `:focus-visible` outline ring.
+- Verification: `npm run lint` 0 errors (3 pre-existing warnings),
+  `npm run test` 19/19, `npm run build` clean.
