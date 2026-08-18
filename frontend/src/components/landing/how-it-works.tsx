@@ -11,9 +11,9 @@ export function HowItWorks() {
         <SectionHeading
           eyebrow="Architecture"
           eyebrowColor="text-cyan-400"
-          title="Three steps."
-          highlight="Zero latency grief."
-          subtitle="The engine sits as ASGI middleware — every request is inspected with sub-millisecond overhead."
+          title="Inspect."
+          highlight="Score. Decide."
+          subtitle="The engine sits as ASGI middleware — every request is inspected before it reaches your routes, in sub-millisecond overhead."
         />
 
         <div className="grid md:grid-cols-3 gap-6 relative">
