@@ -11,7 +11,12 @@ import { analyticsService } from "@/services/analytics"
 import { useWebSocket } from "@/hooks/useWebSocket"
 import { getWsURL } from "@/services/api"
 import type { GeoCountry, TrafficEvent } from "@/types"
-import { Radio, Crosshair, ShieldAlert, ShieldCheck } from "lucide-react"
+import { Radio, Crosshair, ShieldAlert } from "lucide-react"
+import { VerdictChip } from "@/components/ui/verdict-chip"
+import { ScoreBar } from "@/components/ui/score-bar"
+import { EmptyState } from "@/components/ui/empty-state"
+import { cn } from "@/lib/utils"
+import { severityRail, severityFromScore, severityText } from "@/lib/severity"
 
 const COUNTRY_COORDS: Record<string, [number, number]> = {
   US: [39.8, -98.6], CA: [56.1, -106.3], BR: [-14.2, -51.9], AR: [-38.4, -63.6],
