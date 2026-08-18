@@ -39,7 +39,7 @@ export function Features() {
                   {feature.tag}
                 </span>
               </div>
-              <h3 className="font-semibold text-[15px] mb-2">{feature.title}</h3>
+              <h3 className="font-display font-semibold text-[15px] mb-2">{feature.title}</h3>
               <p className="text-sm text-zinc-500 leading-relaxed">
                 {feature.description}
               </p>

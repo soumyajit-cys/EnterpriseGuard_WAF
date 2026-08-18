@@ -211,13 +211,13 @@ export function SectionHeading({
     >
       <span
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest",
+          "inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.15em]",
           eyebrowColor
         )}
       >
         {eyebrow}
       </span>
-      <h2 className="mt-4 text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tracking-tight leading-[1.1] text-balance">
+      <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tracking-tight leading-[1.1] text-balance">
         {title} <span className="text-gradient">{highlight}</span>
       </h2>
       <p className="mt-4 text-zinc-400 leading-relaxed text-[15px]">{subtitle}</p>
