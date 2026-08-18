@@ -195,11 +195,11 @@ export default function AttackMapPage() {
               <h3 className="font-medium text-zinc-200">Live Block Feed</h3>
             </div>
             {liveEvents.length === 0 ? (
-              <div className="flex flex-col items-center py-12 text-center">
-                <ShieldCheck className="h-8 w-8 text-zinc-600 mb-3" />
-                <p className="text-sm text-zinc-500">Waiting for the first block...</p>
-                <p className="text-xs text-zinc-600 mt-1">Fire an attack at the API and watch it stream in.</p>
-              </div>
+              <EmptyState
+                icon={ShieldAlert}
+                title="No blocks yet"
+                description="Fire an attack at the API and watch blocked requests stream in here, with their origin plotted on the map."
+              />
             ) : (
               <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
                 {liveEvents.map((e, i: number) => (
@@ -207,24 +207,31 @@ export default function AttackMapPage() {
                     key={e.id ?? i}
                     initial={{ opacity: 0, x: 16 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2.5"
+                    className="relative overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2.5"
                   >
-                    <div className="flex items-center gap-2">
-                      <ShieldAlert className="h-3.5 w-3.5 text-red-400 shrink-0" />
-                      <Badge variant={severityBadge[e.action] ?? "default"} className="font-mono">
-                        {e.action ?? "BLOCK"}
-                      </Badge>
-                      <span className="ml-auto text-[10px] text-zinc-600 font-mono">
+                    <span
+                      className={cn(
+                        "absolute left-0 top-0 h-full w-1",
+                        severityRail[severityFromScore(e.score)]
+                      )}
+                      aria-hidden
+                    />
+                    <div className="flex items-center gap-2 pl-1">
+                      <VerdictChip verdict={e.action ?? "BLOCK"} />
+                      <ScoreBar score={e.score ?? 0} className="ml-auto" />
+                      <span className="text-[10px] text-zinc-600 font-mono">
                         {e.timestamp
                           ? new Date(e.timestamp).toLocaleTimeString()
                           : new Date().toLocaleTimeString()}
                       </span>
                     </div>
-                    <p className="mt-1.5 font-mono text-xs text-zinc-400 truncate">
+                    <p className="mt-1.5 pl-1 font-mono text-xs text-zinc-400 truncate">
                       <span className="text-zinc-600">{e.ip_address}</span> · {e.method} {e.path}
                     </p>
                     {e.attack_type && (
-                      <p className="mt-0.5 font-mono text-[10px] text-red-400/80">{e.attack_type}</p>
+                      <p className={cn("mt-0.5 pl-1 font-mono text-[10px]", severityText[severityFromScore(e.score)])}>
+                        {e.attack_type}
+                      </p>
                     )}
                   </motion.div>
                 ))}
