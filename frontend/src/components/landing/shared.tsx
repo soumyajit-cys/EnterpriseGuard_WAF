@@ -7,7 +7,6 @@ import {
   Globe,
   Radar,
   Gauge,
-  Lock,
   Network,
   ShieldBan,
   FlaskConical,

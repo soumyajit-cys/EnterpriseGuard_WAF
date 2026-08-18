@@ -66,11 +66,7 @@ function ScoreCounter({
   const [value, setValue] = useState(reduceMotion ? target : 0)
 
   useEffect(() => {
-    if (!active) return
-    if (reduceMotion) {
-      setValue(target)
-      return
-    }
+    if (!active || reduceMotion) return
     const start = performance.now()
     let raf = 0
     const tick = (t: number) => {
