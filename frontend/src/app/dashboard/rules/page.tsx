@@ -85,7 +85,7 @@ export default function RulesPage() {
           </div>
 
           <div className="space-y-2">
-            {data?.items.map((rule: Rule) => (
+            {customRules.map((rule: Rule) => (
               <div key={rule.id} className="flex items-center gap-4 p-4 rounded-lg border border-zinc-800 hover:bg-zinc-800/30 transition-colors">
                 <Switch
                   checked={rule.enabled}
@@ -114,7 +114,7 @@ export default function RulesPage() {
                 </div>
               </div>
             ))}
-            {!isLoading && data?.items.length === 0 && (
+            {!isLoading && customRules.length === 0 && (
               <EmptyState
                 icon={ShieldX}
                 title="No custom rules"
