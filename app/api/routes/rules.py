@@ -50,7 +50,7 @@ async def get_rules(
         sort_desc=sort_desc,
     )
     return {
-        "items": rules,
+        "items": [_serialize(rule) for rule in rules],
         "total": total,
         "page": page,
         "page_size": page_size,
@@ -67,7 +67,7 @@ async def get_rule(
     rule = await repo.get_by_id(db, current_user.organization_id, rule_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
-    return rule
+    return _serialize(rule)
 
 
 @router.post("/", status_code=201)
@@ -134,6 +134,11 @@ async def delete_rule(
     rule = await repo.get_by_id(db, current_user.organization_id, rule_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
+    if rule.is_builtin:
+        raise HTTPException(
+            status_code=409,
+            detail="Built-in rules cannot be deleted — disable them instead",
+        )
     await repo.delete(db, current_user.organization_id, rule_id)
     await audit_service.log(
         action="RULE_DELETED",
