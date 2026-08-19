@@ -21,4 +21,23 @@ class WAFMode:
         return self._mode == "prevention"
 
 
+class BuiltinRuleState:
+    """Enabled state of the 16 built-in detectors, kept in sync with the
+    rules table by RuntimeSyncService. Unsynced detectors default to
+    enabled so a fresh process behaves like the always-on engine."""
+
+    def __init__(self):
+        self._enabled: dict[str, bool] = {}
+
+    def sync(self, state: dict[str, bool]):
+        self._enabled = state
+
+    def is_enabled(self, attack_type: str) -> bool:
+        return self._enabled.get(attack_type, True)
+
+    def count(self) -> int:
+        return len(self._enabled)
+
+
 waf_mode = WAFMode()
+builtin_rules = BuiltinRuleState()

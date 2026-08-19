@@ -16,6 +16,7 @@ from app.waf.rules.graphql import GraphQLDetector
 from app.waf.rules.upload import FileUploadDetector
 from app.waf.rules.encoded import decode_candidates
 from app.services.runtime_sync import custom_rules
+from app.waf.runtime import builtin_rules
 
 
 def _evidence(value: str | None, max_len: int = 120) -> str:
