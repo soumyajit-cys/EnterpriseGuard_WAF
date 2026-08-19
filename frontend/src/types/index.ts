@@ -53,6 +53,7 @@ export interface Rule {
   pattern?: string
   category?: string
   rule_type?: string
+  source?: "builtin" | "custom"
   created_at?: string
   updated_at?: string
 }
