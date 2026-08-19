@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.repositories.rule_repository import RuleRepository
 from app.auth.dependencies import require_analyst
+from app.models.rule import Rule
 from app.models.user import User
 from app.schemas.rule import RuleCreate, RuleUpdate
 from app.services.audit_service import audit_service
