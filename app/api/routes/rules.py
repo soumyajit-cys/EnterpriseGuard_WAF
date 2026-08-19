@@ -122,7 +122,7 @@ async def update_rule(
         details=f"Updated rule: {rule.name}",
     )
     await runtime_sync.sync_once()
-    return rule
+    return _serialize(rule)
 
 
 @router.delete("/{rule_id}", status_code=204)
@@ -167,4 +167,4 @@ async def toggle_rule(
         details=f"{'Enabled' if rule.enabled else 'Disabled'} rule: {rule.name}",
     )
     await runtime_sync.sync_once()
-    return rule
+    return _serialize(rule)
