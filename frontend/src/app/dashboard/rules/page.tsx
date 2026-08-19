@@ -18,24 +18,6 @@ import { rulesService } from "@/services/rules"
 import { getErrorMessage } from "@/services/api"
 import type { Rule } from "@/types"
 
-const BUILT_IN_RULES = [
-  { name: "SQL_INJECTION", description: "Classic SQLi payloads in params, headers and body", score: 30, severity: "medium" },
-  { name: "SQL_INJECTION_ENCODED", description: "Base64 / hex-encoded SQLi runs inside tokens", score: 35, severity: "medium" },
-  { name: "XSS", description: "Cross-site scripting payloads and event handlers", score: 25, severity: "medium" },
-  { name: "COMMAND_INJECTION", description: "OS command chaining and shell metacharacters", score: 85, severity: "critical" },
-  { name: "PATH_TRAVERSAL", description: "Directory traversal sequences (../, ..\\)", score: 40, severity: "medium" },
-  { name: "LFI", description: "Local file inclusion via wrappers and proc paths", score: 70, severity: "high" },
-  { name: "RFI", description: "Remote file inclusion and URL loaders", score: 85, severity: "critical" },
-  { name: "XXE", description: "XML external entity payloads", score: 80, severity: "critical" },
-  { name: "SSRF", description: "Server-side request forgery — internal/metadata targets", score: 75, severity: "high" },
-  { name: "SSTI", description: "Server-side template injection expressions", score: 50, severity: "high" },
-  { name: "LDAP_INJECTION", description: "LDAP filter injection operators", score: 40, severity: "medium" },
-  { name: "HEADER_INJECTION", description: "CRLF and response header splitting", score: 80, severity: "critical" },
-  { name: "HTTP_SMUGGLING", description: "CL+TE / TE+CL conflicting transfer headers", score: 90, severity: "critical" },
-  { name: "GRAPHQL_ABUSE", description: "Introspection queries and batching abuse", score: 55, severity: "high" },
-  { name: "MALICIOUS_UPLOAD", description: "Dangerous filenames and content in multipart uploads", score: 75, severity: "high" },
-]
-
 export default function RulesPage() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState("")
@@ -47,6 +29,9 @@ export default function RulesPage() {
     queryKey: ["rules", page, search],
     queryFn: () => rulesService.getAll({ page, page_size: 20, search }),
   })
+
+  const builtinRules = (data?.items ?? []).filter((r) => r.source === "builtin")
+  const customRules = (data?.items ?? []).filter((r) => r.source !== "builtin")
 
   const toggleMutation = useMutation({
     mutationFn: (id: number) => rulesService.toggle(id),
