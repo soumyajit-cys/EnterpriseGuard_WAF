@@ -17,6 +17,12 @@ router = APIRouter(
 repo = RuleRepository()
 
 
+def _serialize(rule: Rule) -> dict:
+    data = {c.name: getattr(rule, c.name) for c in Rule.__table__.columns}
+    data["source"] = "builtin" if rule.is_builtin else "custom"
+    return data
+
+
 @router.get("/")
 async def get_rules(
     page: int = Query(1, ge=1),

@@ -133,9 +133,51 @@ class RuntimeSyncService:
                 if mode and mode.value in ("detection", "prevention"):
                     waf_mode.set(mode.value)
 
+                # Seed the 16 built-in detectors as rules for this org so
+                # their enabled state can be managed from the dashboard.
+                builtin_rows = await db.execute(
+                    select(Rule).where(
+                        Rule.organization_id == organization_id,
+                        Rule.is_builtin == True,
+                    )
+                )
+                existing_builtin = {
+                    r.name: r for r in builtin_rows.scalars().all()
+                }
+                for meta in BUILTIN_RULES:
+                    if meta.name not in existing_builtin:
+                        db.add(
+                            Rule(
+                                organization_id=organization_id,
+                                name=meta.name,
+                                description=meta.description,
+                                enabled=True,
+                                priority=meta.threshold,
+                                severity=meta.severity,
+                                category=meta.category,
+                                rule_type="builtin",
+                                is_builtin=True,
+                            )
+                        )
+                await db.commit()
+
+                builtin_rows = await db.execute(
+                    select(Rule).where(
+                        Rule.organization_id == organization_id,
+                        Rule.is_builtin == True,
+                    )
+                )
+                builtin_rules.sync(
+                    {
+                        r.name: r.enabled
+                        for r in builtin_rows.scalars().all()
+                    }
+                )
+
                 rule_rows = await db.execute(
                     select(Rule).where(
                         Rule.organization_id == organization_id,
+                        Rule.is_builtin == False,
                         Rule.enabled == True,
                     )
                 )
@@ -148,6 +190,7 @@ class RuntimeSyncService:
         print(
             f"[WAF] Runtime synced (org={organization_id}): {len(blocked)} blocked, "
             f"{len(allowed)} allowed, mode={waf_mode.get()}, "
+            f"builtin_rules={builtin_rules.count()}, "
             f"custom_rules={custom_rules.count()}"
         )
 
