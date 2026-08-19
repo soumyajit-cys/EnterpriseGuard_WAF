@@ -11,7 +11,8 @@ from app.models.waf_setting import WAFSetting
 from app.services.tenant_service import get_default_org_id
 from app.waf.rules.blocklist import BlockList
 from app.waf.rules.allowlist import AllowList
-from app.waf.runtime import waf_mode
+from app.waf.rules.registry import BUILTIN_RULES
+from app.waf.runtime import waf_mode, builtin_rules
 
 SYNC_INTERVAL_SECONDS = 30
 
