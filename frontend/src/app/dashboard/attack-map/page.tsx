@@ -46,7 +46,6 @@ export default function AttackMapPage() {
   const { data: geoData, isLoading } = useQuery({
     queryKey: ["analytics", "geo", hours],
     queryFn: () => analyticsService.getGeo(hours),
-    refetchInterval: 15000,
   })
 
   const eventsRef = useRef<TrafficEvent[]>([])

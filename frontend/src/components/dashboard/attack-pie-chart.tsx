@@ -19,7 +19,7 @@ export function AttackPieChart() {
   const { data, isLoading } = useQuery({
     queryKey: ["attack-distribution", period],
     queryFn: () => analyticsService.getTraffic(period),
-    refetchInterval: 30000,
+    refetchInterval: 300000,
   })
 
   const distribution = (data?.attack_distribution ?? []) as Array<{

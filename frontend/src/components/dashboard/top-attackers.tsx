@@ -19,7 +19,7 @@ export function TopAttackers() {
   const { data, isLoading } = useQuery({
     queryKey: ["top-attackers"],
     queryFn: () => analyticsService.getTraffic("7d"),
-    refetchInterval: 30000,
+    refetchInterval: 300000,
   })
 
   const attackers = (data?.top_ips ?? []) as Array<{ ip: string; count: number }>

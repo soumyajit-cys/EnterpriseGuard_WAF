@@ -37,7 +37,7 @@ export function TrafficChart() {
   const { data, isLoading, isFetching, isPlaceholderData } = useQuery({
     queryKey: ["traffic-chart", period],
     queryFn: () => analyticsService.getTraffic(period),
-    refetchInterval: 30000,
+    refetchInterval: period === "7d" || period === "30d" ? 300000 : 30000,
     placeholderData: keepPreviousData,
   })
 
