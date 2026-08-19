@@ -90,6 +90,8 @@ class Detector:
         ]
 
         for attack_type, detector, threshold in self.detectors:
+            if not builtin_rules.is_enabled(attack_type):
+                continue
             for source_name, source_value in targets:
                 score = 0
                 if hasattr(detector, "inspect"):
@@ -102,39 +104,44 @@ class Detector:
                         "evidence": _evidence(source_value),
                     })
 
-        smuggling_score = self.smuggling.inspect_headers(request.headers)
-        if smuggling_score >= 80:
-            findings.append({
-                "type": "HTTP_SMUGGLING",
-                "score": smuggling_score,
-                "source": "headers",
-                "evidence": _evidence(str({k: v for k, v in request.headers.items() if k.lower() in ("content-length", "transfer-encoding")})),
-            })
+        if builtin_rules.is_enabled("HTTP_SMUGGLING"):
+            smuggling_score = self.smuggling.inspect_headers(request.headers)
+            if smuggling_score >= 80:
+                findings.append({
+                    "type": "HTTP_SMUGGLING",
+                    "score": smuggling_score,
+                    "source": "headers",
+                    "evidence": _evidence(str({k: v for k, v in request.headers.items() if k.lower() in ("content-length", "transfer-encoding")})),
+                })
 
-        graphql_score = self.graphql.inspect(body)
-        if graphql_score < 35:
-            graphql_score = self.graphql.inspect(query_params)
-        if graphql_score >= 35:
-            findings.append({
-                "type": "GRAPHQL_ABUSE",
-                "score": graphql_score,
-                "source": "body" if body else "query",
-                "evidence": _evidence(body or query_params),
-            })
+        if builtin_rules.is_enabled("GRAPHQL_ABUSE"):
+            graphql_score = self.graphql.inspect(body)
+            if graphql_score < 35:
+                graphql_score = self.graphql.inspect(query_params)
+            if graphql_score >= 35:
+                findings.append({
+                    "type": "GRAPHQL_ABUSE",
+                    "score": graphql_score,
+                    "source": "body" if body else "query",
+                    "evidence": _evidence(body or query_params),
+                })
 
-        upload_score = self.upload.inspect(body)
-        if upload_score >= 70:
-            findings.append({
-                "type": "MALICIOUS_UPLOAD",
-                "score": upload_score,
-                "source": "body",
-                "evidence": _evidence(body),
-            })
+        if builtin_rules.is_enabled("MALICIOUS_UPLOAD"):
+            upload_score = self.upload.inspect(body)
+            if upload_score >= 70:
+                findings.append({
+                    "type": "MALICIOUS_UPLOAD",
+                    "score": upload_score,
+                    "source": "body",
+                    "evidence": _evidence(body),
+                })
 
         for source_name, source_value in targets:
             for candidate in decode_candidates(source_value):
                 for attack_type, detector, threshold in self.detectors:
                     if not hasattr(detector, "inspect"):
+                        continue
+                    if not builtin_rules.is_enabled(attack_type):
                         continue
                     try:
                         score = detector.inspect(candidate["value"])
@@ -148,23 +155,25 @@ class Detector:
                             "evidence": _evidence(candidate["value"]),
                         })
 
-        hpp_score = self.hpp.inspect_string(query_params)
-        if hpp_score >= 30:
-            findings.append({
-                "type": "HTTP_PARAMETER_POLLUTION",
-                "score": hpp_score,
-                "source": "query",
-                "evidence": _evidence(query_params),
-            })
+        if builtin_rules.is_enabled("HTTP_PARAMETER_POLLUTION"):
+            hpp_score = self.hpp.inspect_string(query_params)
+            if hpp_score >= 30:
+                findings.append({
+                    "type": "HTTP_PARAMETER_POLLUTION",
+                    "score": hpp_score,
+                    "source": "query",
+                    "evidence": _evidence(query_params),
+                })
 
-        bot_score = self.bot.inspect(request.headers.get("user-agent"))
-        if bot_score >= 20:
-            findings.append({
-                "type": "BOT_TRAFFIC",
-                "score": bot_score,
-                "source": "user-agent",
-                "evidence": _evidence(request.headers.get("user-agent")),
-            })
+        if builtin_rules.is_enabled("BOT_TRAFFIC"):
+            bot_score = self.bot.inspect(request.headers.get("user-agent"))
+            if bot_score >= 20:
+                findings.append({
+                    "type": "BOT_TRAFFIC",
+                    "score": bot_score,
+                    "source": "user-agent",
+                    "evidence": _evidence(request.headers.get("user-agent")),
+                })
 
         for source_name, source_value in targets:
             for hit in custom_rules.match(source_value):
