@@ -145,34 +145,51 @@ export default function RulesPage() {
       <Card>
         <CardContent className="p-5">
           <div className="flex items-center gap-3 mb-5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 border border-purple-500/20">
-              <Cpu className="h-5 w-5 text-purple-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 border border-blue-500/20">
+              <Cpu className="h-5 w-5 text-blue-400" />
             </div>
             <div>
               <h3 className="font-medium text-zinc-200">Built-in Engine Rules</h3>
               <p className="text-xs text-zinc-500">
-                Always-on detectors compiled into the WAF engine — no management needed
+                The 16 detectors compiled into the engine. Disable one and it stops firing — they can&apos;t be deleted or renamed.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-            {BUILT_IN_RULES.map((r) => (
+          <div className="space-y-2">
+            {builtinRules.map((rule) => (
               <div
-                key={r.name}
-                className="flex items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/40 px-4 py-3"
+                key={rule.id}
+                className="flex items-center gap-4 rounded-lg border border-zinc-800 bg-zinc-900/40 px-4 py-3"
               >
-                <Shield className="h-4 w-4 text-purple-400 mt-0.5 shrink-0" />
-                <div className="min-w-0">
+                <Switch
+                  checked={rule.enabled}
+                  onCheckedChange={() => toggleMutation.mutate(rule.id)}
+                  aria-label={`Toggle ${rule.name}`}
+                />
+                <Shield className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-xs font-medium text-zinc-200">{r.name}</span>
-                    <SeverityChip value={r.severity} />
-                    <Badge variant="outline">{r.score} pts</Badge>
+                    <span className="font-mono text-xs font-medium text-zinc-200">{rule.name}</span>
+                    <SeverityChip value={rule.severity} />
+                    {rule.category && (
+                      <Badge variant="outline" className="capitalize">{rule.category}</Badge>
+                    )}
                   </div>
-                  <p className="text-xs text-zinc-500 mt-1">{r.description}</p>
+                  {rule.description && (
+                    <p className="text-xs text-zinc-500 mt-1">{rule.description}</p>
+                  )}
                 </div>
+                <span className="hidden sm:inline font-mono text-[10px] text-zinc-600">
+                  {rule.enabled ? "ACTIVE" : "DISABLED"}
+                </span>
               </div>
             ))}
+            {!isLoading && builtinRules.length === 0 && (
+              <p className="text-sm text-zinc-500 py-4">
+                No built-in rules to show — the engine defaults to all detectors enabled.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
