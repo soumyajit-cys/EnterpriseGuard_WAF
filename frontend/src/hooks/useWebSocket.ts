@@ -11,21 +11,15 @@ interface UseWebSocketOptions {
 }
 
 export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
-  const {
-    onOpen,
-    onClose,
-    onMessage,
-    onError,
-    reconnectInterval = 3000,
-    maxRetries = 10,
-    noRetryCodes = [],
-  } = options
+  const cbRef = useRef(options)
+  cbRef.current = options
 
   const wsRef = useRef<WebSocket | null>(null)
   const retriesRef = useRef(0)
   const mountedRef = useRef(true)
 
   const connect = useCallback(function connect() {
+    const { onOpen, onClose, onMessage, onError, reconnectInterval = 3000, maxRetries = 10, noRetryCodes = [] } = cbRef.current
     if (!mountedRef.current || retriesRef.current >= maxRetries) return
 
     try {
@@ -76,7 +70,7 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
         }, reconnectInterval)
       }
     }
-  }, [url, onOpen, onClose, onMessage, onError, reconnectInterval, maxRetries, noRetryCodes])
+  }, [url])
 
   useEffect(() => {
     mountedRef.current = true
