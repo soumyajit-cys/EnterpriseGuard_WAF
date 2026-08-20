@@ -1,0 +1,58 @@
+# Render blueprint for the EnterpriseGuard WAF backend.
+#
+# Usage:
+#   1. Push this repo to GitHub and create a new "Blueprint" in the Render
+#      dashboard, or run `render blueprint launch` from the repo root.
+#   2. After the first deploy, set the vars marked `sync: false` (REDIS_URL,
+#      DATABASE_URL, CORS_ORIGINS, TRUSTED_PROXIES) — see the comments below.
+#   3. Set the same CORS_ORIGINS on the Vercel side and redeploy both.
+#
+# NOTE: Python 3.14 has no prebuilt pydantic-core wheel, so the runtime is
+# pinned to 3.12.4 to avoid a Cargo/maturin source build on Render.
+
+services:
+  - type: web
+    name: enterpriseguard-waf-api
+    runtime: python
+    plan: free
+    region: oregon
+    pythonVersion: "3.12.4"
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /ping
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: WAF_MODE
+        value: prevention
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: SECRET_KEY
+        generateValue: true
+      # Use the connection string from your Render Postgres dashboard and
+      # prefix the scheme with +asyncpg, e.g.:
+      #   postgresql+asyncpg://wafuser:password@host/dbname?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      # Redis is required at startup. Point this at any Redis-compatible
+      # provider (e.g. Upstash, or Render Redis on a paid plan):
+      #   redis://default:password@host:6379
+      - key: REDIS_URL
+        sync: false
+      # JSON list of frontend origins allowed to call this API, e.g.:
+      #   ["https://your-frontend.vercel.app"]
+      # Production CORS allows ONLY these origins (with credentials).
+      - key: CORS_ORIGINS
+        sync: false
+      # Comma-separated proxy IPs that may set X-Forwarded-For. Set this to
+      # Render's edge IPs for your region or client IPs (and rate limiting,
+      # blocklists, geolocation) will see Render's IP instead of the client's.
+      - key: TRUSTED_PROXIES
+        sync: false
+
+databases:
+  - name: enterpriseguard-waf-db
+    plan: free
+    databaseName: wafdb
+    user: wafuser
