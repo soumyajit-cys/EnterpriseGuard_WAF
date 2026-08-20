@@ -39,6 +39,24 @@ class Settings(BaseSettings):
     )
 
     @model_validator(mode="after")
+    def _validate_urls(self) -> "Settings":
+        redis_prefix = self.REDIS_URL.split(":", 1)[0] + ":"
+        if redis_prefix not in ("redis:", "rediss:"):
+            raise ValueError(
+                "REDIS_URL must start with redis:// or rediss:// "
+                f"(got '{self.REDIS_URL[:20]}...'). Use your Upstash "
+                "Redis/TLS connection string, e.g. "
+                "rediss://default:password@host.upstash.io:6379"
+            )
+        if not self.DATABASE_URL.startswith("postgresql+asyncpg://"):
+            raise ValueError(
+                "DATABASE_URL must start with postgresql+asyncpg:// "
+                f"(got '{self.DATABASE_URL[:30]}...'). Swap postgresql:// "
+                "for postgresql+asyncpg:// to use the async driver."
+            )
+        return self
+
+    @model_validator(mode="after")
     def _validate_production_settings(self) -> "Settings":
         if self.ENVIRONMENT != "production":
             return self
