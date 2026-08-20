@@ -18,7 +18,7 @@ services:
     region: oregon
     pythonVersion: "3.12.4"
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /ping
     autoDeploy: true
     envVars:
@@ -30,14 +30,15 @@ services:
         value: "true"
       - key: SECRET_KEY
         generateValue: true
-      # Use the connection string from your Render Postgres dashboard and
-      # prefix the scheme with +asyncpg, e.g.:
-      #   postgresql+asyncpg://wafuser:password@host/dbname?sslmode=require
+      # Use the connection string from your Neon project and prefix the
+      # scheme with +asyncpg (the async driver), e.g.:
+      #   postgresql+asyncpg://wafuser:password@ep-xxxx.neon.tech/wafdb
+      # Drop ?sslmode=require — asyncpg negotiates TLS over Neon hostnames.
       - key: DATABASE_URL
         sync: false
       # Redis is required at startup. Point this at any Redis-compatible
-      # provider (e.g. Upstash, or Render Redis on a paid plan):
-      #   redis://default:password@host:6379
+      # provider (e.g. Upstash with its rediss:// TLS URL):
+      #   rediss://default:password@xxxx.upstash.io:6379
       - key: REDIS_URL
         sync: false
       # JSON list of frontend origins allowed to call this API, e.g.:

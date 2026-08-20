@@ -1,9 +1,5 @@
 {
   "framework": "nextjs",
   "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://YOUR-BACKEND.onrender.com",
-    "NEXT_PUBLIC_WS_URL": "wss://YOUR-BACKEND.onrender.com"
-  }
+  "outputDirectory": ".next"
 }
