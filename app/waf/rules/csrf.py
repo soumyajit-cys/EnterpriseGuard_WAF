@@ -1,6 +1,7 @@
 from fastapi import Request
 
 from app.auth.jwt import decode_token
+from app.core.config import settings
 from app.core.csrf import validate_csrf_token
 
 
@@ -38,7 +39,14 @@ class CSRFValidator:
 
             parsed = urlparse(origin)
             if parsed.hostname and parsed.hostname != host.split(":")[0]:
-                return False
+                # Cross-origin deployments (e.g. a Vercel frontend calling
+                # the Render API) send Origin = frontend domain, which never
+                # matches the API Host. Only allow origins explicitly listed
+                # in CORS_ORIGINS — everything else stays rejected.
+                netloc = f"{parsed.scheme}://{parsed.netloc}".rstrip("/")
+                allowed = {f"{o.rstrip('/')}" for o in settings.CORS_ORIGINS}
+                if netloc not in allowed:
+                    return False
 
         token = request.headers.get("X-CSRF-Token")
         if not token:
